@@ -17,6 +17,9 @@
 **使用方工程**是外部的小说仓库，须已存在 `cards/` 与 `manuscript/` 目录。
 本 skill 只走相对路径，不创建使用方目录、不修改使用方配置。
 
+> 📖 日常使用与常见问题请看 **[USAGE.md](./USAGE.md)**。
+> 本文档聚焦项目结构、安装方式与技术约定。
+
 ## 快速开始
 
 ### 一键安装
@@ -69,7 +72,8 @@
 novel-cards/
   AGENTS.md               # 本仓库开发约定（不要写卡片内容）
   SKILL.md                # skill 入口（frontmatter 仅 name/description/license）
-  README.md               # 本文件
+  README.md               # 本文件（项目概览）
+  USAGE.md                # 使用说明（日常使用 + FAQ + 回滚）
   LICENSE                 # AGPL-3.0（不可修改）
   install.sh              # 一键安装 / 项目初始化
   references/
