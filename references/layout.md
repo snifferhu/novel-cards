@@ -18,6 +18,9 @@ skill 只**读**已存在的相对路径，不创建、不移动、不重命名�
     factions/            # type: faction，势力卡
     snapshots/           # type: snapshot，状态快照卡
     darklayer/           # type: darklayer，暗线卡（独立命名空间）
+  reflections/           # type: reflection，反思卡（写作闭环，独立于 cards/）
+    chapter-050.md
+    ...
   manuscript/
     chapter-001.md
     chapter-002.md
@@ -25,6 +28,9 @@ skill 只**读**已存在的相对路径，不创建、不移动、不重命名�
   graph/                 # 关系图谱 HTML（独立于 cards/）
     tl-bronze-key-graph.html
     ...
+  drafts/                # 练习稿（通胀过滤器未通过 / 用户标记）
+    practice/
+      ...
 ```
 
 ## 命名规则
@@ -43,10 +49,11 @@ skill 只**读**已存在的相对路径，不创建、不移动、不重命名�
   | faction | `fa-` | `cards/factions/` |
   | snapshot | `sn-` | `cards/snapshots/` |
   | darklayer | `dk-` | `cards/darklayer/` |
+  | reflection | `rf-` | `reflections/`（**不进入 `cards/`**） |
 
 - **slug**：小写字母 + 连字符 + 数字，例：`ch-jiang-li` /
-  `fs-orphan-letter` / `dk-mother-tongue` / `tl-bronze-key`。
-  避免 emoji、中文、空格。
+  `fs-orphan-letter` / `dk-mother-tongue` / `tl-bronze-key` /
+  `rf-chapter-050`。避免 emoji、中文、空格。
 
 ## 动线卡命名空间（timeline）
 
@@ -72,7 +79,7 @@ skill 只**读**已存在的相对路径，不创建、不移动、不重命名�
 - **必须**位于 `cards/darklayer/`（或等价独立目录，如 `cards/hidden/`、
   `cards/underlayer/`）。
 - id 必须以 `dk-` 开头，**不允许**出现在 `cards/characters/` 等主书目录。
-- 与主书人物 / 关系卡的引用**只**通过 `references_to_main` 显式字段
+- 与主书人物卡的引用**只**通过 `references_to_main` 显式字段
   串接，例如：
 
   ```yaml
@@ -83,10 +90,33 @@ skill 只**读**已存在的相对路径，不创建、不移动、不重命名�
 - 违反此约定的常见错误：把暗线人物直接写进 `cards/characters/` 但改一个
   隐藏前缀 —— 这在目录层面就破坏了命名空间隔离。
 
+## 反思卡命名空间（reflection）
+
+- **位置**：`reflections/`，**与 `cards/` 平级**（不进入 `cards/`）。
+- **id 前缀**：`rf-`，命名约定 `rf-<chapter-id>`（例：`rf-chapter-050`）。
+- **文件命名**：与关联章节同名（`reflections/chapter-050.md`），
+  便于在目录中与 `manuscript/chapter-050.md` 一一对照。
+- **正文结构**：必须包含五个二级标题：`stuck` / `shone` / `why` /
+  `insights` / `action_items`。详见 `references/hard-rules.md` 规则 9。
+- **反哺**：`action_items` 是唯一指向其他卡片的入口，格式必须明确到
+  卡 id 或图谱文件；不写「优化一下人物刻画」这类模糊描述。
+
+## 练习稿目录（drafts/practice/）
+
+- **位置**：`drafts/practice/`，与 `cards/` 平级。
+- **用途**：存放通胀过滤器判定为「不进正式排期」的素材，或用户主动
+  标记为「练习稿」的题材构思。
+- **不建 frontmatter 强制**：练习稿不是正式卡片，可以只用 Markdown
+  自由文本；如果希望日后回炉，可加 `status: practice` / `created` /
+  `updated` 三个字段以便检索，但 skill 不做强制。
+- **回炉机制**：后续若出现新的独家洞察，可以按 `nc-过滤` 重新评估，
+  判定通过后转入 `cards/`。
+
 ## 路径引用规范
 
 - 所有路径引用必须使用**相对使用方工程根**的相对路径，例如
-  `cards/characters/ch-jiang-li.md`、`graph/tl-bronze-key-graph.html`。
+  `cards/characters/ch-jiang-li.md`、`graph/tl-bronze-key-graph.html`、
+  `reflections/chapter-050.md`。
 - **禁止**在卡片正文或 frontmatter 中使用绝对路径、`~/`、`$HOME`、
   Windows 盘符路径。
 - 卡间引用使用 **id**（如 `ch-jiang-li`）而非路径，路径由目录约定推导。
@@ -134,8 +164,10 @@ novel-cards skill 支持四种安装方式：
     factions/.gitkeep
     snapshots/.gitkeep
     darklayer/.gitkeep
+  reflections/.gitkeep
   manuscript/.gitkeep
   graph/.gitkeep
+  drafts/practice/.gitkeep
 ```
 
 **使用方工程配置不动**：本 skill 不修改使用方工程的 `AGENTS.md` /

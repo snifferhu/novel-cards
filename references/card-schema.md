@@ -8,14 +8,14 @@
 | 字段 | 类型 | 说明 |
 |---|---|---|
 | `id` | string | 卡片唯一标识，含类型前缀，全局唯一 |
-| `type` | enum | `character` / `plotpoint` / `item` / `scene` / `foreshadow` / `relationship` / `faction` / `snapshot` / `darklayer` |
+| `type` | enum | `character` / `plotpoint` / `item` / `scene` / `foreshadow` / `timeline` / `faction` / `snapshot` / `darklayer` / `reflection` |
 | `status` | enum | 卡片生命周期状态，见"状态生命周期"节 |
 | `created` | date | 首次创建时间（ISO 8601） |
 | `updated` | date | 最近一次更新时间（ISO 8601） |
 
 ## 状态生命周期
 
-一般卡片（除 foreshadow 与 darklayer 外）：
+一般卡片（除 foreshadow、darklayer 与 reflection 外）：
 
 ```
 draft → active → archived
@@ -25,7 +25,16 @@ draft → active → archived
 - `active`：已进入正文使用，是主书的一部分
 - `archived`：已废弃或替换，保留历史不删除
 
-## 八类卡专属字段
+**特殊状态**：
+
+- **foreshadow**：`unresolved` / `resolved`（详见下方 foreshadow 章节）
+- **darklayer**：`hint` / `hinted` / `confirmed` / `revealed`
+- **reflection**：`draft` / `reviewed` / `closed`
+  - `draft`：初稿，`action_items` 尚未处理
+  - `reviewed`：用户审阅完毕，`action_items` 处理中或部分处理
+  - `closed`：全部 `action_items` 已处理（含跳过），反思卡归档
+
+## 九类卡专属字段
 
 ### character（人物卡）
 
@@ -99,7 +108,6 @@ draft → active → archived
 - 复杂交互（多对象、多类型、含暗示关系）放 `graph/` 目录下 HTML 图谱
 - 动线卡通过 `graph` 字段（可选）显式指向对应图谱文件
 
-
 ### faction（势力卡）
 
 | 字段 | 必填 | 说明 |
@@ -132,6 +140,28 @@ draft → active → archived
 
 **硬规则约束**：暗线卡必须位于 `cards/darklayer/`；id 必须以 `dk-` 开头；
 与主书卡片只通过 `references_to_main` 单向串接。详见 `hard-rules.md` 规则 4。
+
+### reflection（反思卡）
+
+| 字段 | 必填 | 说明 |
+|---|---|---|
+| `chapter` | ✅ | 复盘对象的章节 id（如 `chapter-050`） |
+| `title` | ✅ | 复盘标题（一般等于章节标题 + 「复盘」） |
+
+**正文结构（硬规则约束）**：正文必须包含以下五个二级标题，按顺序出现：
+
+| 二级标题 | 内容 |
+|---|---|
+| `## stuck` | 卡点：写作过程中出现的具体卡点 |
+| `## shone` | 亮点：本章写得顺畅、出彩、超出预期的段落 |
+| `## why` | 归因：把卡点与亮点的根本原因拎出来 |
+| `## insights` | 新认知：本章沉淀出的新认知（人物理解、世界观补丁、技法经验） |
+| `## action_items` | 反哺动作：把新认知落到具体的卡片修改上，markdown 任务列表 |
+
+**位置约束**：必须位于 `reflections/`，**不得**放入 `cards/`。
+**id 前缀**：`rf-`，命名 `rf-<chapter-id>`。
+
+详见 `hard-rules.md` 规则 9 与 `references/loop.md`。
 
 ## 字段命名规范
 
@@ -213,3 +243,63 @@ graph: graph/tl-bronze-key-graph.html
 关键道具，与 `fs-key-secret` 伏笔强关联。
 ```
 
+## 反思卡示例
+
+```yaml
+---
+id: rf-chapter-050
+type: reflection
+status: draft
+created: 2026-10-21
+updated: 2026-10-21
+chapter: chapter-050
+title: 第五章复盘
+---
+
+# 第五章 · 复盘
+
+## stuck
+
+- 卡点 1：姜璃与苏叶的对手戏推不动，两人对话总是重复已有立场
+  - 出现于：中段对话（约 800-1200 字处）
+  - 现象：连续三次重写仍未突破
+  - 归因假设：苏叶的动机在人物卡中描述太单薄
+
+- 卡点 2：孤儿院失踪事件的真相浮出水面太快，读者还没准备好
+  - 出现于：章节中段
+  - 现象：情感节奏断了
+  - 归因假设：铺垫不足，缺少一个前置伏笔
+
+## shone
+
+- 亮点 1：审判台场景的空间描写
+  - 位置：章节结尾 300 字
+  - 出彩点：用「月光」「审判席」「铁链声」三个意象构建出完整氛围
+  - 可复用性：这个「三意象组合」手法可以迁移到其他关键场景
+
+## why
+
+- 根本原因 A（卡点 1）：苏叶人物卡缺少「个人欲望」字段，只有立场没有欲望
+- 根本原因 B（卡点 2）：伏笔卡 `fs-orphan-letter` 的 `planted_at` 定得太晚
+
+## insights
+
+- 认知 1：人物卡的「目标」需要区分「立场」与「欲望」，只有立场的配角写不出戏
+- 认知 2：情感节奏的铺垫必须至少提前一章埋设伏笔，不能在同一章内「先埋后收」
+- 认知 3：「三意象组合」是可复用的场景描写手法
+
+## action_items
+
+- [ ] 更新 `cards/characters/ch-su-ye.md`：把「目标」字段拆为「立场」与「欲望」两个子字段
+- [ ] 新建 `cards/foreshadow/fs-orphan-letter.md`：把「孤儿院信件」作为 chapter-050 前置伏笔，`planted_at: chapter-049`
+- [ ] 更新 `cards/scenes/sc-moonlit-arena.md`：把「三意象组合」手法记录到备注段
+- [ ] 补素材：需要用户口述「苏叶个人欲望」的具体素材，先过 `nc-过滤`
+
+---
+
+关联：`manuscript/chapter-050.md`
+相关反思卡：（暂无）
+```
+
+**说明**：以上示例中 `action_items` 的第 4 条「补素材」必须**先过通胀过滤器**
+（规则 10），才能进入正式素材池或练习稿目录。

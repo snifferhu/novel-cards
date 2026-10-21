@@ -2,16 +2,17 @@
 
 双端兼容（**OpenCode** + **Claude Code**）的小说卡片体系维护 skill。为长篇
 小说写作提供**人物 / 桥段 / 道具 / 场景 / 伏笔 / 动线 / 势力 / 快照 / 暗线**
-八类结构化卡片模板，并支持用 **HTML 图谱**表达复杂关系，以**提案制**方式
-与作者协作。统一触发前缀 `nc-`。
+九类结构化卡片，并支持 **HTML 图谱**表达复杂关系、**反思卡**沉淀单章
+复盘、**通胀过滤器**做新素材入口 gate。以**提案制**方式与作者协作。
+统一触发前缀 `nc-`。
 
 ## 这个仓库是什么
 
 本仓库**不是**任何小说工程本身，而是一个 skill 定义仓库。交付物是：
 
 - `SKILL.md` — skill 入口（触发词、场景、工作流程、硬规则）
-- `references/` — 细则（布局约定、硬规则详解、卡片 schema）
-- `templates/` — 八类卡的骨架模板 + 关系图谱 HTML 模板
+- `references/` — 细则（布局约定、硬规则详解、卡片 schema、闭环工作流、过滤器）
+- `templates/` — 九类卡的骨架模板 + 关系图谱 HTML 模板
 - `install.sh` — 一键安装到 OpenCode / Claude Code
 - `AGENTS.md` — 本仓库自身的开发约定
 
@@ -57,8 +58,11 @@
     factions/             # 势力卡（type: faction，id 前缀 fa-）
     snapshots/            # 状态快照卡（type: snapshot，id 前缀 sn-）
     darklayer/            # 暗线卡（type: darklayer，id 前缀 dk-）
+  reflections/            # 反思卡（type: reflection，id 前缀 rf-）
   manuscript/             # 正文章节
   graph/                  # 关系图谱 HTML（复杂关系可视化）
+  drafts/
+    practice/             # 练习稿（过滤器未通过 / 用户标记为练习）
 ```
 
 ### 软链开发模式
@@ -80,8 +84,10 @@ novel-cards/
   install.sh              # 一键安装 / 项目初始化
   references/
     layout.md             # 布局约定与安装方式
-    hard-rules.md         # 硬规则详解
-    card-schema.md        # 八类卡完整字段定义
+    hard-rules.md         # 硬规则详解（含反思卡、过滤器）
+    card-schema.md        # 九类卡完整字段定义
+    loop.md               # 写作闭环工作流
+    filter.md             # 通胀过滤器规则
   templates/
     characters.md         # 人物卡模板
     plotpoints.md         # 桥段卡模板
@@ -92,10 +98,11 @@ novel-cards/
     factions.md           # 势力卡模板
     snapshots.md          # 状态快照卡模板
     darklayer.md          # 暗线卡模板（独立命名空间）
+    reflections.md        # 反思卡模板（写作闭环）
     relation-graph.html   # 关系图谱 HTML 模板（SVG 骨架）
 ```
 
-## 八类卡速览
+## 九类卡速览
 
 | # | 类型 | type | id 前缀 | 模板 | 关键专属字段 |
 |---|---|---|---|---|---|
@@ -108,15 +115,16 @@ novel-cards/
 | 7 | 势力 | `faction` | `fa-` | `templates/factions.md` | `name` / `leader` / `members` |
 | 8 | 快照 | `snapshot` | `sn-` | `templates/snapshots.md` | `chapter` / `focus` / `summary` |
 | 9 | 暗线 | `darklayer` | `dk-` | `templates/darklayer.md` | `truth` / `references_to_main` |
+| 10 | 反思 | `reflection` | `rf-` | `templates/reflections.md` | `chapter` / 五段结构（`stuck` / `shone` / `why` / `insights` / `action_items`） |
 
 所有卡必备五字段：`id` / `type` / `status` / `created` / `updated`。
 
 > **推荐等级**（非硬约束，仅建议）：
 > - **核心**：character / plotpoint / foreshadow —— 长篇骨架
 > - **常用**：scene / item / timeline / faction —— 中篇以上
-> - **按需**：snapshot / darklayer —— 特定叙事需要时才建
+> - **按需**：snapshot / darklayer / reflection —— 特定叙事需要时才建
 >
-> 八类卡全部可选，按需启用。
+> 九类卡全部可选，按需启用。反思卡建议随写作节奏使用，不必强求每章一张。
 
 ## HTML 关系图谱
 
@@ -128,9 +136,36 @@ novel-cards/
 - **卡片引用**：动线卡正文写 `见 graph/xxx.html`，或 `graph:` 字段显式指向
 - **生成方式**：`nc-图谱 <对象>` 或自然语言「生成 xx 的关系图谱」
 
+## 写作闭环（Loop）
+
+系统的形状：素材 → AI → 卡片 → 文章 → **读者反馈 / 自我复盘 → 新认知 →
+反哺素材库 → 再次写作**。反思卡是这条回路的锚点。
+
+- **触发**：`nc-复盘 <章节>` 或自然语言「复盘这一章」
+- **产物**：`reflections/<chapter-id>.md`，含五段结构：
+  - `stuck` — 卡点
+  - `shone` — 亮点
+  - `why` — 归因
+  - `insights` — 新认知
+  - `action_items` — 反哺动作（唯一允许写回卡片的入口）
+- **反哺**：每条 `action_items` 单独出反哺提案，用户逐条确认或跳过
+- **详细**：`references/loop.md`
+
+## 通胀过滤器（Filter）
+
+新素材进入正式排期前的入口 gate，防止同质化素材污染素材库。
+
+- **触发**：`nc-过滤 <素材摘要>` 或自然语言「过滤一下这个素材」
+- **三问**：
+  1. Q1 公共领域性：这个题材是否是公共领域人人都能讨论的？
+  2. Q2 三个月复刻性：如果我不做，三个月后会不会有别人用同样角度做出来？
+  3. Q3 独家洞察：我的角度里有没有只有我知道、只有我能提供的特殊经验或洞察？
+- **判定**：Q3 是否决项，无独家洞察一律进 `drafts/practice/`
+- **详细**：`references/filter.md`
+
 ## 硬规则速览
 
-1. **禁止直接落盘**：AI 绝不 `edit` / `write` 使用方工程的卡片文件与图谱 HTML。
+1. **禁止直接落盘**：AI 绝不 `edit` / `write` 使用方工程的卡片、图谱、反思卡、练习稿文件。
 2. **提案制**：AI 回写卡片以完整 Markdown 提案、图谱以完整 HTML 提案输出，用户确认后自行落盘。
 3. **伏笔合法**：伏笔卡必须有 `payoff_chapter` **或** `status: unresolved`；二者皆缺视为非法。
 4. **暗线隔离**：暗线卡必须位于 `cards/darklayer/`，id 前缀 `dk-`，与主书人物只通过 `references_to_main` 单向串接。
@@ -138,6 +173,8 @@ novel-cards/
 6. **动线分类**：动线卡必须通过 `track` 字段声明追踪对象类型（`character` / `item` / `faction` / `place` / `other`）。
 7. **图谱与卡片分离**：关系图谱 HTML 存 `graph/`，不入 `cards/`；卡片正文可引用，图谱无 frontmatter。
 8. **双端兼容**：`SKILL.md` frontmatter 只允许 `name` / `description` / `license` 三键，禁止 opencode 专属字段。
+9. **闭环反哺**：反思卡正文必须含 `stuck` / `shone` / `why` / `insights` / `action_items` 五段；`action_items` 是唯一把新认知写回卡片的入口。
+10. **过滤器 gate**：所有新素材在写入 `cards/` 前必须过 `nc-过滤` 三问；Q3（独家洞察）是否决项。
 
 完整规则见 `references/hard-rules.md`。
 
@@ -157,6 +194,8 @@ novel-cards/
 | `nc-快照` | 新增状态快照卡 |
 | `nc-暗线` | 新增暗线卡 |
 | `nc-图谱` | 生成 / 更新 HTML 关系图谱 |
+| `nc-复盘` | 生成 / 更新反思卡（单章复盘） |
+| `nc-过滤` | 对新素材执行通胀过滤器三问 |
 
 ### 自然语言触发（无前缀，兜底）
 
@@ -165,17 +204,21 @@ novel-cards/
 - 「梳理动线」 / 「生成关系图谱」
 - 「埋个伏笔」 / 「回收伏笔」 / 「这条暗线要收」
 - 「写章节状态快照」 / 「做一下时间线快照」
+- 「复盘这一章」 / 「这一章哪里卡住了」 / 「这一章写完要沉淀一下」
+- 「过滤一下这个素材」 / 「这个题材值不值得做」 / 「这个角度别人能不能抄」
 
-## 工作流程（四步）
+## 工作流程（五步）
 
 ```
-读上下文 → 提案卡片 / 图谱 → 用户确认 → 用户落盘
+读上下文 → 提案卡片 / 图谱 / 反思卡 / 过滤器判定
+         → 用户确认 → 用户落盘 → (反思卡) 反哺
 ```
 
 1. **读上下文**：AI 读取使用方工程的相关章节和已有卡片
-2. **提案卡片 / 图谱**：AI 在对话中输出完整 Markdown 提案或 HTML 图谱代码
+2. **提案卡片 / 图谱 / 反思卡 / 过滤器**：AI 在对话中输出完整 Markdown 提案或 HTML 图谱代码
 3. **用户确认**：用户回复确认、修改、或拒绝
 4. **用户落盘**：用户自行复制提案到编辑器并保存到目标路径
+5. **反哺（仅反思卡）**：AI 逐条读 `action_items`，单独出反哺提案，用户逐条确认
 
 ## 使用方工程约束
 

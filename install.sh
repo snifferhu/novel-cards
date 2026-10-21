@@ -58,12 +58,19 @@ if [[ -n "$PROJECT" ]]; then
            "$PROJECT/cards/snapshots" \
            "$PROJECT/cards/darklayer" \
            "$PROJECT/manuscript" \
-           "$PROJECT/graph"
-  for d in "$PROJECT"/cards/*/ "$PROJECT"/manuscript/ "$PROJECT"/graph/; do
+           "$PROJECT/graph" \
+           "$PROJECT/reflections" \
+           "$PROJECT/drafts/practice"
+  for d in "$PROJECT"/cards/*/ \
+           "$PROJECT"/manuscript/ \
+           "$PROJECT"/graph/ \
+           "$PROJECT"/reflections/ \
+           "$PROJECT"/drafts/practice/; do
     touch "$d.gitkeep"
   done
   echo "Done. Project skeleton created."
-  echo "Reminder: this skill does NOT write card files — you must author them (with AI proposals)."
+  echo "Reminder: this skill does NOT write card / reflection / graph files —"
+  echo "you must author them (with AI proposals)."
   exit 0
 fi
 
@@ -99,8 +106,9 @@ install_to() {
       # fallback: cp with exclusions
       mkdir -p "$dest"
       cp -R "$SRC"/SKILL.md "$SRC"/references "$SRC"/templates "$SRC"/LICENSE "$SRC"/AGENTS.md "$dest/" 2>/dev/null || true
-      [ -f "$SRC"/README.md ] && cp "$SRC/README.md" "$dest/"
-      [ -f "$SRC"/install.sh ] && cp "$SRC/install.sh" "$dest/"
+      [ -f "$SRC"/README.md ] && cp "$SRC"/README.md "$dest/"
+      [ -f "$SRC"/USAGE.md ] && cp "$SRC"/USAGE.md "$dest/"
+      [ -f "$SRC"/install.sh ] && cp "$SRC"/install.sh "$dest/"
     fi
     echo "Copied: $dest"
   fi
