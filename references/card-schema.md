@@ -25,7 +25,7 @@ draft → active → archived
 - `active`：已进入正文使用，是主书的一部分
 - `archived`：已废弃或替换，保留历史不删除
 
-## 九类卡专属字段
+## 八类卡专属字段
 
 ### character（人物卡）
 
@@ -80,15 +80,25 @@ draft → active → archived
 **硬规则约束**：`status: resolved` 时必须有 `payoff_chapter`；
 `status: unresolved` 时 `payoff_chapter` 可缺。详见 `hard-rules.md` 规则 3。
 
-### relationship（关系动态卡）
+### timeline（动线卡）
 
 | 字段 | 必填 | 说明 |
 |---|---|---|
-| `from` | ✅ | 关系起点人物 id |
-| `to` | ✅ | 关系终点人物 id |
-| `nature` | ✅ | 关系性质文本描述 |
-| `arcs` | ✅ | 关系变化轨迹数组（每项含 `chapter` / `state`） |
-| `current_state` | ✅ | 当前关系快照 |
+| `title` | ✅ | 动线主题名（如"青铜钥匙的流向"、"姜璃的成长弧线"） |
+| `track` | ✅ | 追踪对象类型：`character` / `item` / `faction` / `place` / `other` |
+| `target` | 条件必填 | 追踪对象 id（`ch-*` / `it-*` / `fa-*` / `sc-*`；`track: other` 时可省） |
+| `first_seen` | ✅ | 首次出现章节 |
+| `mentions` | ❌ | 简要关系交汇点数组（每项含对象 id + 一段话说清交汇） |
+| `graph` | ❌ | 关联图谱 HTML 相对路径（如 `graph/tl-bronze-key-graph.html`） |
+| `reveal_tier` | ❌ | 揭示强度：`hint` / `hinted` / `confirmed` / `revealed`（若为暗线动线） |
+
+**动线卡与关系图的关系**：
+
+- 动线卡追踪**单一对象**跨章节、跨场景的完整轨迹
+- `mentions` 段记录该对象与其他对象的**简要交汇**，不做详细展开
+- 复杂交互（多对象、多类型、含暗示关系）放 `graph/` 目录下 HTML 图谱
+- 动线卡通过 `graph` 字段（可选）显式指向对应图谱文件
+
 
 ### faction（势力卡）
 
@@ -160,5 +170,46 @@ age: 24
 
 ## 关系
 
-- 与 `ch-su-ye` 是师徒，见 `rel-shi-tu`
+- 与 `ch-su-ye` 是师徒关系；详细交汇见 `tl-jiang-li-journey` 动线卡的
+  `mentions` 段；复杂关系图见 `graph/tl-jiang-li-journey-graph.html`
 ```
+
+## 动线卡示例
+
+```yaml
+---
+id: tl-bronze-key
+type: timeline
+status: active
+created: 2025-02-10
+updated: 2025-02-25
+title: 青铜钥匙的流向
+track: item
+target: it-bronze-key
+first_seen: chapter-003
+graph: graph/tl-bronze-key-graph.html
+---
+
+## 概览
+
+追踪青铜钥匙从旧宅密室到最终审判台的完整流向。
+
+## 变化轨迹
+
+| 章节 | 状态 | 位置/持有者 | 关键事件 |
+|---|---|---|---|
+| chapter-003 | 出现 | 姜璃随身 | 从旧宅密室取得 |
+| chapter-015 | 转移 | 苏叶保管 | 委托保管 |
+| chapter-042 | 现身 | 月光审判台 | 关键道具 |
+
+## 简要关系记录
+
+- 与 `ch-jiang-li`：委托关系（chapter-015）
+- 与 `ch-su-ye`：保管关系（chapter-015 起）
+- 与 `sc-moonlit-arena`：现身场景（chapter-042）
+
+## 备注
+
+关键道具，与 `fs-key-secret` 伏笔强关联。
+```
+

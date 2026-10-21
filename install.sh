@@ -53,12 +53,13 @@ if [[ -n "$PROJECT" ]]; then
            "$PROJECT/cards/items" \
            "$PROJECT/cards/scenes" \
            "$PROJECT/cards/foreshadow" \
-           "$PROJECT/cards/relationships" \
+           "$PROJECT/cards/timeline" \
            "$PROJECT/cards/factions" \
            "$PROJECT/cards/snapshots" \
            "$PROJECT/cards/darklayer" \
-           "$PROJECT/manuscript"
-  for d in "$PROJECT"/cards/*/ "$PROJECT"/manuscript/; do
+           "$PROJECT/manuscript" \
+           "$PROJECT/graph"
+  for d in "$PROJECT"/cards/*/ "$PROJECT"/manuscript/ "$PROJECT"/graph/; do
     touch "$d.gitkeep"
   done
   echo "Done. Project skeleton created."

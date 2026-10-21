@@ -14,13 +14,16 @@ skill 只**读**已存在的相对路径，不创建、不移动、不重命名�
     items/               # type: item，道具卡
     scenes/              # type: scene，场景卡
     foreshadow/          # type: foreshadow，伏笔卡
-    relationships/       # type: relationship，关系动态卡
+    timeline/            # type: timeline，动线卡
     factions/            # type: faction，势力卡
     snapshots/           # type: snapshot，状态快照卡
     darklayer/           # type: darklayer，暗线卡（独立命名空间）
   manuscript/
     chapter-001.md
     chapter-002.md
+    ...
+  graph/                 # 关系图谱 HTML（独立于 cards/）
+    tl-bronze-key-graph.html
     ...
 ```
 
@@ -36,13 +39,33 @@ skill 只**读**已存在的相对路径，不创建、不移动、不重命名�
   | item | `it-` | `cards/items/` |
   | scene | `sc-` | `cards/scenes/` |
   | foreshadow | `fs-` | `cards/foreshadow/` |
-  | relationship | `rel-` | `cards/relationships/` |
+  | timeline | `tl-` | `cards/timeline/` |
   | faction | `fa-` | `cards/factions/` |
   | snapshot | `sn-` | `cards/snapshots/` |
   | darklayer | `dk-` | `cards/darklayer/` |
 
 - **slug**：小写字母 + 连字符 + 数字，例：`ch-jiang-li` /
-  `fs-orphan-letter` / `dk-mother-tongue`。避免 emoji、中文、空格。
+  `fs-orphan-letter` / `dk-mother-tongue` / `tl-bronze-key`。
+  避免 emoji、中文、空格。
+
+## 动线卡命名空间（timeline）
+
+- **位置**：`cards/timeline/`，id 前缀 `tl-`。
+- 一条动线追踪**一个对象**（人物 / 道具 / 势力 / 场景 / 其他），
+  通过 `track` 字段显式声明类型。
+- 一条动线的"关系交汇"在 `mentions` 段简要记录；
+  **复杂交互**（多个对象、多条边）不放在 `mentions`，改由 `graph/`
+  目录下的 HTML 图谱表达。
+
+## 关系图谱（graph/）
+
+- **位置**：使用方工程根的 `graph/`，与 `cards/` 平级。
+- **文件命名**：`tl-<slug>-graph.html`，与所表达的核心动线卡的 slug 对齐；
+  若跨多条动线则命名 `<主题>-graph.html`。
+- **独立性**：图谱 HTML 文件**不属于**卡片，无 frontmatter，不被
+  skill 视为卡片。卡片正文可通过 `见 graph/xxx.html` 引用，但不建立
+  YAML 字段级双向绑定。
+- **模板**：见 `templates/relation-graph.html`（自包含 SVG，无需外部依赖）。
 
 ## 暗线命名空间（dark-layer）
 
@@ -63,10 +86,11 @@ skill 只**读**已存在的相对路径，不创建、不移动、不重命名�
 ## 路径引用规范
 
 - 所有路径引用必须使用**相对使用方工程根**的相对路径，例如
-  `cards/characters/ch-jiang-li.md`。
+  `cards/characters/ch-jiang-li.md`、`graph/tl-bronze-key-graph.html`。
 - **禁止**在卡片正文或 frontmatter 中使用绝对路径、`~/`、`$HOME`、
   Windows 盘符路径。
 - 卡间引用使用 **id**（如 `ch-jiang-li`）而非路径，路径由目录约定推导。
+- 图谱引用使用**相对路径**（`graph/xxx.html`），不使用 id。
 
 ## 安装与迁移
 
@@ -106,11 +130,12 @@ novel-cards skill 支持四种安装方式：
     items/.gitkeep
     scenes/.gitkeep
     foreshadow/.gitkeep
-    relationships/.gitkeep
+    timeline/.gitkeep
     factions/.gitkeep
     snapshots/.gitkeep
     darklayer/.gitkeep
   manuscript/.gitkeep
+  graph/.gitkeep
 ```
 
 **使用方工程配置不动**：本 skill 不修改使用方工程的 `AGENTS.md` /

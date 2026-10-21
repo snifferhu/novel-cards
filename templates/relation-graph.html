@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>关系图谱 — {{TITLE}}</title>
+<style>
+  body {
+    font-family: -apple-system, "PingFang SC", "Microsoft YaHei", sans-serif;
+    margin: 0;
+    padding: 2rem;
+    background: #fafafa;
+    color: #1a1a1a;
+  }
+  h1 {
+    font-size: 1.4rem;
+    margin-bottom: 0.5rem;
+  }
+  .meta {
+    color: #666;
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+  }
+  .meta code {
+    background: #eee;
+    padding: 0.1rem 0.4rem;
+    border-radius: 3px;
+  }
+  .graph-container {
+    background: white;
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  svg {
+    width: 100%;
+    height: auto;
+    max-height: 800px;
+    display: block;
+  }
+  .node {
+    fill: #4a90e2;
+    stroke: #2c5f9e;
+    stroke-width: 2;
+  }
+  .node.faction { fill: #e67e22; stroke: #b85c0c; }
+  .node.item    { fill: #27ae60; stroke: #1a7d46; }
+  .node.place   { fill: #9b59b6; stroke: #6c3483; }
+  .node.character { fill: #4a90e2; stroke: #2c5f9e; }
+  .node-label {
+    font-size: 12px;
+    fill: #1a1a1a;
+    text-anchor: middle;
+    dominant-baseline: middle;
+    pointer-events: none;
+  }
+  .edge {
+    stroke: #999;
+    stroke-width: 1.5;
+    fill: none;
+  }
+  .edge.directed { marker-end: url(#arrow); }
+  .edge.dashed { stroke-dasharray: 4 3; }
+  .edge-label {
+    font-size: 10px;
+    fill: #555;
+    text-anchor: middle;
+  }
+  .legend {
+    margin-top: 1rem;
+    display: flex;
+    gap: 1rem;
+    font-size: 0.85rem;
+    flex-wrap: wrap;
+  }
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .legend-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid;
+  }
+  .notes {
+    margin-top: 1.5rem;
+    padding: 1rem;
+    background: #fff9e6;
+    border-left: 3px solid #f39c12;
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+</style>
+</head>
+<body>
+
+<h1>关系图谱 — {{TITLE}}</h1>
+<div class="meta">
+  <div>关联动线：<code>tl-{{SLUG}}</code></div>
+  <div>生成日期：{{DATE}}</div>
+  <div>节点数：{{NODE_COUNT}} · 边数：{{EDGE_COUNT}}</div>
+</div>
+
+<div class="graph-container">
+<svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#999"/>
+    </marker>
+  </defs>
+
+  <!-- ============ 节点 ============ -->
+  <!-- 节点位置可自由调整；x/y 中心坐标，r=30 -->
+
+  <!-- 人物节点示例 -->
+  <circle class="node character" cx="200" cy="150" r="30"/>
+  <text class="node-label" x="200" y="150">姜璃</text>
+
+  <circle class="node character" cx="600" cy="150" r="30"/>
+  <text class="node-label" x="600" y="150">苏叶</text>
+
+  <!-- 道具节点示例 -->
+  <circle class="node item" cx="400" cy="330" r="30"/>
+  <text class="node-label" x="400" y="330">青铜钥匙</text>
+
+  <!-- 势力节点示例 -->
+  <circle class="node faction" cx="120" cy="380" r="30"/>
+  <text class="node-label" x="120" y="380">神智会</text>
+
+  <!-- 场景节点示例 -->
+  <circle class="node place" cx="680" cy="380" r="30"/>
+  <text class="node-label" x="680" y="380">月光审判台</text>
+
+  <!-- ============ 边 ============ -->
+  <!-- 有向边（关系方向） -->
+  <line class="edge directed" x1="228" y1="160" x2="572" y2="148"/>
+  <text class="edge-label" x="400" y="145">师-徒</text>
+
+  <!-- 无向边（关联） -->
+  <line class="edge" x1="215" y1="178" x2="380" y2="305"/>
+  <text class="edge-label" x="290" y="250">持有</text>
+
+  <line class="edge" x1="585" y1="178" x2="420" y2="305"/>
+  <text class="edge-label" x="510" y="250">保管</text>
+
+  <!-- 虚线（暗示/潜在关系） -->
+  <line class="edge dashed" x1="150" y1="360" x2="370" y2="345"/>
+  <text class="edge-label" x="260" y="355">成员</text>
+
+  <line class="edge dashed" x1="650" y1="360" x2="430" y2="345"/>
+  <text class="edge-label" x="540" y="355">现身</text>
+
+  <!-- 姜璃 → 神智会（成员） -->
+  <line class="edge directed" x1="215" y1="178" x2="135" y2="360"/>
+</svg>
+</div>
+
+<div class="legend">
+  <div class="legend-item"><span class="legend-dot" style="background:#4a90e2;border-color:#2c5f9e"></span>人物</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#e67e22;border-color:#b85c0c"></span>势力</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#27ae60;border-color:#1a7d46"></span>道具</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#9b59b6;border-color:#6c3483"></span>场景</div>
+  <div class="legend-item"><svg width="40" height="10"><line x1="0" y1="5" x2="35" y2="5" stroke="#999" stroke-width="1.5"/></svg>关联</div>
+  <div class="legend-item"><svg width="40" height="10"><line x1="0" y1="5" x2="35" y2="5" stroke="#999" stroke-width="1.5" stroke-dasharray="4 3"/></svg>暗示/潜在</div>
+</div>
+
+<div class="notes">
+  <strong>读图说明：</strong>
+  实线 = 明确关系；虚线 = 暗示/潜在关系；带箭头 = 有向关系（如师-徒）。
+  节点颜色对应 card 类型，便于跨图谱对照。
+</div>
+
+</body>
+</html>

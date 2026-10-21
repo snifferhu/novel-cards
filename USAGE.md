@@ -71,9 +71,10 @@ cp -r novel-cards <project>/.opencode/skills/
 ~/my-novel/
   cards/
     characters/   plotpoints/   items/
-    scenes/       foreshadow/   relationships/
+    scenes/       foreshadow/   timeline/
     factions/     snapshots/    darklayer/
   manuscript/
+  graph/          # 关系图谱 HTML（复杂关系可视化）
 ```
 
 每个目录都有一个 `.gitkeep`，空目录也可被 git 追踪。
@@ -86,26 +87,37 @@ cp -r novel-cards <project>/.opencode/skills/
 
 ## 3. 触发 skill：说什么话
 
-`SKILL.md` 的 `description` 决定了触发时机。以下说法**都会**激活 skill：
+### 3.1 统一前缀触发（推荐，好记）
 
-### 明确触发（推荐）
+以 `nc-` 为统一前缀，后接卡片类型：
 
-```
-「用 novel-cards 帮我维护一下人物卡」
-「我要走提案制」
-「新增/更新人物卡」
-「整理一下这一章出现的道具」
-「埋个伏笔」/「回收一下这个伏笔」
-「梳理一下姜璃和苏叶的关系」
-```
+| 提示语 | 动作 |
+|---|---|
+| `nc-人物 姜璃` | 建/更新人物卡 |
+| `nc-桥段 chapter-012` | 建桥段卡 |
+| `nc-道具 青铜钥匙` | 建道具卡 |
+| `nc-场景 月光审判台` | 建场景卡 |
+| `nc-伏笔 孤儿院信件` | 建伏笔卡 |
+| `nc-动线 青铜钥匙` | 建动线卡（追踪道具跨章节流向） |
+| `nc-势力 神智会` | 建势力卡 |
+| `nc-快照 chapter-050` | 建状态快照卡 |
+| `nc-暗线 母亲的舌头` | 建暗线卡 |
+| `nc-图谱 青铜钥匙` | 生成 HTML 关系图谱 |
 
-### 隐式触发（可能命中）
+**为什么用前缀**：避免自然语言被误触发到其他 skill。前缀明确、好记、
+类似 spec-kitty 的 `spec:` 风格。
 
-```
-「帮我把这一章拆一下结构」
-「画一张势力关系图」
-「这条暗线准备怎么收」
-```
+### 3.2 自然语言触发（无前缀，兜底）
+
+以下说法**也会**激活 skill：
+
+- 「维护小说卡片体系」 / 「走提案制」
+- 「新增/更新人物卡」 / 「添加一张伏笔卡」
+- 「整理这一章出现的道具 / 场景」
+- 「梳理动线」 / 「生成关系图谱」
+- 「埋个伏笔」 / 「回收一下这个伏笔」
+- 「这条暗线要收」 / 「暗线人物和主书 X 有关」
+- 「写章节状态快照」 / 「做一下时间线快照」
 
 **未命中时的兜底**：直接说 `加载 novel-cards skill`。
 
@@ -116,7 +128,7 @@ cp -r novel-cards <project>/.opencode/skills/
 以"新增人物卡"为例：
 
 ```
-用户：帮我给姜璃建一张人物卡，她是主角，在 chapter-003 首次出场，
+用户：nc-人物 姜璃，她是主角，在 chapter-003 首次出场，
     属于神智会，师承苏叶。
 
 AI：（读上下文：manuscript/chapter-003.md、cards/factions/fa-shenzhi-hui.md、
@@ -142,7 +154,8 @@ AI：（读上下文：manuscript/chapter-003.md、cards/factions/fa-shenzhi-hui
     外冷内热，理性至上...
 
     ## 关系
-    - 与 ch-su-ye 是师徒，见 rel-shi-tu
+    - 与 ch-su-ye 是师徒关系；详细交汇见 tl-jiang-li-journey 动线卡的
+      mentions 段；复杂关系图见 graph/tl-jiang-li-journey-graph.html
     ```
 ```
 
@@ -156,35 +169,80 @@ AI：（读上下文：manuscript/chapter-003.md、cards/factions/fa-shenzhi-hui
 
 ---
 
-## 5. 九类卡：每类的典型提示语
+## 5. 八类卡：每类的典型提示语
 
-| 卡片 | 提示语示例 | 输出位置 |
+| 卡片 | 前缀式提示语 | 输出位置 |
 |---|---|---|
-| 人物 | 「为 ch-jiang-li 建卡」 | `cards/characters/ch-jiang-li.md` |
-| 桥段 | 「chapter-012 是重要桥段，帮我建 pp 卡」 | `cards/plotpoints/pp-moonlit-trial.md` |
-| 道具 | 「记录那把青铜钥匙」 | `cards/items/it-bronze-key.md` |
-| 场景 | 「月光审判台」 | `cards/scenes/sc-moonlit-arena.md` |
-| 伏笔 | 「埋个伏笔：孤儿院信件的下落」 | `cards/foreshadow/fs-orphan-letter.md` |
-| 关系 | 「梳理姜璃和苏叶的师徒关系」 | `cards/relationships/rel-shi-tu-jiang-su.md` |
-| 势力 | 「神智会的势力卡」 | `cards/factions/fa-shenzhi-hui.md` |
-| 快照 | 「chapter-050 状态快照」 | `cards/snapshots/sn-chapter-050.md` |
-| 暗线 | 「母亲的舌头这条暗线」 | `cards/darklayer/dk-mother-tongue.md` |
+| 人物 | `nc-人物 姜璃` | `cards/characters/ch-jiang-li.md` |
+| 桥段 | `nc-桥段 chapter-012` | `cards/plotpoints/pp-moonlit-trial.md` |
+| 道具 | `nc-道具 青铜钥匙` | `cards/items/it-bronze-key.md` |
+| 场景 | `nc-场景 月光审判台` | `cards/scenes/sc-moonlit-arena.md` |
+| 伏笔 | `nc-伏笔 孤儿院信件` | `cards/foreshadow/fs-orphan-letter.md` |
+| 动线 | `nc-动线 青铜钥匙` | `cards/timeline/tl-bronze-key.md` |
+| 势力 | `nc-势力 神智会` | `cards/factions/fa-shenzhi-hui.md` |
+| 快照 | `nc-快照 chapter-050` | `cards/snapshots/sn-chapter-050.md` |
+| 暗线 | `nc-暗线 母亲的舌头` | `cards/darklayer/dk-mother-tongue.md` |
+| 图谱 | `nc-图谱 青铜钥匙` | `graph/tl-bronze-key-graph.html` |
 
 ---
 
-## 6. 提案制铁律：AI 会做什么、不会做什么
+## 6. 动线卡 vs 关系图
+
+**关系动态不再有独立卡类型**。原来的关系动态卡已合并到动线卡里，
+复杂关系用 HTML 图谱表达。
+
+### 何时用动线卡（`cards/timeline/`）
+
+追踪**单一对象**跨章节跨场景的完整轨迹。一个对象一张卡。
+
+```
+nc-动线 青铜钥匙
+```
+
+- `track: item`（也可能是 `character` / `faction` / `place` / `other`）
+- `target: it-bronze-key`
+- 正文变化轨迹表记录每个章节的状态/位置/事件
+- `mentions` 段简要记录与其他对象的交汇
+
+### 何时用关系图谱（`graph/`）
+
+当**多个对象**之间的关系密度超过 Markdown 表格可表达范围时。
+尤其是：多角色三角关系、跨势力协作、含暗示/潜在关系。
+
+```
+nc-图谱 青铜钥匙
+```
+
+AI 会基于相关 `timeline` 卡的 `mentions` 段生成 SVG 图谱，节点类型
+用颜色区分（人物 / 势力 / 道具 / 场景），实线=明确关系，虚线=暗示关系，
+带箭头=有向关系。
+
+### 两者的分工
+
+| 需求 | 用哪个 |
+|---|---|
+| 单个人物的成长弧线 | 动线卡（`track: character`） |
+| 单个道具的完整流向 | 动线卡（`track: item`） |
+| 两个角色之间的师徒演变 | 动线卡的 `mentions` + 图谱 |
+| 三方势力博弈 | 图谱 |
+| 一条贯穿全书的主题线 | 动线卡（`track: other`） |
+| 关系网络全景 | 图谱 |
+
+---
+
+## 7. 提案制铁律：AI 会做什么、不会做什么
 
 **AI 会做**：
 - 读你的 `cards/` 与 `manuscript/`
-- 出**完整** Markdown 提案（含 frontmatter + 正文）
+- 出**完整** Markdown 提案（含 frontmatter + 正文）或完整 HTML 图谱代码
 - 在提案前说明**建议保存路径**
-- 校验硬规则（伏笔合法组合 / 暗线命名空间 / 五字段）
+- 校验硬规则（伏笔合法组合 / 暗线命名空间 / 五字段 / track 分类）
 - 检测到你提供的卡不合规时，**指出违规点**并给出修正提案
 
 **AI 不会做**：
-- 直接 `edit` / `write` 你工程里的卡片文件
+- 直接 `edit` / `write` 你工程里的卡片文件或图谱 HTML
 - 修改你的 `AGENTS.md` / `CLAUDE.md` / `.gitignore`
-- 创建 `cards/` 与 `manuscript/` 之外的目录
+- 创建 `cards/` 与 `manuscript/` 之外的目录（`graph/` 除外，仅生成文件）
 - 使用绝对路径或 `$HOME`
 
 如果你发现 AI 有上述行为，**说明 skill 版本错误或触发到了错误 skill**，
@@ -192,50 +250,61 @@ AI：（读上下文：manuscript/chapter-003.md、cards/factions/fa-shenzhi-hui
 
 ---
 
-## 7. 硬规则速查
+## 8. 硬规则速查
 
 ```
 1. 不直接落盘 —— 只出提案
 2. 伏笔合法 —— 有 payoff_chapter 或 status: unresolved
 3. 暗线隔离 —— cards/darklayer/，dk- 前缀，references_to_main 单向引用
 4. 五字段必备 —— id / type / status / created / updated
-5. frontmatter 三键 —— name / description / license（skill 自身约束）
+5. 动线分类 —— track 字段声明追踪对象类型
+6. 图谱分离 —— HTML 存 graph/，不入 cards/
+7. frontmatter 三键 —— name / description / license（skill 自身约束）
 ```
 
 完整规则与违规响应模板见 `references/hard-rules.md`。
 
 ---
 
-## 8. 批量操作场景
+## 9. 批量操作场景
 
 ### 一次处理一整章
 
 ```
-用户：读 chapter-020，把所有新出场的人物、道具、场景列出来出卡，
+用户：nc-整理 chapter-020，把所有新出场的人物、道具、场景列出来出卡，
      伏笔单独提出，我逐条确认。
 ```
 
 AI 会**分批次**出提案，每批 1–3 张卡；不会一次性倾倒 20 张。
 
-### 一次性梳理关系
+### 追踪一条动线
 
 ```
-用户：把 ch-jiang-li 目前的所有关系整理成 rel- 卡提案
+用户：nc-动线 青铜钥匙，从 chapter-003 到 chapter-042 的完整流向
 ```
 
-AI 会先扫描已有 rel- 卡，判断哪些需要新建、哪些需要更新 `arcs`。
+AI 会扫描所有相关章节，生成变化轨迹表；如果同时涉及多个角色的交互，
+提示"是否需要生成图谱？"。
+
+### 一次性梳理关系图谱
+
+```
+用户：nc-图谱 姜璃，把她的所有关联对象画成图
+```
+
+AI 会先扫描所有相关 timeline 卡的 `mentions` 段，然后生成图谱 HTML。
 
 ### 时间线快照
 
 ```
-用户：chapter-050 是个分水岭，做一张 snapshot，标记势力格局变化
+用户：nc-快照 chapter-050，这是个分水岭，标记势力格局变化
 ```
 
-AI 会引用已 arch 的所有 faction 卡与关键 plotpoint 卡。
+AI 会引用已 arch 的所有 faction 卡与关键 timeline 卡。
 
 ---
 
-## 9. 常见问题
+## 10. 常见问题
 
 ### Q1：AI 说找不到 `cards/` 目录怎么办？
 
@@ -282,9 +351,26 @@ grep -rLE '^(id|type|status|created|updated):' cards/ --include='*.md'
 不能。本 skill 的边界是"卡片体系"，正文编辑不在其职责范围内。
 `manuscript/` 目录只是被读取作为上下文，AI 不会主动改。
 
+### Q8：动线卡什么时候用、什么时候画图？
+
+- **单对象**跨章节变化 → 动线卡
+- **多对象**之间关系网络 → 图谱
+- **两者都需要** → 动线卡 `mentions` 简要记录 + 图谱详细描述
+  动线卡的 `graph` 字段（可选）指向对应图谱 HTML。
+
+### Q9：图谱 HTML 我能直接编辑吗？
+
+可以。图谱是标准 HTML + SVG，任何编辑器都能改。AI 也会以完整 HTML
+代码形式出提案，你可以修改节点位置、颜色、边类型后再保存。
+
+### Q10：我为什么找不到 `relationships/` 目录？
+
+`relationships/` 已合并到 `timeline/`。旧用法（关系动态卡）请改用
+动线卡表达，复杂关系用图谱。
+
 ---
 
-## 10. 故障回滚
+## 11. 故障回滚
 
 **卸载 skill**（软链模式）：
 ```bash
@@ -307,21 +393,24 @@ git checkout <tag-or-commit>
 
 **清理使用方工程骨架**：
 ```bash
-rm -rf ~/my-novel/cards ~/my-novel/manuscript
+rm -rf ~/my-novel/cards ~/my-novel/manuscript ~/my-novel/graph
 # 或精细删除空目录
 find ~/my-novel/cards -name '.gitkeep' -delete
 ```
 
 ---
 
-## 11. 术语对照
+## 12. 术语对照
 
 | 术语 | 中文 | 含义 |
 |---|---|---|
 | skill | 技能 | OpenCode / Claude Code 的可加载行为定义 |
 | frontmatter | 前置元数据 | Markdown 文件头部 YAML 块 |
-| proposal | 提案 | AI 输出、等用户确认后再落盘的完整卡片 Markdown |
+| proposal | 提案 | AI 输出、等用户确认后再落盘的完整卡片 Markdown / HTML |
 | consumer project | 使用方工程 | 加载本 skill 的小说仓库 |
+| timeline | 动线 | 单一对象跨章节跨场景的完整追踪卡 |
+| relation graph | 关系图谱 | 多对象关系网络的 HTML + SVG 可视化 |
 | dark layer | 暗线 | 读者不可见的真相层，独立命名空间 |
 | payoff | 伏笔回收 | 之前埋下的线索在后续章节得到呼应 |
 | canonical | 权威 | 主书人物链（与暗线对应） |
+| track | 追踪类型 | 动线卡的分类字段（character/item/faction/place/other） |

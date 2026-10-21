@@ -7,12 +7,14 @@ novel-cards skill 的所有行为准则集中于此。规则分为**不可变硬
 
 | # | 规则 | 强度 |
 |---|---|---|
-| 1 | AI 绝不直接 `edit` / `write` 使用方工程的卡片文件 | 硬性 |
-| 2 | AI 回写卡片一律以**完整 Markdown 提案**输出到对话，等用户确认后由用户落盘 | 硬性 |
+| 1 | AI 绝不直接 `edit` / `write` 使用方工程的卡片文件与图谱 HTML | 硬性 |
+| 2 | AI 回写卡片一律以**完整 Markdown 提案**输出到对话，图谱以完整 HTML 提案输出，等用户确认后由用户落盘 | 硬性 |
 | 3 | 伏笔卡（`type: foreshadow`）必须关联 `payoff_chapter` **或** 显式标注 `status: unresolved`；二者皆缺视为非法 | 硬性 |
 | 4 | 暗线卡（`type: darklayer`）使用独立命名空间（`cards/darklayer/`），不混入主书人物链；与主书人物的引用只通过显式字段 `references_to_main` 串接 | 硬性 |
 | 5 | 所有卡片 frontmatter 至少含 `id` / `type` / `status` / `created` / `updated` 五字段 | 硬性 |
 | 6 | 双端兼容：`SKILL.md` frontmatter 只允许 `name` / `description` / `license` 三键 | 硬性（针对 skill 本身，不是卡片） |
+| 7 | 关系图谱 HTML 存放于使用方工程的 `graph/` 目录，**不进入** `cards/`；卡片正文可引用图谱文件（`见 graph/xxx.html`），图谱本身无 frontmatter，不被视为卡片 | 硬性 |
+| 8 | 动线卡（`type: timeline`）必须通过 `track` 字段声明追踪对象类型（`character` / `item` / `faction` / `place` / `other`），`target` 指向具体对象 id | 硬性 |
 
 ## 规则 1 & 2：提案制详解
 
@@ -119,3 +121,36 @@ done
 建议提案（假设选 a）：
 <完整卡片 Markdown>
 ```
+
+
+## 规则 7：图谱与卡片分离
+
+**背景**：Markdown 表格难以表达多节点、多类型的复杂关系（尤其是
+"暗示关系"、"多角色三角"、"跨势力协作"等）。当关系密度超过表格可表达
+范围时，使用 HTML + SVG 图谱。
+
+**允许**：
+- 图谱 HTML 存放于 `<consumer-root>/graph/`
+- 卡片正文写 `见 graph/tl-xxx-graph.html` 提示
+- 同一动线可对应一份图谱，也可对应多份（不同视角）
+
+**禁止**：
+- 图谱放入 `cards/` 目录
+- 图谱文件带 frontmatter（YAML 前置元数据块）
+- 卡片通过 `type: timeline` 直接内嵌 SVG 代码（应放 `graph/` 独立文件）
+- 图谱通过 skill 硬规则校验（图谱不受五字段约束）
+
+## 规则 8：动线卡 track 分类
+
+动线卡通过 `track` 字段显式分类，便于检索：
+
+| `track` 值 | `target` 指向 | 示例 |
+|---|---|---|
+| `character` | `ch-*` id | `tl-jiang-li-journey` |
+| `item` | `it-*` id | `tl-bronze-key` |
+| `faction` | `fa-*` id | `tl-shenzhi-rise` |
+| `place` | `sc-*` id | `tl-shenzhi-hq` |
+| `other` | 无固定类型 id | `tl-winter-season`（跨对象主题线） |
+
+`target` 在 `track: other` 时可省略或填写自由字符串；其他取值必须指向
+对应类型的有效卡片 id。

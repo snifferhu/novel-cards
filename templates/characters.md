@@ -30,7 +30,7 @@ chapter_appearances: []
 
 ## 关系要点
 
-- 与 `<ch-xxx>` 的关系：<参见 relationship 卡 `rel-xxx`>
+- 与 `<ch-xxx>` 的关系：<参见动线卡 `tl-xxx` 的 mentions 段，复杂交互见 `graph/`>
 - 所属势力：<参见 faction 卡 `fa-xxx`>
 
 ## 章节出场
