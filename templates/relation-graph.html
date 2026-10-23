@@ -11,20 +11,9 @@
     background: #fafafa;
     color: #1a1a1a;
   }
-  h1 {
-    font-size: 1.4rem;
-    margin-bottom: 0.5rem;
-  }
-  .meta {
-    color: #666;
-    font-size: 0.85rem;
-    margin-bottom: 1.5rem;
-  }
-  .meta code {
-    background: #eee;
-    padding: 0.1rem 0.4rem;
-    border-radius: 3px;
-  }
+  h1 { font-size: 1.4rem; margin-bottom: 0.5rem; }
+  .meta { color: #666; font-size: 0.85rem; margin-bottom: 1.5rem; }
+  .meta code { background: #eee; padding: 0.1rem 0.4rem; border-radius: 3px; }
   .graph-container {
     background: white;
     border: 1px solid #e5e5e5;
@@ -32,65 +21,45 @@
     padding: 1rem;
     box-shadow: 0 2px 8px rgba(0,0,0,0.04);
   }
-  svg {
-    width: 100%;
-    height: auto;
-    max-height: 800px;
-    display: block;
-  }
-  .node {
-    fill: #4a90e2;
-    stroke: #2c5f9e;
-    stroke-width: 2;
-  }
-  .node.faction { fill: #e67e22; stroke: #b85c0c; }
-  .node.item    { fill: #27ae60; stroke: #1a7d46; }
-  .node.place   { fill: #9b59b6; stroke: #6c3483; }
-  .node.character { fill: #4a90e2; stroke: #2c5f9e; }
+  svg { width: 100%; height: auto; max-height: 900px; display: block; }
+
+  /* ===== 节点配色：按 card 类型分层 ===== */
+  .node            { stroke-width: 2; }
+  .node.actor      { fill: #4a90e2; stroke: #2c5f9e; }   /* 角色（原 character） */
+  .node.item       { fill: #27ae60; stroke: #1a7d46; }   /* 道具 */
+  .node.faction    { fill: #e67e22; stroke: #b85c0c; }   /* 势力 */
+  .node.place      { fill: #9b59b6; stroke: #6c3483; }   /* 场景 */
+  .node.module     { fill: #e74c3c; stroke: #a93226; }   /* 积木模块（中心调度单元） */
+  .node.timeline   { fill: #16a085; stroke: #117a65; }   /* 动线分支 */
+  .node.foreshadow { fill: #f39c12; stroke: #b7770a; }   /* 伏笔（外圈） */
+  .node.darklayer  { fill: #34495e; stroke: #1b2631; }   /* 暗线（外圈，深色低调） */
+  .node.lexstat    { fill: #ecf0f1; stroke: #95a5a6; }   /* 词频张力（外圈） */
+
   .node-label {
-    font-size: 12px;
-    fill: #1a1a1a;
-    text-anchor: middle;
-    dominant-baseline: middle;
-    pointer-events: none;
+    font-size: 12px; fill: #1a1a1a;
+    text-anchor: middle; dominant-baseline: middle; pointer-events: none;
   }
-  .edge {
-    stroke: #999;
-    stroke-width: 1.5;
-    fill: none;
-  }
+  .node-label.on-dark { fill: #fff; }
+
+  /* ===== 边 ===== */
+  .edge          { stroke: #999; stroke-width: 1.5; fill: none; }
   .edge.directed { marker-end: url(#arrow); }
-  .edge.dashed { stroke-dasharray: 4 3; }
-  .edge-label {
-    font-size: 10px;
-    fill: #555;
-    text-anchor: middle;
-  }
-  .legend {
-    margin-top: 1rem;
-    display: flex;
-    gap: 1rem;
-    font-size: 0.85rem;
-    flex-wrap: wrap;
-  }
-  .legend-item {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-  }
-  .legend-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 2px solid;
-  }
+  .edge.dashed   { stroke-dasharray: 4 3; }
+  .edge.bind     { stroke: #e74c3c; stroke-width: 2; }        /* md → tl 绑定（实红） */
+  .edge.trigger  { stroke: #f39c12; stroke-width: 1.5; }      /* tl/md → fs 触发（橙） */
+  .edge.foreshadow_plant { stroke: #f39c12; stroke-dasharray: 5 3; }
+  .edge.foreshadow_payoff{ stroke: #b7770a; stroke-width: 2; }
+  .edge.references_to_main{ stroke: #34495e; stroke-dasharray: 3 3; }
+  .edge.lexstat_bind { stroke: #95a5a6; stroke-dasharray: 2 3; }
+  .edge-label { font-size: 10px; fill: #555; text-anchor: middle; }
+
+  .legend { margin-top: 1rem; display: flex; gap: 1rem; font-size: 0.85rem; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 0.4rem; }
+  .legend-dot { width: 12px; height: 12px; border-radius: 50%; border: 2px solid; }
   .notes {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    background: #fff9e6;
-    border-left: 3px solid #f39c12;
-    border-radius: 4px;
-    font-size: 0.9rem;
+    margin-top: 1.5rem; padding: 1rem;
+    background: #fff9e6; border-left: 3px solid #f39c12;
+    border-radius: 4px; font-size: 0.9rem;
   }
 </style>
 </head>
@@ -101,76 +70,157 @@
   <div>关联动线：<code>tl-{{SLUG}}</code></div>
   <div>生成日期：{{DATE}}</div>
   <div>节点数：{{NODE_COUNT}} · 边数：{{EDGE_COUNT}}</div>
+  <div>数据来源：<code>index/card-graph.json</code>（tree_id: main）· 本文件为纯展示投影，由 nc-图谱 重生成</div>
 </div>
 
+<!--
+  ============================================================================
+  积木联动总图布局说明（v1.0）
+  ----------------------------------------------------------------------------
+  三层结构，自内向外：
+    中心层  module（md-*）   —— 最小调度单元，红色大圆
+    分支层  timeline（tl-*） —— 多条动线从中心 module 辐射出去，青绿圆
+    外圈层  foreshadow（fs-*）/ darklayer（dk-*）/ lexstat（lx-*）—— 黄/深灰/浅灰小圆
+
+  边语义（与 index/card-graph.json 的 relation 枚举一一对应）：
+    bind_module         md → tl   实红线（module 绑定动线节点）
+    trigger             md/tl → * 橙线（触发爆点/动线变更）
+    foreshadow_plant    * → fs    橙虚线（伏笔埋点）
+    foreshadow_payoff   * → fs    棕实线（伏笔回收）
+    references_to_main  dk → ac   深灰点线（暗线单向引用主书）
+    lexstat_bind        pp → lx   灰点线（桥段绑定词频张力）
+    tracks              tl → ac   灰线（动线追踪对象）
+
+  下方 SVG 为「女主进门名场面」示例：中心 md-action-entry 辐射四条 tl 动线，
+  外圈挂 fs-hairpin（埋点）、lx-ch03（词频）、dk-power-gaze（暗线凝视）。
+  实际渲染时 nc-图谱 读取 card-graph.json 替换占位节点/坐标。
+  ============================================================================
+-->
+
 <div class="graph-container">
-<svg viewBox="0 0 800 500" xmlns="http://www.w3.org/2000/svg">
+<svg viewBox="0 0 900 640" xmlns="http://www.w3.org/2000/svg">
   <defs>
     <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
             markerWidth="6" markerHeight="6" orient="auto">
       <path d="M0,0 L10,5 L0,10 z" fill="#999"/>
     </marker>
+    <marker id="arrow-red" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#e74c3c"/>
+    </marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#f39c12"/>
+    </marker>
   </defs>
 
-  <!-- ============ 节点 ============ -->
-  <!-- 节点位置可自由调整；x/y 中心坐标，r=30 -->
+  <!-- ============ 中心层：module 积木（红色大圆） ============ -->
+  <circle class="node module" cx="450" cy="320" r="46"/>
+  <text class="node-label on-dark" x="450" y="308">推门入场</text>
+  <text class="node-label on-dark" x="450" y="324">md-action-entry</text>
+  <text class="node-label on-dark" x="450" y="340">（积木模块）</text>
 
-  <!-- 人物节点示例 -->
-  <circle class="node character" cx="200" cy="150" r="30"/>
-  <text class="node-label" x="200" y="150">姜璃</text>
+  <!-- ============ 分支层：timeline 动线（青绿圆，四向辐射） ============ -->
+  <!-- 上：发型动线 -->
+  <circle class="node timeline" cx="450" cy="120" r="34"/>
+  <text class="node-label" x="450" y="112">发型动线</text>
+  <text class="node-label" x="450" y="128">tl-hairstyle</text>
 
-  <circle class="node character" cx="600" cy="150" r="30"/>
-  <text class="node-label" x="600" y="150">苏叶</text>
+  <!-- 右：气味动线 -->
+  <circle class="node timeline" cx="700" cy="200" r="34"/>
+  <text class="node-label" x="700" y="192">气味动线</text>
+  <text class="node-label" x="700" y="208">tl-scent</text>
 
-  <!-- 道具节点示例 -->
-  <circle class="node item" cx="400" cy="330" r="30"/>
-  <text class="node-label" x="400" y="330">青铜钥匙</text>
+  <!-- 下：光影动线 -->
+  <circle class="node timeline" cx="450" cy="520" r="34"/>
+  <text class="node-label" x="450" y="512">光影动线</text>
+  <text class="node-label" x="450" y="528">tl-light</text>
 
-  <!-- 势力节点示例 -->
-  <circle class="node faction" cx="120" cy="380" r="30"/>
-  <text class="node-label" x="120" y="380">神智会</text>
+  <!-- 左：服装动线 -->
+  <circle class="node timeline" cx="200" cy="200" r="34"/>
+  <text class="node-label" x="200" y="192">服装动线</text>
+  <text class="node-label" x="200" y="208">tl-costume</text>
 
-  <!-- 场景节点示例 -->
-  <circle class="node place" cx="680" cy="380" r="30"/>
-  <text class="node-label" x="680" y="380">月光审判台</text>
+  <!-- ============ 外圈层：foreshadow / lexstat / darklayer ============ -->
+  <!-- 伏笔：发簪（挂在发型动线外，右上） -->
+  <circle class="node foreshadow" cx="640" cy="70" r="26"/>
+  <text class="node-label" x="640" y="64">发簪伏笔</text>
+  <text class="node-label" x="640" y="78">fs-hairpin</text>
 
-  <!-- ============ 边 ============ -->
-  <!-- 有向边（关系方向） -->
-  <line class="edge directed" x1="228" y1="160" x2="572" y2="148"/>
-  <text class="edge-label" x="400" y="145">师-徒</text>
+  <!-- 词频张力：第3章（挂在光影动线外，右下） -->
+  <circle class="node lexstat" cx="620" cy="560" r="26"/>
+  <text class="node-label" x="620" y="554">词频 ch03</text>
+  <text class="node-label" x="620" y="568">lx-ch03</text>
 
-  <!-- 无向边（关联） -->
-  <line class="edge" x1="215" y1="178" x2="380" y2="305"/>
-  <text class="edge-label" x="290" y="250">持有</text>
+  <!-- 暗线：权力凝视（挂在服装动线外，左下，深色低调） -->
+  <circle class="node darklayer" cx="240" cy="560" r="26"/>
+  <text class="node-label on-dark" x="240" y="554">权力凝视</text>
+  <text class="node-label on-dark" x="240" y="568">dk-power-gaze</text>
 
-  <line class="edge" x1="585" y1="178" x2="420" y2="305"/>
-  <text class="edge-label" x="510" y="250">保管</text>
+  <!-- 角色：女主（被多条动线追踪，左上角独立） -->
+  <circle class="node actor" cx="120" cy="90" r="30"/>
+  <text class="node-label" x="120" y="84">女主</text>
+  <text class="node-label" x="120" y="100">ac-female-lead</text>
 
-  <!-- 虚线（暗示/潜在关系） -->
-  <line class="edge dashed" x1="150" y1="360" x2="370" y2="345"/>
-  <text class="edge-label" x="260" y="355">成员</text>
+  <!-- ============ 边：bind_module（md → tl，实红） ============ -->
+  <line class="edge bind directed" x1="450" y1="274" x2="450" y2="154"/>
+  <text class="edge-label" x="450" y="215">bind_module</text>
 
-  <line class="edge dashed" x1="650" y1="360" x2="430" y2="345"/>
-  <text class="edge-label" x="540" y="355">现身</text>
+  <line class="edge bind directed" x1="492" y1="296" x2="668" y2="222"/>
+  <text class="edge-label" x="585" y="255">bind_module</text>
 
-  <!-- 姜璃 → 神智会（成员） -->
-  <line class="edge directed" x1="215" y1="178" x2="135" y2="360"/>
+  <line class="edge bind directed" x1="450" y1="366" x2="450" y2="486"/>
+  <text class="edge-label" x="450" y="430">bind_module</text>
+
+  <line class="edge bind directed" x1="408" y1="296" x2="232" y2="222"/>
+  <text class="edge-label" x="315" y="255">bind_module</text>
+
+  <!-- ============ 边：tracks（tl → actor，灰线） ============ -->
+  <line class="edge" x1="420" y1="100" x2="150" y2="92"/>
+  <text class="edge-label" x="285" y="92">tracks</text>
+
+  <!-- ============ 边：foreshadow_plant（tl-hairstyle → fs-hairpin，橙虚线） ============ -->
+  <line class="edge foreshadow_plant directed" x1="482" y1="108" x2="616" y2="80"/>
+  <text class="edge-label" x="550" y="88">foreshadow_plant</text>
+
+  <!-- ============ 边：lexstat_bind（pp/lx 关联，灰点线） ============ -->
+  <line class="edge lexstat_bind" x1="482" y1="532" x2="596" y2="552"/>
+  <text class="edge-label" x="540" y="540">lexstat_bind</text>
+
+  <!-- ============ 边：references_to_main（dk → ac，深灰点线，暗线单向引用） ============ -->
+  <line class="edge references_to_main directed" x1="262" y1="540" x2="135" y2="118"/>
+  <text class="edge-label" x="180" y="330">references_to_main</text>
 </svg>
 </div>
 
 <div class="legend">
-  <div class="legend-item"><span class="legend-dot" style="background:#4a90e2;border-color:#2c5f9e"></span>人物</div>
-  <div class="legend-item"><span class="legend-dot" style="background:#e67e22;border-color:#b85c0c"></span>势力</div>
-  <div class="legend-item"><span class="legend-dot" style="background:#27ae60;border-color:#1a7d46"></span>道具</div>
-  <div class="legend-item"><span class="legend-dot" style="background:#9b59b6;border-color:#6c3483"></span>场景</div>
-  <div class="legend-item"><svg width="40" height="10"><line x1="0" y1="5" x2="35" y2="5" stroke="#999" stroke-width="1.5"/></svg>关联</div>
-  <div class="legend-item"><svg width="40" height="10"><line x1="0" y1="5" x2="35" y2="5" stroke="#999" stroke-width="1.5" stroke-dasharray="4 3"/></svg>暗示/潜在</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#e74c3c;border-color:#a93226"></span>积木 module（中心）</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#16a085;border-color:#117a65"></span>动线 timeline（分支）</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#f39c12;border-color:#b7770a"></span>伏笔 foreshadow（外圈）</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#34495e;border-color:#1b2631"></span>暗线 darklayer（外圈）</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#ecf0f1;border-color:#95a5a6"></span>词频 lexstat（外圈）</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#4a90e2;border-color:#2c5f9e"></span>角色 actor</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#27ae60;border-color:#1a7d46"></span>道具 item</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#e67e22;border-color:#b85c0c"></span>势力 faction</div>
+  <div class="legend-item"><span class="legend-dot" style="background:#9b59b6;border-color:#6c3483"></span>场景 place</div>
+  <div class="legend-item"><svg width="40" height="10"><line x1="0" y1="5" x2="35" y2="5" stroke="#e74c3c" stroke-width="2"/></svg>bind_module</div>
+  <div class="legend-item"><svg width="40" height="10"><line x1="0" y1="5" x2="35" y2="5" stroke="#f39c12" stroke-width="1.5" stroke-dasharray="5 3"/></svg>foreshadow_plant</div>
+  <div class="legend-item"><svg width="40" height="10"><line x1="0" y1="5" x2="35" y2="5" stroke="#34495e" stroke-width="1.5" stroke-dasharray="3 3"/></svg>references_to_main</div>
 </div>
 
 <div class="notes">
   <strong>读图说明：</strong>
-  实线 = 明确关系；虚线 = 暗示/潜在关系；带箭头 = 有向关系（如师-徒）。
+  本图为<strong>积木联动总图</strong>，三层结构自内向外：
+  ① 中心 <code>module</code>（md-*，红）是最小调度单元；
+  ② 分支 <code>timeline</code>（tl-*，青绿）从中心辐射，每条动线通过 <code>bind_module</code> 绑回中心积木；
+  ③ 外圈 <code>foreshadow</code>（fs-*，黄）/ <code>darklayer</code>（dk-*，深灰）/ <code>lexstat</code>（lx-*，浅灰）
+  通过 <code>foreshadow_plant</code> / <code>references_to_main</code> / <code>lexstat_bind</code> 挂接到对应动线或桥段。
+  <br><br>
+  实线 = 明确关系；虚线 = 暗示/潜在/埋点关系；带箭头 = 有向关系。
   节点颜色对应 card 类型，便于跨图谱对照。
+  <br><br>
+  <strong>数据源</strong>：本 HTML 是 <code>index/card-graph.json</code> 图森林的纯展示投影，
+  不含任何独立业务逻辑；json 一变，nc-图谱 重新生成本文件并覆盖旧版。
 </div>
 
 </body>

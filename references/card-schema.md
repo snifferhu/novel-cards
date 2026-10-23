@@ -1,21 +1,73 @@
 # 卡片 Schema（card-schema.md）
 
-九类卡的完整字段定义与 `status` 生命周期。所有卡片必须包含"通用五字段"；
-各类型专属字段列在下方。
+novel-cards v1.0 全部卡片类型的 frontmatter schema：通用五字段、各类型专属
+字段、actor 非人类行动单元分类、item 黑盒三层建模与五感公理、pose 插槽填充
+机制、module 积木 trigger_map、timeline 节点 bind_module 联动，以及 lexstat /
+corpus / metric / sensory_cue / refwork 等新增类型的完整字段契约。
+
+所有卡片必须包含「通用五字段」；各类型专属字段列在下方。模板位于 `templates/`。
 
 ## 通用五字段（必备）
 
 | 字段 | 类型 | 说明 |
 |---|---|---|
-| `id` | string | 卡片唯一标识，含类型前缀，全局唯一 |
-| `type` | enum | `character` / `plotpoint` / `item` / `scene` / `foreshadow` / `timeline` / `faction` / `snapshot` / `darklayer` / `reflection` |
-| `status` | enum | 卡片生命周期状态，见"状态生命周期"节 |
+| `id` | string | 卡片唯一标识，含类型前缀，全局唯一；**前缀 MUST 与该类型的注册前缀一致** |
+| `type` | enum | 卡片类型，见下方类型总表 |
+| `status` | enum | 卡片生命周期状态，见「状态生命周期」节 |
 | `created` | date | 首次创建时间（ISO 8601） |
-| `updated` | date | 最近一次更新时间（ISO 8601） |
+| `updated` | date | 最近一次更新时间（ISO 8601），每次内容变更后同步 |
+
+缺失任一字段视为非法卡。`nc-校阅` 审计时标记为 schema 违规并输出意见书。
+
+### 类型与前缀总表
+
+| type | id 前缀 | 目录 | 中文名 |
+|---|---|---|---|
+| `actor` | `ac-` | `cards/characters/` | 角色（叙事行动单元） |
+| `plotpoint` | `pp-` | `cards/plotpoints/` | 桥段 |
+| `item` | `it-` | `cards/items/` | 道具 |
+| `scene` | `sc-` | `cards/scenes/` | 场景 |
+| `foreshadow` | `fs-` | `cards/foreshadow/` | 伏笔 |
+| `timeline` | `tl-` | `cards/timeline/` | 动线 |
+| `faction` | `fa-` | `cards/factions/` | 势力 |
+| `snapshot` | `sn-` | `cards/snapshots/` | 快照 |
+| `darklayer` | `dk-` | `cards/darklayer/` | 暗线 |
+| `module` | `md-` | `cards/modules/` | 积木模块 |
+| `lexstat` | `lx-` | `cards/lexstats/` | 词频张力 |
+| `corpus` | `co-` | `cards/corpus/` | 语料 |
+| `metric` | `mt-` | `cards/metrics/` | 量化指标 |
+| `pose` | `po-` | `cards/pose-bank/` | 姿态 |
+| `sensory_cue` | `su-` | `cards/custom/sensory_cue/` | 感官标记 |
+| `refwork` | `rw-` | `cards/custom/refwork/` | 对标作品档案 |
+| `character_tendency` | `tend-` | `cards/tendencies/` | 角色动向（性格/心智倾向滑动标尺） |
+| `reflection` | `rf-` | `reflections/`（**不进入 `cards/`**） | 反思卡 |
+
+自定义类型经 `nc-注册` 写入 registry 白名单后，存放于 `cards/custom/<type>/`。
+
+## 设定卡检索：容错、多候选与差异归档（v1.0 新增约定）
+
+作者口述或输入设定对象时，**拼写错误、记忆偏差、同物异名**是常态。`nc-检索`
+（及所有「更新已有卡」类技能）MUST 按以下规则处理，避免误伤或静默覆盖：
+
+1. **模糊匹配 + 多候选返回**：检索不应只返回单一「最像」的结果。当存在多个
+   可能对应同一设定的记录时（同名不同卡 / 别名 / 拼写近似），AI MUST 列出
+   **全部候选**（含各自 id、关键差异点），请作者确认「是哪一张」或「其实是新
+   设定」。禁止 AI 自行拍板选定唯一候选后直接改写。
+2. **无历史 → 新建；有历史 → 填充**：若检索不到任何匹配，走「新建卡」流程；
+   若命中已有卡，走「内容填充/更新」流程，复用其 id 与既有字段。
+3. **差异不直接覆盖，先归档 history**：当要更新的卡与现有内容存在**实质差异**
+   （非纯笔误修正）时，AI MUST NOT 原地覆盖。流程为：先把旧版本复制一份到
+   `history/<card-id>/<updated-date>.md`（保留原 frontmatter + 正文快照），再
+   出新版提案。这样任意一次设定变更都可回溯、可回滚。
+4. **纯笔误/格式修正**可直接出更新提案，无需归档（在提案里注明「仅修正 X」）。
+
+> 该约定对**所有卡类型**生效（actor / item / scene / faction / darklayer …）。
+> `history/` 目录由 `install.sh --project` 预建；归档文件无 frontmatter 校验
+> 要求，仅作只读快照。详见 `references/hard-rules.md` 与 `USAGE.md` FAQ。
 
 ## 状态生命周期
 
-一般卡片（除 foreshadow、darklayer 与 reflection 外）：
+一般卡片（除 foreshadow、darklayer、reflection 外）：
 
 ```
 draft → active → archived
@@ -27,55 +79,164 @@ draft → active → archived
 
 **特殊状态**：
 
-- **foreshadow**：`unresolved` / `resolved`（详见下方 foreshadow 章节）
+- **foreshadow**：`planted` / `developing` / `resolved` / `unresolved` / `abandoned`
 - **darklayer**：`hint` / `hinted` / `confirmed` / `revealed`
 - **reflection**：`draft` / `reviewed` / `closed`
   - `draft`：初稿，`action_items` 尚未处理
   - `reviewed`：用户审阅完毕，`action_items` 处理中或部分处理
   - `closed`：全部 `action_items` 已处理（含跳过），反思卡归档
+- **plotpoint**：额外支持 `official` / `candidate` / `archive` 三态（备选方案不会自动替换主线剧情）
 
-## 九类卡专属字段
+## actor（角色卡，替代原 character）
 
-### character（人物卡）
+`actor`（`ac-`）替代原 `character`（`ch-`）。定义为「拥有独立主观视角、可参与
+桥段、可绑定感知/抽象动线、具备状态变化的叙事行动单元」，**与是否人类无关**。
 
 | 字段 | 必填 | 说明 |
 |---|---|---|
 | `name` | ✅ | 显示名 |
 | `aliases` | ❌ | 别名字符串数组 |
-| `faction` | ❌ | 所属势力 id |
+| `classification` | ✅ | 分类标签（不锁死枚举），见下 |
+| `affiliation` | ❌ | 所属势力 id |
 | `first_appearance` | ✅ | 首次出场章节 |
-| `role` | ✅ | `protagonist` / `deuteragonist` / `antagonist` / `supporting` |
-| `age` | ❌ | 年龄或年龄段 |
+| `cross_ref` | ❌ | 与 item 等的互相引用 id 数组（器灵觉醒场景用） |
 
-### plotpoint（桥段卡）
+**分类标签**（frontmatter 打标，不锁死枚举）：
+
+| 标签 | 含义 |
+|---|---|
+| `protagonist` | 主角 |
+| `supporting` | 配角 |
+| `extra` | 路人 |
+| `creature` | 生灵（蛤蟆·异兽） |
+| `object-spirit` | 器物灵体（会跑的桌子·宝剑器灵） |
+| `force` | 抽象意志 |
+| `phantom` | 幻影残魂 |
+
+**actor 与 item 的区分规则**：
+
+- `actor` = 主动：能发起动作、有主观感知、有欲望动机
+- `item` = 默认被动
+- 一旦道具拥有独立意志主动行动，SHALL 建模为 `actor`（标签 `object-spirit`），
+  原 `item` 卡保留物理本体描述，两卡通过 `cross_ref` 互相引用
+
+最小示例（蛤蟆主角）：
+
+```yaml
+---
+id: ac-frog-lead
+type: actor
+status: draft
+created: 2026-10-22
+updated: 2026-10-22
+name: 蛤蟆甲
+classification: creature
+first_appearance: chapter-001
+---
+```
+
+## plotpoint（桥段卡）
 
 | 字段 | 必填 | 说明 |
 |---|---|---|
 | `chapter` | ✅ | 所在章节 |
 | `summary` | ✅ | 一句话摘要 |
-| `participants` | ✅ | 相关人物 id 数组 |
+| `participants` | ✅ | 相关对象 id 数组（actor/item/scene） |
+| `lexstat_bind` | ❌ | 绑定的词频张力卡 id（`lx-*`） |
+| `module_list` | ❌ | 引用的积木模块 id 数组（`md-*`） |
+| `pose_refs` | ❌ | 引用的姿态卡 id 数组（`po-*`） |
+| `foreshadow_links` | ❌ | 关联伏笔 id 数组（`fs-*`） |
+| `strategic_burst` | ❌ | 是否战略爆点（boolean，触发节奏豁免） |
 | `pivotal` | ❌ | 是否关键转折（boolean） |
 
-### item（道具卡）
+最小示例：
+
+```yaml
+---
+id: pp-entry-scene
+type: plotpoint
+status: draft
+created: 2026-10-22
+updated: 2026-10-22
+chapter: chapter-003
+summary: 女主入场名场面，多感官同步启动
+participants: [ac-female-lead, ac-host]
+lexstat_bind: lx-ch03
+module_list: [md-action-entry]
+foreshadow_links: [fs-hairpin]
+strategic_burst: false
+---
+```
+
+## item（道具卡，黑盒三层建模）
+
+`item`（`it-`）SHALL 支持黑盒三层内部结构。默认黑盒模式：作者只自然描述道具，
+skill 自动拆解写入图森林；高级模式开关打开后展示三层分区并允许手动调整感知
+track 绑定。
 
 | 字段 | 必填 | 说明 |
 |---|---|---|
 | `name` | ✅ | 道具名 |
-| `owner` | ❌ | 当前持有者 id（可能为空表示无主） |
+| `owner` | ❌ | 当前持有者 id（可为空表示无主） |
 | `origin` | ✅ | 来源描述 |
-| `power` | ❌ | 特殊能力描述 |
 | `last_seen` | ✅ | 最近出现章节 |
+| `blackbox` | ❌ | 三层结构对象（见下），黑盒模式由 skill 自动填充 |
+| `advanced_mode` | ❌ | boolean，打开后展示三层分区并允许手动调整感知 track 绑定 |
+| `cross_ref` | ❌ | 与觉醒 actor 的互相引用 id |
 
-### scene（场景卡）
+**黑盒三层**（`blackbox` 对象内部分区）：
+
+- **物理层**（`physical`）：材质、尺寸、耐久、限制、使用条件、客观规则
+- **感知层**（`perceptual`）：五感映射（visual / auditory / olfactory / gustatory / tactile）
+- **抽象非感知层**（`abstract`）：绑定权力、秘密、记忆、宿命、信任等抽象 timeline，道具作为符号载体
+
+最小示例（黑盒模式，作者自然描述后 skill 自动拆解）：
+
+```yaml
+---
+id: it-cursed-sword
+type: item
+status: draft
+created: 2026-10-22
+updated: 2026-10-22
+name: 血脉诅咒之剑
+origin: 旧宅密室取得
+last_seen: chapter-042
+blackbox:
+  physical: {material: 玄铁, rule: 持握发烫}
+  perceptual: {tactile: 温感, visual: 族徽}
+  abstract: [tl-fate-line, tl-blood-secret]
+---
+```
+
+### 五感公理
+
+感知动线的根（track root）**MUST 落在人类原生五感之一**：视觉 / 听觉 / 嗅觉 /
+味觉 / 触觉（温·压·痛·肌理）。玄幻衍生感知 SHALL 建模为对应五感的子标签变体，
+**MUST NOT 新增脱离五感底层的独立感知大类**：
+
+| 玄幻衍生感知 | 归入五感根 | 子标签形态 |
+|---|---|---|
+| 灵识/神念扫描 | 触觉 | 回声定位型探测（雷达·声呐） |
+| 神视/天眼 | 视觉 | 延伸（穿透·望远·透视·多波段） |
+| 灵嗅/辨息 | 嗅觉 | 超距高分率版 |
+| 灵味/道韵尝感 | 味觉 | 抽象化 |
+| 神魂刺痛/震颤 | 触觉 | 痛觉/压力投射到精神层面 |
+
+非感知抽象动线（权力/秘密/记忆/欲望/宿命/张力/信任）与感知动线平行，互不侵占，
+可通过 `nc-注册` 自由扩展。
+
+## scene（场景卡）
 
 | 字段 | 必填 | 说明 |
 |---|---|---|
 | `name` | ✅ | 场景名 |
 | `location` | ✅ | 地理或叙事位置描述 |
 | `first_appearance` | ✅ | 首次出现章节 |
+| `atmosphere` | ❌ | 基调关键词 |
 | `recurrence` | ❌ | 是否重复出现 |
 
-### foreshadow（伏笔卡）
+## foreshadow（伏笔卡）
 
 | 字段 | 必填 | 说明 |
 |---|---|---|
@@ -87,28 +248,51 @@ draft → active → archived
 | `reveal_tier` | ❌ | `early` / `mid` / `finale` 暗示回收时机 |
 
 **硬规则约束**：`status: resolved` 时必须有 `payoff_chapter`；
-`status: unresolved` 时 `payoff_chapter` 可缺。详见 `hard-rules.md` 规则 3。
+`status: unresolved` 时 `payoff_chapter` 可缺。详见 `hard-rules.md`。
 
-### timeline（动线卡）
+## timeline（动线卡，节点由积木驱动）
 
 | 字段 | 必填 | 说明 |
 |---|---|---|
-| `title` | ✅ | 动线主题名（如"青铜钥匙的流向"、"姜璃的成长弧线"） |
-| `track` | ✅ | 追踪对象类型：`character` / `item` / `faction` / `place` / `other` |
-| `target` | 条件必填 | 追踪对象 id（`ch-*` / `it-*` / `fa-*` / `sc-*`；`track: other` 时可省） |
+| `title` | ✅ | 动线主题名 |
+| `track` | ✅ | 追踪对象类型：`character` / `item` / `faction` / `place` / `other` / 已注册的自定义类型 |
+| `target` | 条件必填 | 追踪对象 id（`ac-*` / `it-*` / `fa-*` / `sc-*`；`track: other` 时可省） |
 | `first_seen` | ✅ | 首次出现章节 |
-| `mentions` | ❌ | 简要关系交汇点数组（每项含对象 id + 一段话说清交汇） |
-| `graph` | ❌ | 关联图谱 HTML 相对路径（如 `graph/tl-bronze-key-graph.html`） |
-| `reveal_tier` | ❌ | 揭示强度：`hint` / `hinted` / `confirmed` / `revealed`（若为暗线动线） |
+| `nodes` | ✅ | 节点数组，每节点 SHOULD 含 `node_id` / `bind_module` / `trigger_foreshadow` / 爆点标注 |
+| `mentions` | ❌ | 简要关系交汇点数组 |
+| `graph` | ❌ | 关联图谱 HTML 相对路径 |
 
-**动线卡与关系图的关系**：
+**节点结构**：每个节点 SHOULD 通过 `bind_module` 字段绑定一个 pose/module 积木；
+未绑定 module 的孤立节点仅允许用于简单线性记录。
 
-- 动线卡追踪**单一对象**跨章节、跨场景的完整轨迹
-- `mentions` 段记录该对象与其他对象的**简要交汇**，不做详细展开
-- 复杂交互（多对象、多类型、含暗示关系）放 `graph/` 目录下 HTML 图谱
-- 动线卡通过 `graph` 字段（可选）显式指向对应图谱文件
+最小示例（发型动线，节点绑定积木）：
 
-### faction（势力卡）
+```yaml
+---
+id: tl-hairstyle
+type: timeline
+status: draft
+created: 2026-10-22
+updated: 2026-10-22
+title: 女主发型动线图谱
+track: character
+target: ac-female-lead
+first_seen: chapter-003
+nodes:
+  - chapter: 3
+    node_id: node_01
+    desc: 高髻严整，玉簪固定
+    bind_module: md-action-entry
+    trigger_foreshadow: fs-hairpin
+  - chapter: 14
+    node_id: node_02
+    desc: 玉簪取下，长发散落
+    bind_module: md-action-unpin
+    burst: 中型情绪爆点
+---
+```
+
+## faction（势力卡）
 
 | 字段 | 必填 | 说明 |
 |---|---|---|
@@ -118,30 +302,311 @@ draft → active → archived
 | `goals` | ✅ | 势力目标描述 |
 | `influence` | ❌ | 影响范围文本 |
 
-### snapshot（状态快照卡）
+## snapshot（快照卡，时间锚点状态切片）
+
+❌ **不是**：姿势库、插画、动态素材库。
+✅ **定义**：在某确定章节/时间锚点上，一套锁定的、瞬时的全局状态切片；可单聚焦
+actor，也可定格场景内多方角色/道具/势力/动线状态。用途：前后对比、校验逻辑
+（"这一刻角色知不知道秘密？伤势多重？手里拿着什么？"）。
+
+与 timeline 区别：timeline = 变化过程（曲线）；snapshot = 时间轴上钉点，拍下此刻
+所有变量值。
 
 | 字段 | 必填 | 说明 |
 |---|---|---|
-| `chapter` | ✅ | 快照对应的章节 |
+| `chapter` | ✅ | 快照对应的章节锚点 |
 | `focus` | ✅ | 快照关注点（`world` / `faction` / `character-arc` 等） |
 | `summary` | ✅ | 快照正文摘要 |
+| `used_pose` | ❌ | 引用姿态卡 id（校阅时校验「此刻状态能否支撑该 pose」） |
 | `related_cards` | ✅ | 关联卡片 id 数组 |
 
-### darklayer（暗线卡）
+## darklayer（暗线卡）
+
+> **语义定义（v1.0 扩展）**：暗线**不是仅指代角色**。它是「整条明面叙事中，
+> 没有明说、需要读者自行推敲的隐性逻辑」——可以是一条贯穿全书的隐秘设定、
+> 一组桥段背后的真实因果、一个角色的隐藏动机链，或多种混合。一张暗线卡
+> 可以同时挂接多类主书对象（设定 / 桥段 / 角色 / 道具 / 势力），通过
+> `references_to_main` 显式串接。判断标准：**读者读完全文后回看能发现「原来
+> 如此」的那条暗逻辑**，就是暗线。
 
 | 字段 | 必填 | 说明 |
 |---|---|---|
 | `name` | ✅ | 暗线主题名 |
 | `truth` | ✅ | 真相摘要（读者不可见的核心信息） |
-| `surface_hint` | ✅ | 表面层如何暗示此暗线 |
-| `references_to_main` | ✅ | 显式引用主书卡片 id 的数组（**唯一允许的连接方式**） |
+| `surface_hint` | ✅ | 表面层如何暗示此暗线（可含多类对象的暗示点） |
+| `implicit_kind` | ❌ | 隐性逻辑类型：`setting`（隐秘设定）/ `plot`（桥段真实因果）/ `character`（角色隐藏动机）/ `mixed`（混合，默认） |
+| `references_to_main` | ✅ | 显式引用主书卡片 id 的数组（**唯一允许的连接方式**；可混合 ac-/pp-/it-/fa-/sc- 等多类前缀） |
 | `reveal_chapter` | ❌ | 计划回收章节（未定时省略） |
 | `reveal_tier` | ❌ | 揭示强度：`hint` / `hinted` / `confirmed` / `revealed` |
 
 **硬规则约束**：暗线卡必须位于 `cards/darklayer/`；id 必须以 `dk-` 开头；
-与主书卡片只通过 `references_to_main` 单向串接。详见 `hard-rules.md` 规则 4。
+与主书卡片只通过 `references_to_main` 单向串接（**MUST NOT** 反向在主书卡里
+写 `references_to_darklayer`，保持命名空间隔离）。详见 `hard-rules.md`。
 
-### reflection（反思卡）
+## module（积木模块卡，最小调度单元）
+
+`module`（`md-`）是最小调度单元，其 `trigger_map` SHALL 可自由绑定任意数量、
+任意 track 类型的 timeline 节点 + pose + 自定义类型卡片（symbol/metric 等），
+**MUST NOT 锁死固定四感组合**。同一 module 可在不同章节复用，通过修改绑定的
+动线节点产生不同效果。
+
+| 字段 | 必填 | 说明 |
+|---|---|---|
+| `name` | ✅ | 积木名称（如"推门入场姿态模块"） |
+| `bind_scene` | ❌ | 绑定场景 id |
+| `trigger_map` | ✅ | 积木联动：键为 timeline id，值为 `node_id`（+ 可选 pose/自定义卡引用） |
+| `view_mod` | ❌ | 多视角视图模块（host_view / self_view / hidden_view 等） |
+| `trigger_expect` | ❌ | 爆点预期：铺垫哪一级爆点 |
+
+**跨动线同步变化 MUST 走 module 积木模块**，禁止在正文或动线卡里零散写联动。
+
+最小示例（进门积木）：
+
+```yaml
+---
+id: md-action-entry
+type: module
+status: draft
+created: 2026-10-22
+updated: 2026-10-22
+name: 推门入场姿态模块
+bind_scene: sc-main-parlor
+trigger_map:
+  tl-hairstyle: node_01   # 高髻固定，发簪就位
+  tl-scent: node_01       # 冷木质香随气流扩散
+  tl-light: node_01       # 自然光切断，切换室内顶冷白光
+  tl-costume: node_01     # 挺括长裙，线条收敛
+view_mod:
+  host_view: 房主视角看到的画面（端庄、有距离感）
+  self_view: 女主自我感知（清楚自己正在扮演符号）
+  hidden_view: 暗线视角（dk-power-gaze：正在进入凝视结构）
+trigger_expect: 情绪基线铺垫，为后续第14章发簪摘落爆点蓄力
+---
+```
+
+## lexstat（词频张力卡）
+
+`lexstat`（`lx-`）是写稿环节的核心控制点，强约束：爆点段落高密词集中释放，
+爆点之后强制留白，禁止持续堆叠感官描写。
+
+| 字段 | 必填 | 说明 |
+|---|---|---|
+| `bind_chapter` | ✅ | 绑定章节 |
+| `bind_plotpoint` | ❌ | 绑定桥段 id |
+| `high_density_words` | ✅ | 高存在感、强冲击词（爆点区域使用） |
+| `low_density_words` | ✅ | 淡词、留白词（过渡、收束、留白段落使用） |
+| `forbidden_words` | ✅ | 破坏氛围、直白说教的词，本章禁用 |
+| `tension_curve` | ✅ | 0~10 张力标尺：`start` / `rising` / `climax` / `release` |
+| `blank_rule` | ✅ | 留白规则：爆点后强制留白段落数、禁止同句堆砌四种感官等 |
+| `checklist` | ✅ | 校验指标清单 |
+
+最小示例：
+
+```yaml
+---
+id: lx-ch03
+type: lexstat
+status: draft
+created: 2026-10-22
+updated: 2026-10-22
+bind_chapter: chapter-003
+bind_plotpoint: pp-entry-scene
+high_density_words: [审视, 灼热, 绷紧]
+low_density_words: [静, 微凉, 缓]
+forbidden_words: [哲学旁白, 直白说教]
+tension_curve: {start: 3, rising: 6, climax: 9, release: 4}
+blank_rule:
+  climax_after_para: 爆点后强制留白 2 段，不继续堆描写
+  avoid_overdescribe: [不要同时堆砌 4 种感官在同一个句子]
+checklist:
+  - 感官词密度是否超标
+  - 隐喻词是否只留给可读懂暗线的读者
+  - 是否存在直接哲学旁白
+---
+```
+
+## corpus（语料卡）
+
+`corpus`（`co-`）存放参考语料、风格样本，按语义标签分类，作为选词池。
+
+| 字段 | 必填 | 说明 |
+|---|---|---|
+| `tags` | ✅ | 语义标签数组（感官描写/香氛/室内光影/克制情欲/留白短句等） |
+| `source` | ✅ | 来源（摘抄/片段/参考文本/URL） |
+| `purpose` | ❌ | 服务的桥段/动线 id |
+| `text` | ✅ | 原始参考语料文本 |
+| `extract` | ❌ | 人工萃取：可用词组、句式、氛围感表达（写作时直接参考） |
+| `notes` | ❌ | 区分表层情欲描写词与深层思辨隐喻词，两类分开标记防止混同 |
+
+最小示例：
+
+```yaml
+---
+id: co-candlelight
+type: corpus
+status: draft
+created: 2026-10-22
+updated: 2026-10-22
+tags: [室内光影, 感官描写]
+source: 参考文本摘抄
+purpose: 服务 tl-light
+text: |
+  烛火摇曳，光影在墙上拉长又缩短……
+extract: |
+  可用句式：「烛火 + 动词 + 光影位置变化」
+notes: 表层光影词与深层凝视隐喻词分开标记
+---
+```
+
+## metric（量化指标卡）
+
+`metric`（`mt-`）挂载张力、爆点、信息载荷等量化指标，供长篇深度打磨与批量统计
+分析使用；数值索引同步写入 `index/metric-index.json`。
+
+| 字段 | 必填 | 说明 |
+|---|---|---|
+| `bind_range` | ✅ | 绑定的章节区间 |
+| `dimensions` | ✅ | 指标维度（张力/爆点密度/信息载荷/五感释放节奏等） |
+| `values` | ✅ | 各维度的数值条目 |
+
+## pose（姿态卡，招牌动作库）
+
+`pose`（`po-`，存放于 `cards/pose-bank/`）解决跨场景复用一致性。一个 pose =
+【固定内核（招牌不变）+ 环境变量插槽（每次调用替换）+ 多视角文案 + 使用约束】。
+内核锁死不改，保证辨识度统一；插槽随环境/伤势/情绪变化，适配场景，不出戏。
+
+| 字段 | 必填 | 说明 |
+|---|---|---|
+| `name` | ✅ | 姿态名 |
+| `pose_tag` | ✅ | `signature` / `habit` / `combat` / `relax` / `special` |
+| `core` | ✅ | 固定内核（招牌不变的部分） |
+| `slots` | ✅ | 环境变量插槽定义（每次调用替换） |
+| `slot_default` | ✅ | P3 兜底值（未绑定快照时用） |
+| `multi_view` | ❌ | 多视角文案（host/self/hidden 等） |
+| `extra_constraint` | ❌ | 使用约束（如"水下不可鼓腮"） |
+
+**插槽填充三级优先级**（MUST 遵循）：
+
+1. **P1** 桥段本地手动覆写（`slot_override`）> 覆盖一切自动值
+2. **P2** 当前时间锚点快照状态自动填充（默认，作者零填写，全章统一）
+3. **P3** pose 默认兜底（`slot_default`，未绑定快照时，短篇常见）
+
+填充后 MUST 跑 `extra_constraint` 校验（如"水下不可鼓腮"），冲突进入 `nc-校阅`
+意见，不自动改文字。
+
+最小示例：
+
+```yaml
+---
+id: po-guard-stance
+type: pose
+status: draft
+created: 2026-10-22
+updated: 2026-10-22
+name: 招牌戒备姿态
+pose_tag: signature
+core: 重心下沉，双肘护胸，目光锁定对方咽喉
+slots:
+  left_arm: {default: 垂落}
+  right_hand: {default: 持械}
+slot_default: {left_arm: 垂落, right_hand: 持械}
+extra_constraint: 左臂受伤时左臂不得抬起
+---
+```
+
+## sensory_cue（感官标记卡）
+
+`sensory_cue`（`su-`，存放于 `cards/custom/sensory_cue/`）：声音/乐曲/气味/光影
+等氛围触发器，可绑定角色/场景，供桥段引用；**本身不是剧情事件**，用于塑造标志性
+氛围信号。
+
+| 字段 | 必填 | 说明 |
+|---|---|---|
+| `cue_type` | ✅ | `sound` / `music` / `scent` / `light` / `atmosphere` |
+| `bind_target` | ✅ | 绑定的角色/场景 id |
+| `description` | ✅ | 氛围信号描述 |
+
+最小示例（王熙凤笑声）：
+
+```yaml
+---
+id: su-wang-laugh
+type: sensory_cue
+status: draft
+created: 2026-10-22
+updated: 2026-10-22
+cue_type: sound
+bind_target: ac-wang-xifeng
+description: 人还没进院子，笑声先传过来，所有人安静下来
+---
+```
+
+## refwork（对标作品档案卡）
+
+`refwork`（`rw-`，存放于 `cards/custom/refwork/`）：外部参考作品档案，登记基础
+信息，用于对标拆解。拆解产物带独立 `tree_id` 存于 card-graph.json 森林，与原创
+主线隔离。
+
+| 字段 | 必填 | 说明 |
+|---|---|---|
+| `title` | ✅ | 作品名 |
+| `author` | ❌ | 作者 |
+| `genre` | ❌ | 题材 |
+| `study_focus` | ✅ | 拆解学习重点（伏笔回收手法/节奏/世界观等） |
+| `tree_id` | ✅ | 归属子图标记（与原创主线隔离） |
+
+## character_tendency（角色动向卡，性格/心智倾向滑动标尺）
+
+`character_tendency`（`tend-`，存放于 `cards/tendencies/`）：刻画角色性格 / 心智
+倾向的**带触发事件的连续滑动标尺**——有基准刻度、长期趋势方向、当前刻度，每一次
+变动绑定一个具体桥段事件作为推手，而非凭空变性格。该卡**依附角色**（`target_role`
+引用 `ac-` id），引用桥段（`trigger_plot` 引用 `pp-` id）作为变动原因。它 MUST NOT
+替代角色基础卡（基线初始状态仍存于 `actor` 卡）。`nc-检索` 支持
+`type:character_tendency` 与按角色过滤；`nc-校阅` 可校验动向逻辑冲突。
+
+| 字段 | 必填 | 说明 |
+|---|---|---|
+| `target_role` | ✅ | 依附的角色 id（`ac-*`），本卡刻画该角色的某条倾向维度 |
+| `dimension` | ✅ | 倾向维度名（如「克制↔放荡」「信任↔戒备」），两端语义须明确 |
+| `baseline` | ✅ | 基准刻度（通常为 0，表示故事起点时的初始倾向位置） |
+| `direction_rule` | ❌ | 长期趋势方向描述（如「长期向放荡偏移」「总体回稳」） |
+| `current_value` | ✅ | 当前刻度值（= history[] 最后一条的 value） |
+| `history` | ✅ | 变动历史数组，每条含 `{value, trigger_plot, description}`；`trigger_plot` 引用 `pp-*` 桥段 id 作为该次变动的推手事件 |
+| `notes` | ❌ | 补充说明（作者备注、与其他维度的联动等） |
+
+> **铁律**：`history[]` 中每一条 MUST 绑定一个**已存在**的桥段卡（`trigger_plot`
+> 指向真实 `pp-*` id），禁止无事件推手的凭空变性格。详见
+> `references/hard-rules.md`「动向每次变动必须绑定已存在桥段」。
+
+最小示例（克制→放荡滑动标尺）：
+
+```yaml
+---
+id: tend-lead-restraint
+type: character_tendency
+status: draft
+created: 2026-10-23
+updated: 2026-10-23
+target_role: ac-frog-lead
+dimension: 克制↔放荡
+baseline: 0
+direction_rule: 长期向放荡偏移
+current_value: 3
+history:
+  - value: 1
+    trigger_plot: pp-ch03-betrayal
+    description: 被挚友背叛后第一次失控，开始怀疑自我约束的意义
+  - value: 2
+    trigger_plot: pp-ch17-fall
+    description: 经历坠落与放纵，主动放弃部分克制
+  - value: 3
+    trigger_plot: pp-ch31-embrace
+    description: 彻底接纳放荡面，不再压抑本能
+notes: 与「信任↔戒备」维度联动，放荡度上升时戒备度同步下降
+---
+```
+
+## reflection（反思卡）
 
 | 字段 | 必填 | 说明 |
 |---|---|---|
@@ -155,151 +620,26 @@ draft → active → archived
 | `## stuck` | 卡点：写作过程中出现的具体卡点 |
 | `## shone` | 亮点：本章写得顺畅、出彩、超出预期的段落 |
 | `## why` | 归因：把卡点与亮点的根本原因拎出来 |
-| `## insights` | 新认知：本章沉淀出的新认知（人物理解、世界观补丁、技法经验） |
+| `## insights` | 新认知：本章沉淀出的新认知 |
 | `## action_items` | 反哺动作：把新认知落到具体的卡片修改上，markdown 任务列表 |
 
 **位置约束**：必须位于 `reflections/`，**不得**放入 `cards/`。
 **id 前缀**：`rf-`，命名 `rf-<chapter-id>`。
 
-详见 `hard-rules.md` 规则 9 与 `references/loop.md`。
+详见 `hard-rules.md` 与 `references/loop.md`。
+
+## 长线四方对齐
+
+长线道具/感官爆点 MUST 满足四方对齐：伏笔 `fs-` 卡、动线 `tl-` 节点、模块
+`md-`、词频 `lx-` 卡提前 ≥8 章预埋，缺一即视为预埋不完整。`nc-校阅` 校验四方齐全。
+
+例：第 3 章植入 `fs-hairpin`，计划第 14 章回收 → 该链路上 MUST 存在对应的
+`tl-hairstyle` 节点、`md-action-entry`/`md-action-unpin` 模块、`lx-ch03`/`lx-ch14`
+词频卡。
 
 ## 字段命名规范
 
 - 一律 snake_case
-- 数组字段命名用复数（`participants` / `members` / `arcs`）
-- 引用其他卡 id 的字段命名 `xxx_id` 或复数 `xxx_ids`（如 `faction` 直接用 string，`members` 用 array）
+- 数组字段命名用复数（`participants` / `members` / `nodes`）
+- 引用其他卡 id 的字段命名 `xxx_id` 或复数 `xxx_ids` / `xxx_list` / `xxx_refs` / `xxx_links`
 - 时间字段统一 ISO 8601：`2025-01-15` 或 `2025-01-15T10:30:00Z`
-
-## 字段示例
-
-一份完整的 character 卡：
-
-```yaml
----
-id: ch-jiang-li
-type: character
-status: active
-created: 2025-01-15
-updated: 2025-02-20
-name: 姜璃
-aliases: [小璃, 阿璃]
-faction: fa-shenzhi-hui
-first_appearance: chapter-003
-role: protagonist
-age: 24
----
-
-## 性格
-
-外冷内热，理性至上，但在关键时刻会突破既定判断。
-
-## 目标
-
-- 短期：查明孤儿院失踪事件真相
-- 长期：建立独立调查网络
-
-## 关系
-
-- 与 `ch-su-ye` 是师徒关系；详细交汇见 `tl-jiang-li-journey` 动线卡的
-  `mentions` 段；复杂关系图见 `graph/tl-jiang-li-journey-graph.html`
-```
-
-## 动线卡示例
-
-```yaml
----
-id: tl-bronze-key
-type: timeline
-status: active
-created: 2025-02-10
-updated: 2025-02-25
-title: 青铜钥匙的流向
-track: item
-target: it-bronze-key
-first_seen: chapter-003
-graph: graph/tl-bronze-key-graph.html
----
-
-## 概览
-
-追踪青铜钥匙从旧宅密室到最终审判台的完整流向。
-
-## 变化轨迹
-
-| 章节 | 状态 | 位置/持有者 | 关键事件 |
-|---|---|---|---|
-| chapter-003 | 出现 | 姜璃随身 | 从旧宅密室取得 |
-| chapter-015 | 转移 | 苏叶保管 | 委托保管 |
-| chapter-042 | 现身 | 月光审判台 | 关键道具 |
-
-## 简要关系记录
-
-- 与 `ch-jiang-li`：委托关系（chapter-015）
-- 与 `ch-su-ye`：保管关系（chapter-015 起）
-- 与 `sc-moonlit-arena`：现身场景（chapter-042）
-
-## 备注
-
-关键道具，与 `fs-key-secret` 伏笔强关联。
-```
-
-## 反思卡示例
-
-```yaml
----
-id: rf-chapter-050
-type: reflection
-status: draft
-created: 2026-10-21
-updated: 2026-10-21
-chapter: chapter-050
-title: 第五章复盘
----
-
-# 第五章 · 复盘
-
-## stuck
-
-- 卡点 1：姜璃与苏叶的对手戏推不动，两人对话总是重复已有立场
-  - 出现于：中段对话（约 800-1200 字处）
-  - 现象：连续三次重写仍未突破
-  - 归因假设：苏叶的动机在人物卡中描述太单薄
-
-- 卡点 2：孤儿院失踪事件的真相浮出水面太快，读者还没准备好
-  - 出现于：章节中段
-  - 现象：情感节奏断了
-  - 归因假设：铺垫不足，缺少一个前置伏笔
-
-## shone
-
-- 亮点 1：审判台场景的空间描写
-  - 位置：章节结尾 300 字
-  - 出彩点：用「月光」「审判席」「铁链声」三个意象构建出完整氛围
-  - 可复用性：这个「三意象组合」手法可以迁移到其他关键场景
-
-## why
-
-- 根本原因 A（卡点 1）：苏叶人物卡缺少「个人欲望」字段，只有立场没有欲望
-- 根本原因 B（卡点 2）：伏笔卡 `fs-orphan-letter` 的 `planted_at` 定得太晚
-
-## insights
-
-- 认知 1：人物卡的「目标」需要区分「立场」与「欲望」，只有立场的配角写不出戏
-- 认知 2：情感节奏的铺垫必须至少提前一章埋设伏笔，不能在同一章内「先埋后收」
-- 认知 3：「三意象组合」是可复用的场景描写手法
-
-## action_items
-
-- [ ] 更新 `cards/characters/ch-su-ye.md`：把「目标」字段拆为「立场」与「欲望」两个子字段
-- [ ] 新建 `cards/foreshadow/fs-orphan-letter.md`：把「孤儿院信件」作为 chapter-050 前置伏笔，`planted_at: chapter-049`
-- [ ] 更新 `cards/scenes/sc-moonlit-arena.md`：把「三意象组合」手法记录到备注段
-- [ ] 补素材：需要用户口述「苏叶个人欲望」的具体素材，先过 `nc-过滤`
-
----
-
-关联：`manuscript/chapter-050.md`
-相关反思卡：（暂无）
-```
-
-**说明**：以上示例中 `action_items` 的第 4 条「补素材」必须**先过通胀过滤器**
-（规则 10），才能进入正式素材池或练习稿目录。

@@ -48,12 +48,12 @@ title: 第<n>章复盘
 - 认知 2：<一句话结论>
 
 ### 5. 反哺动作（action_items）
-（把新认知落到具体的卡片修改上，明确到卡 id）
+（把新认知落到具体的卡片修改上，明确到卡 id；actor 前缀 ac-）
 
-- [ ] 更新 `cards/characters/ch-xxx.md`：<改什么>
+- [ ] 更新 `cards/characters/ac-xxx.md`：<改什么>
 - [ ] 新建 `cards/foreshadow/fs-xxx.md`：<内容摘要>
-- [ ] 更新 `graph/relationship.html`：<补哪条边>
-- [ ] 补素材：<需要搜集/口述的补充素材>
+- [ ] 更新 `graph/tl-xxx-graph.html`：<补哪条边>
+- [ ] 补素材：<需要搜集/口述的补充素材，先过 nc-素材 入库前 gate>
 
 ## 关联
 
