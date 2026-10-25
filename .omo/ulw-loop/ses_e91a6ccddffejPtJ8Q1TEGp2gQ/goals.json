@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "activeGoalId": "5b37df63-5a23-4b2e-91b6-46c15483621c",
+  "goals": [
+    {
+      "id": "5b37df63-5a23-4b2e-91b6-46c15483621c",
+      "title": "opsx-apply merge-usage-into-readme",
+      "status": "in_progress",
+      "successCriteria": []
+    }
+  ]
+}

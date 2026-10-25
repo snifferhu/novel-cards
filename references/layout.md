@@ -23,6 +23,7 @@
     tracks-registry.yaml      # 自定义动线 track 标签白名单
     tags-registry.yaml        # 语义标签白名单
     burst-tags-registry.yaml  # 爆点标注白名单
+    tendency-prototypes.yaml  # 动向卡人格基线原型白名单（骨架 only，经 nc-注册 写入）
   index/                   # .json 机器索引 / 图森林真值
     card-graph.json          # 图森林（节点+边+tree_id）
     metric-index.json        # 量化数值索引

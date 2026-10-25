@@ -98,3 +98,4 @@
 - [ ] 双语模板对应：`templates/agents-zh.md` 与 `templates/agents-en.md`、`quickstart-zh.md` 与 `quickstart-en.md`、`skill-reference-zh.md` 与 `skill-reference-en.md` 各自节结构一一对应，占位符集合一致。
 - [ ] 四层数据分层表述一致：`.md` / `.json` / `.yaml` / `.html` 的分工在 SKILL.md / README / `references/data-layering.md` 三处措辞一致。
 - [ ] 触发词前缀 `nc-` 在 SKILL.md description / README / USAGE 三处一致（v1.0 主体 24 前缀；2026-10-23 追加 `nc-动向` / `nc-研判` / `nc-编排` / `nc-更名` 后为 29 前缀）。
+- [ ] `baseline_prototype` 为 registry-backed 可选枚举：`npd-*` 等词表只在 references/templates 以「需经 nc-注册」标注的示例出现；`nc-初始化` 骨架（`registry/tendency-prototypes.yaml`）零预置具体条目；`nc-校阅` 检查④为建议级（提示而非禁止）；未声明该字段的存量 tend- 卡行为不变。

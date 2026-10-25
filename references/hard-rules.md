@@ -24,7 +24,7 @@ novel-cards skill 的所有行为准则集中于此。规则分为**不可变硬
 | 13 | **五感公理**：感知动线的根 MUST 落在人类原生五感之一（视觉/听觉/嗅觉/味觉/触觉）；玄幻衍生感知 SHALL 建模为对应五感的子标签变体，MUST NOT 新增脱离五感底层的独立感知大类 | 硬性（v1.0 新增） |
 | 14 | **道具黑盒三层**：`item` 卡 SHALL 支持物理层/感知层/抽象非感知层三层内部结构；默认黑盒模式由 skill 自动拆解，高级模式才允许手动调整感知 track 绑定 | 硬性（v1.0 新增） |
 | 15 | **pose 插槽三级优先级**：P1 桥段本地手动覆写 > P2 当前时间锚点快照状态自动填充 > P3 pose 默认兜底；填充后 MUST 跑 `extra_constraint` 校验，冲突进入 `nc-校阅` 意见，不自动改文字 | 硬性（v1.0 新增） |
-| 16 | **注册前置**：新增自定义卡片类型或动线 track 标签 MUST 先经 `nc-注册` 写入 registry 白名单再建卡 | 硬性（v1.0 新增） |
+| 16 | **注册前置**：新增自定义卡片类型、动线 track 标签或动向卡人格基线原型枚举取值 MUST 先经 `nc-注册` 写入 registry 白名单再建卡 | 硬性（v1.0 新增） |
 | 17 | **素材合规 fail-closed**：网页 URL 抓取 MUST 先校验目标站点 robots.txt，禁止路径直接拦截不请求页面；不尝试绕过反爬/登录/动态渲染；任何不确定情况按「禁止」处理终止；抓取成功必附版权提醒 | 硬性（v1.0 新增） |
 | 18 | **actor 与 item 区分**：拥有独立意志主动行动的道具 SHALL 建模为 `actor`（标签 `object-spirit`），原 `item` 卡保留物理本体描述，两卡通过 `cross_ref` 互相引用 | 硬性（v1.0 新增） |
 | 19 | **跨动线同步走 module**：跨动线同步变化 MUST 走 module 积木模块，禁止在正文或动线卡里零散写联动 | 硬性（v1.0 新增） |
@@ -332,6 +332,12 @@ pose 卡的插槽填充 MUST 遵循三级优先级：
 新增自定义卡片类型或动线 track 标签 MUST 先经 `nc-注册` 写入 registry 白名单
 （`registry/types-registry.yaml` / `registry/tracks-registry.yaml`）再建卡。
 未经注册的自定义 type / track 值视为 schema 违规。
+
+动向卡（`character_tendency`）的可选字段 `baseline_prototype`（人格基线原型声明，
+如自恋型人格的创作原型）同属本规则：取值 MUST 先经 `nc-注册` 写入
+`registry/tendency-prototypes.yaml`（条目含 `label` / `description` /
+`boundary_hints`）再写入卡提案；skill 不内置锁死枚举，安装骨架零预置。
+未注册取值由 `nc-动向` 拦截。
 
 ## 规则 17：素材合规 fail-closed（v1.0 新增）
 

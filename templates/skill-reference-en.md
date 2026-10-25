@@ -22,7 +22,7 @@
 | 2 | `nc-素材` | `nc-material` | Ingest raw material; passes inflation-filter gate before entry | false |
 | 3 | `nc-清洗` | `nc-clean` | Denoise material, produce a clean copy; raw material untouched | false |
 | 4 | `nc-检索` | `nc-query` | Query material and all card assets (incl. `type:character_tendency`, per-role filter) | false |
-| 5 | `nc-注册` | `nc-reg` | Register custom card types / track tags (writes registry whitelist) | false |
+| 5 | `nc-注册` | `nc-reg` | Register custom card types / track tags / tendency baseline prototypes (writes registry whitelist) | false |
 | 6 | `nc-更名` | `nc-rename` | Global identifier replacement (title/codename); preview first, then batch write; never touches res/ or colloquial names | false |
 
 ### B. Narrative Card Modeling
@@ -34,7 +34,7 @@
 | 9 | `nc-道具` | `nc-item` | Create/update item cards; black-box auto-splits physical/perceptual/abstract tracks | false |
 | 10 | `nc-场景` | `nc-scene` | Create/update scene cards with base environment parameters | false |
 | 11 | `nc-感官标记` | `nc-sensorycue` | Create/edit sensory-cue cards (sound/music/scent/light), referenced by plotpoints | false |
-| 12 | `nc-动向` | `nc-tendency` | Create/edit `character_tendency` (`tend-`) sliding scale; each shift binds a plotpoint driver | false |
+| 12 | `nc-动向` | `nc-tendency` | Create/edit `character_tendency` (`tend-`) sliding scale; each shift binds a plotpoint driver; optional `baseline_prototype` declaration (must be registered via nc-注册) | false |
 
 ### C. Plot Structure
 
@@ -62,7 +62,7 @@
 
 | # | Chinese | English alias | Responsibility | auto_invokable |
 |---|---|---|---|---|
-| 25 | `nc-校阅` | `nc-review` | Narrative audit: setting/pose/tracks/foreshadow/motive/OOC + tendency-logic conflicts (embeds nc-节奏) | false |
+| 25 | `nc-校阅` | `nc-review` | Narrative audit: setting/pose/tracks/foreshadow/motive/OOC + tendency-logic conflicts (incl. prototype boundary-drift check ④; embeds nc-节奏) | false |
 | 26 | `nc-节奏` | `nc-rhythm` | Chapter plot density / burst density / white-space check; strategic bursts auto-exempted | true |
 | 27 | `nc-守卫` | `nc-safetyguard` | Privacy + compliance content scan, distinguishes [harm-rendering red line] / [exposure-critique doubt] | false |
 
@@ -87,14 +87,14 @@
 | `nc-素材` | local file path / plain text / web URL | `res/inbox/` sealed record + `cards/corpus/co-*.md` (gate before entry) |
 | `nc-清洗` | target material id | independent clean copy (derived under `res/`), raw material untouched |
 | `nc-检索` | keywords + type/tag/source/status filters | candidate asset pool (chat output, not persisted) |
-| `nc-注册` | custom type name / track tag name | `registry/` whitelist appended entries |
+| `nc-注册` | custom type name / track tag name / tendency baseline prototype key (with boundary_hints) | `registry/` whitelist appended entries |
 | `nc-更名` | old identifier → new identifier | [replacement preview list] → after confirmation batch write + history snapshot + CHANGELOG + latest.md |
 | `nc-角色` | name, classification tag, motive, first appearance | `cards/characters/ac-*.md` (type: actor) |
 | `nc-姿态` | pose_tag, core, slots, multi-view copy | `cards/pose-bank/po-*.md` |
 | `nc-道具` | natural-language description | `cards/items/it-*.md` (black-box three-layer auto-split) |
 | `nc-场景` | location, atmosphere, time-of-day | `cards/scenes/sc-*.md` |
 | `nc-感官标记` | cue type, bound target | `cards/custom/sensory_cue/su-*.md` |
-| `nc-动向` | target_role(ac-), dimension, baseline, direction_rule, history[] | `cards/tendencies/tend-*.md` (type: character_tendency) |
+| `nc-动向` | target_role(ac-), dimension, baseline, direction_rule, history[], baseline_prototype (optional, must be registered via nc-注册) | `cards/tendencies/tend-*.md` (type: character_tendency) |
 | `nc-桥段` | chapter, involved objects, strategic-burst flag | `cards/plotpoints/pp-*.md` |
 | `nc-伏笔` | setup chapter, planned payoff chapter | `cards/foreshadow/fs-*.md` |
 | `nc-快照` | chapter anchor, focus target | `cards/snapshots/sn-*.md` |

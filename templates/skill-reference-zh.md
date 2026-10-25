@@ -18,7 +18,7 @@
 | 2 | `nc-素材` | `nc-material` | 原始素材收纳入库，入库前过通胀过滤器 gate | false |
 | 3 | `nc-清洗` | `nc-clean` | 素材降噪预处理，生成独立干净副本，原始素材不动 | false |
 | 4 | `nc-检索` | `nc-query` | 检索素材与全部卡片资产（含 `type:character_tendency`、按角色过滤） | false |
-| 5 | `nc-注册` | `nc-reg` | 注册自定义卡片类型 / 动线 track 标签（写入 registry 白名单） | false |
+| 5 | `nc-注册` | `nc-reg` | 注册自定义卡片类型 / 动线 track 标签 / 动向人格基线原型（写入 registry 白名单） | false |
 | 6 | `nc-更名` | `nc-rename` | 全局标识符替换（书名/代号），先预览后批量写入，不动 res/ 与口语称呼 | false |
 
 ### B. 叙事卡片建模组
@@ -30,7 +30,7 @@
 | 9 | `nc-道具` | `nc-item` | 新建/更新道具卡，黑盒自动拆分物理/感知/抽象三层动线 | false |
 | 10 | `nc-场景` | `nc-scene` | 新建/更新场景卡片，记录环境基础参数 | false |
 | 11 | `nc-感官标记` | `nc-sensorycue` | 创建/编辑感官标记卡（声音/乐曲/气味/光影氛围触发器），供桥段引用 | false |
-| 12 | `nc-动向` | `nc-tendency` | 创建/编辑 `character_tendency`（`tend-`）角色动向滑动标尺，每次变动绑定桥段推手 | false |
+| 12 | `nc-动向` | `nc-tendency` | 创建/编辑 `character_tendency`（`tend-`）角色动向滑动标尺，每次变动绑定桥段推手；可选声明人格基线原型 `baseline_prototype`（须经 nc-注册） | false |
 
 ### C. 剧情结构组
 
@@ -58,7 +58,7 @@
 
 | # | 中文 | 英文别名 | 简要职责 | auto_invokable |
 |---|---|---|---|---|
-| 25 | `nc-校阅` | `nc-review` | 叙事审计：设定/pose/动线/伏笔/动机/OOC + 动向逻辑冲突（内置 nc-节奏） | false |
+| 25 | `nc-校阅` | `nc-review` | 叙事审计：设定/pose/动线/伏笔/动机/OOC + 动向逻辑冲突（含原型边界漂移检查④；内置 nc-节奏） | false |
 | 26 | `nc-节奏` | `nc-rhythm` | 章节桥段疏密/爆点密度/留白校验，战略爆点自动豁免 | true |
 | 27 | `nc-守卫` | `nc-safetyguard` | 隐私 + 合规内容扫描，区分【渲染加害红线】/【揭露批判疑点】 | false |
 
@@ -82,14 +82,14 @@
 | `nc-素材` | 本地文件路径 / 纯文本 / 网页 URL | `res/inbox/` 封存 + `cards/corpus/co-*.md`（入库前过 gate） |
 | `nc-清洗` | 目标素材 id | 独立干净副本（`res/` 派生），原始素材不动 |
 | `nc-检索` | 关键词 + 类型/标签/来源/状态筛选 | 候选资产池（对话输出，不落盘） |
-| `nc-注册` | 自定义类型名 / track 标签名 | `registry/` 白名单追加条目 |
+| `nc-注册` | 自定义类型名 / track 标签名 / 动向人格基线原型 key（含 boundary_hints） | `registry/` 白名单追加条目 |
 | `nc-更名` | 旧标识符 → 新标识符 | 【替换预览清单】→ 确认后批量写入 + history 快照 + CHANGELOG + latest.md |
 | `nc-角色` | 名字、分类标签、动机、首出场 | `cards/characters/ac-*.md`（type: actor） |
 | `nc-姿态` | pose_tag、内核、插槽、多视角文案 | `cards/pose-bank/po-*.md` |
 | `nc-道具` | 自然语言描述 | `cards/items/it-*.md`（黑盒三层自动拆解） |
 | `nc-场景` | 地点、氛围、时段 | `cards/scenes/sc-*.md` |
 | `nc-感官标记` | cue 类型、绑定对象 | `cards/custom/sensory_cue/su-*.md` |
-| `nc-动向` | target_role(ac-)、dimension、baseline、direction_rule、history[] | `cards/tendencies/tend-*.md`（type: character_tendency） |
+| `nc-动向` | target_role(ac-)、dimension、baseline、direction_rule、history[]、baseline_prototype（可选，须经 nc-注册） | `cards/tendencies/tend-*.md`（type: character_tendency） |
 | `nc-桥段` | 章节、涉及对象、是否战略爆点 | `cards/plotpoints/pp-*.md` |
 | `nc-伏笔` | 埋点章节、计划回收章节 | `cards/foreshadow/fs-*.md` |
 | `nc-快照` | 章节锚点、聚焦对象 | `cards/snapshots/sn-*.md` |

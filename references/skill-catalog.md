@@ -24,7 +24,7 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
 | 2 | `nc-素材` | `nc-material` | 原始素材收纳入库，原样封存，分配 id + 来源/版权/分类标签；入库前过通胀过滤器 gate | false | 素材录入入口 |
 | 3 | `nc-清洗` | `nc-clean` | 素材降噪预处理，生成独立干净副本，原始素材保留不动 | false | 素材杂乱才用，可选 |
 | 4 | `nc-检索` | `nc-query` | 检索素材、全部卡片资产（含 `type:character_tendency` 与按角色过滤），返回候选资产池 | false | 系统底层自带私有查重 |
-| 5 | `nc-注册` | `nc-reg` | 注册自定义卡片类型、自定义动线 track 标签（写入 registry 白名单） | false | 需要扩展类型时使用 |
+| 5 | `nc-注册` | `nc-reg` | 注册自定义卡片类型、自定义动线 track 标签、动向卡人格基线原型枚举取值（写入 registry 白名单） | false | 需要扩展类型时使用 |
 | 6 | `nc-更名` | `nc-rename` | 全局标识符替换：改故事书名 / 全局代号重命名（跨卡片/伏笔/快照/桥段/图谱引用统一替换）；先出【替换预览清单】确认后批量写入，不动 res/ 原始素材与正文口语称呼 | false | 工程维护类，非创作主线强制节点 |
 
 ### B. 叙事卡片建模组
@@ -36,7 +36,7 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
 | 9 | `nc-道具` | `nc-item` | 新建/更新道具卡，黑盒自动拆分物理/感知/抽象三层动线 | false | 黑盒优先，高级模式解锁底层 |
 | 10 | `nc-场景` | `nc-scene` | 新建/更新场景卡片，记录环境基础参数 | false | — |
 | 11 | `nc-感官标记` | `nc-sensorycue` | 创建/编辑感官标记卡（声音、乐曲、气味、光影等氛围触发器），可绑定角色/场景，供桥段引用 | false | 本身不是剧情事件 |
-| 12 | `nc-动向` | `nc-tendency` | 创建/编辑 `character_tendency`（`tend-`）角色动向滑动标尺卡：刻画性格/心智倾向的带触发事件连续滑动标尺，每次变动绑定具体桥段事件作为推手 | false | 依附角色（target_role 引用 ac-），引用桥段（trigger_plot 引用 pp-） |
+| 12 | `nc-动向` | `nc-tendency` | 创建/编辑 `character_tendency`（`tend-`）角色动向滑动标尺卡：刻画性格/心智倾向的带触发事件连续滑动标尺，每次变动绑定具体桥段事件作为推手；可选声明人格基线原型 `baseline_prototype`（须经 nc-注册） | false | 依附角色（target_role 引用 ac-），引用桥段（trigger_plot 引用 pp-） |
 
 ### C. 剧情结构组
 
@@ -69,7 +69,7 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
 
 | # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | 备注 |
 |---|---|---|---|---|---|
-| 25 | `nc-校阅` | `nc-review` | 叙事审计：设定、pose 约束、动线、伏笔、动机、OOC 一致性 + character_tendency 动向逻辑冲突检查；内置调用 nc-节奏 输出作为节奏模块 | false | 只出意见不改稿 |
+| 25 | `nc-校阅` | `nc-review` | 叙事审计：设定、pose 约束、动线、伏笔、动机、OOC 一致性 + character_tendency 动向逻辑冲突检查（含原型边界漂移建议级检查④）；内置调用 nc-节奏 输出作为节奏模块 | false | 只出意见不改稿 |
 | 26 | `nc-节奏` | `nc-rhythm` | 章节桥段疏密、爆点密度、留白校验，战略爆点自动豁免 | true | 可被 nc-校阅 内部自动唤起 |
 | 27 | `nc-守卫` | `nc-safetyguard` | 隐私 + 合规内容扫描，区分【渲染加害红线】/【揭露批判疑点】 | false | 低频，分发前使用，默认隐藏 |
 
@@ -148,14 +148,14 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
 | `nc-素材` | 本地文件路径 / 纯文本 / 网页 URL | `res/inbox/` 封存记录 + `cards/corpus/co-*.md` 语料卡；入库前过通胀过滤器 gate |
 | `nc-清洗` | 目标素材 id | 独立干净副本（`res/` 下派生文件），原始素材不动 |
 | `nc-检索` | 关键词 + 类型/标签/来源/状态筛选（支持 `type:character_tendency`、`role:ac-*`） | 候选资产池（对话输出，不落盘） |
-| `nc-注册` | 自定义类型名 / track 标签名 | `registry/` 白名单追加条目 |
+| `nc-注册` | 自定义类型名 / track 标签名 / 动向人格基线原型 key（含 label、boundary_hints） | `registry/` 白名单追加条目 |
 | `nc-更名` | 旧标识符 → 新标识符（书名或全局代号） | 【替换预览清单】→ 确认后批量写入 cards/ 各层 + history 快照 + CHANGELOG 追加 + latest.md 更新（不动 res/ 与正文口语称呼） |
 | `nc-角色` | 名字、分类标签、动机、首出场 | `cards/characters/ac-*.md`（type: actor） |
 | `nc-姿态` | pose_tag、内核、插槽、多视角文案 | `cards/pose-bank/po-*.md` |
 | `nc-道具` | 自然语言描述 | `cards/items/it-*.md`（黑盒三层自动拆解） |
 | `nc-场景` | 地点、氛围、时段 | `cards/scenes/sc-*.md` |
 | `nc-感官标记` | cue 类型（sound/scent/light/atmosphere）、绑定对象 | `cards/custom/sensory_cue/su-*.md` |
-| `nc-动向` | target_role(ac-)、dimension、baseline、direction_rule、history[]（每条 {value, trigger_plot: pp-*, description}） | `cards/tendencies/tend-*.md`（type: character_tendency） |
+| `nc-动向` | target_role(ac-)、dimension、baseline、direction_rule、history[]（每条 {value, trigger_plot: pp-*, description}）、baseline_prototype（可选，须经 nc-注册；未注册拦截） | `cards/tendencies/tend-*.md`（type: character_tendency） |
 | `nc-桥段` | 章节、涉及对象、是否战略爆点 | `cards/plotpoints/pp-*.md` |
 | `nc-伏笔` | 埋点章节、计划回收章节 | `cards/foreshadow/fs-*.md` |
 | `nc-快照` | 章节锚点、聚焦对象 | `cards/snapshots/sn-*.md` |

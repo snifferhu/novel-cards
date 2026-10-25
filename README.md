@@ -158,7 +158,7 @@ novel-cards/
 | `nc-素材` | `nc-material` | 原素材收纳入库（本地/纯文本/URL），入库前自动过通胀过滤器 gate |
 | `nc-清洗` | `nc-clean` | 素材降噪预处理，生成独立干净副本，原始素材保留不动 |
 | `nc-检索` | `nc-query` | 检索素材与全部卡片资产（含 `type:character_tendency`、按角色过滤），返回候选资产池 |
-| `nc-注册` | `nc-reg` | 注册自定义卡片类型 / 动线 track 标签（写入 registry 白名单） |
+| `nc-注册` | `nc-reg` | 注册自定义卡片类型 / 动线 track 标签 / 动向人格基线原型（写入 registry 白名单） |
 | `nc-更名` | `nc-rename` | 全局标识符替换（书名/代号），先预览后批量写入，不动 res/ 与口语称呼 |
 
 ### B. 叙事卡片建模组
@@ -170,7 +170,7 @@ novel-cards/
 | `nc-道具` | `nc-item` | 新建/更新道具卡，黑盒自动拆分物理/感知/抽象三层动线 |
 | `nc-场景` | `nc-scene` | 新建/更新场景卡片，记录环境基础参数 |
 | `nc-感官标记` | `nc-sensorycue` | 创建/编辑感官标记卡（声音/乐曲/气味/光影氛围触发器），供桥段引用 |
-| `nc-动向` | `nc-tendency` | 创建/编辑 `character_tendency`（`tend-`）角色动向滑动标尺，每次变动绑定桥段推手 |
+| `nc-动向` | `nc-tendency` | 创建/编辑 `character_tendency`（`tend-`）角色动向滑动标尺，每次变动绑定桥段推手；可选声明人格基线原型 `baseline_prototype`（须经 nc-注册） |
 
 ### C. 剧情结构组
 
@@ -198,7 +198,7 @@ novel-cards/
 
 | 中文 | 英文 | 职责 |
 |---|---|---|
-| `nc-校阅` | `nc-review` | 叙事审计：设定/pose 约束/动线/伏笔/动机/OOC + 动向逻辑冲突（内置 nc-节奏） |
+| `nc-校阅` | `nc-review` | 叙事审计：设定/pose 约束/动线/伏笔/动机/OOC + 动向逻辑冲突（含原型边界漂移检查④；内置 nc-节奏） |
 | `nc-节奏` | `nc-rhythm` | 章节桥段疏密、爆点密度、留白校验，战略爆点自动豁免〔auto_invokable〕 |
 | `nc-守卫` | `nc-safetyguard` | 隐私 + 合规内容扫描，区分【渲染加害红线】/【揭露批判疑点】 |
 
@@ -238,7 +238,7 @@ novel-cards/
 | 13 | 量化 | `metric` | `mt-` | `cards/metrics/` | 张力 / 爆点 / 信息载荷数值 |
 | 14 | 姿态 | `pose` | `po-` | `cards/pose-bank/` | 内核 / 环境插槽 / 多视角模板（P1>P2>P3 优先级） |
 | 15 | 感官标记 | `sensory_cue` | `su-` | `cards/custom/sensory_cue/` | 触发器类型（声音/乐曲/气味/光影） |
-| 16 | 角色动向 | `character_tendency` | `tend-` | `cards/tendencies/` | `target_role` / `dimension` / `baseline` / `direction_rule` / `current_value` / `history[]`（每条绑定桥段推手） |
+| 16 | 角色动向 | `character_tendency` | `tend-` | `cards/tendencies/` | `target_role` / `dimension` / `baseline` / `direction_rule` / `current_value` / `history[]`（每条绑定桥段推手）/ `baseline_prototype`（可选，人格基线原型，须经 nc-注册） |
 | 17 | 对标作品 | `refwork` | `rw-` | `cards/custom/refwork/` | 独立 `tree_id` 隔离 / 拆解维度 |
 | 18 | 反思 | `reflection` | `rf-` | `reflections/`（不入 `cards/`） | 五段结构（`stuck`/`shone`/`why`/`insights`/`action_items`） |
 
@@ -335,7 +335,7 @@ Novel-Cards 仅提供轻量化单点内容摘录辅助。工具会主动遵从�
 13. **五感公理**：感知动线根 MUST 落在原生五感之一，玄幻衍生感知建模为子标签变体。
 14. **道具黑盒三层**：item 卡支持物理/感知/抽象非感知层，默认黑盒模式自动拆解。
 15. **pose 插槽三级优先级**：P1 桥段覆写 > P2 快照自动填充 > P3 默认兜底；冲突进意见书。
-16. **注册前置**：自定义类型 / track 标签 MUST 先经 `nc-注册` 写入 registry 再建卡。
+16. **注册前置**：自定义类型 / track 标签 / 动向人格基线原型取值 MUST 先经 `nc-注册` 写入 registry 再建卡。
 17. **素材合规 fail-closed**：网页抓取先校验 robots.txt，禁止路径直接拦截，不绕过反爬。
 18. **actor 与 item 区分**：拥有独立意志主动行动的道具 SHALL 建模为 actor（object-spirit）。
 19. **跨动线同步走 module**：MUST 走积木 `trigger_map`，禁止零散写联动。

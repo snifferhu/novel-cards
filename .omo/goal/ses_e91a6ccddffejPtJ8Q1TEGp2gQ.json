@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "goal": {
+    "id": "5b37df63-5a23-4b2e-91b6-46c15483621c",
+    "sessionID": "ses_e91a6ccddffejPtJ8Q1TEGp2gQ",
+    "objective": "opsx-apply merge-usage-into-readme",
+    "status": "active",
+    "tokensUsed": 0,
+    "timeUsedSeconds": 0,
+    "createdAt": 1792938461,
+    "updatedAt": 1792938461,
+    "lastStartedAt": 1792938461
+  }
+}

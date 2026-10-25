@@ -10,7 +10,7 @@ yaml 配置约定，以及 html 视图由 json 重生成的投影规则。
 |---|---|---|---|---|
 | `.md` | 文档（内嵌 yaml frontmatter） | `cards/**`、`reflections`、`manuscript` | 【人类主编辑载体】卡片、积木、指标、反思、正文、摘抄 | ✅ 直接改，业务源头 |
 | `.json` | 扁平数组 / 图（Graph/森林 Forest，节点+边） | `index/`、`graph/export` | 【机器索引、关系模型、数值索引】检索索引、卡片关系森林、metric 数值、词频向量 | ✅ 系统同步生成，优先经 nc- 指令改动 |
-| `.yaml` | 配置树 | `registry/` | 注册表：类型、track、标签白名单，偏静态配置 | ✅ 人工少量维护 |
+| `.yaml` | 配置树 | `registry/` | 注册表：类型、track、标签、动向人格基线原型白名单，偏静态配置 | ✅ 人工少量维护 |
 | `.html` | 渲染视图（消费 json 图数据） | `graph/` | 可视化看板、关系图谱、时序图，纯展示层 | ❌ 不存业务逻辑；json 一变，html 重生成 |
 
 ### 同步规则
@@ -107,11 +107,13 @@ yaml 配置约定，以及 html 视图由 json 重生成的投影规则。
 | `tracks-registry.yaml` | 自定义动线 track 标签白名单（`nc-注册` 写入） |
 | `tags-registry.yaml` | 语义标签白名单 |
 | `burst-tags-registry.yaml` | 爆点标注白名单（strategic-burst / blank-transition 等） |
+| `tendency-prototypes.yaml` | 动向卡人格基线原型白名单（`nc-注册` 写入，条目含 `boundary_hints`；骨架 only，零预置条目） |
 
-**注册前置规则**：新增自定义卡片类型或动线标签 MUST 先经 `nc-注册` 写入
-registry 再建卡。例：作者需要一条「温度场」自定义感知动线 → 先执行 `nc-注册`
+**注册前置规则**：新增自定义卡片类型、动线标签或动向人格基线原型取值 MUST 先经
+`nc-注册` 写入 registry 再建卡。例：作者需要一条「温度场」自定义感知动线 → 先执行 `nc-注册`
 将 `temperature-field` 加入 track 白名单 registry，之后 timeline 卡才能使用该
-track 值。
+track 值；刻画自恋型人格角色时 → 先经 `nc-注册` 登记原型（如 `npd-grandiose`
+及其 `boundary_hints`），tend- 卡才能声明 `baseline_prototype: npd-grandiose`。
 
 `work-setting.yaml` 结构示例：
 

@@ -767,6 +767,10 @@ grep -rLE '^(id|type|status|created|updated):' cards/ reflections/ --include='*.
 `direction_rule` 长期趋势方向；此后每落地一个新桥段，就在 `history[]` 追加一条
 `{value, trigger_plot: pp-*, description}`，把这次性格偏移绑定到那个具体桥段事件上。
 基线初始状态仍写在 `actor` 角色卡上，动向卡只记"沿某维度的渐进滑动"，二者互补不替代。
+刻画带人格病理类稳定基线的角色（如自恋型人格的浮夸型 / 脆弱型创作原型）时，可给
+tend- 卡加可选字段 `baseline_prototype` 声明滑动边界锚点（取值先经 `nc-注册` 写入
+`registry/tendency-prototypes.yaml`），`nc-校阅` 检查 ④ 会在受限方向漂移超容差时
+出建议级提醒。
 详见 `references/card-schema.md` 的 character_tendency 小节。
 
 ### Q17：想批量改剧情 / 基于一批素材扩写整条故事线怎么办？
