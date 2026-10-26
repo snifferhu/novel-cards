@@ -5,7 +5,9 @@
 剧情结构 / 生成与可视化 / 审计校验 / 归档导出&复盘六组），覆盖 **16+ 类结构化卡片**，
 支持 **HTML 图谱**表达复杂关系、**四层数据分层**（`.md` 业务源头 / `.json` 图森林真值 /
 `.yaml` 配置白名单 / `.html` 展示投影）、**反思卡**沉淀单章复盘、**通胀过滤器**做
-新素材入口 gate。以**提案制**方式与作者协作。统一触发前缀 `nc-`（均支持英文别名）。
+新素材入口 gate、**多本作品并行创作**（一个工程目录同时管理多部小说，`works/` 子空间
+隔离 + `--work` 作用域 + 多笔名署名）。以**提案制**方式与作者协作。统一触发前缀
+`nc-`（均支持英文别名）。
 
 > **面向对象透镜**：每张卡都是一个 `NcObject` 子类实例，每个 `nc-*` 技能都是对
 > `StoryWorld` 容器或某个对象的一次方法调用；正文是参与对象按 timeline 顺序 `render()`
@@ -318,24 +320,74 @@ novel-cards/
 业务源头；`.json` 是图森林真值（节点 id/type/tree_id + 边 source/target/relation）；
 `.yaml` 是配置白名单。详见 `references/data-layering.md`。
 
-## 多本作品与署名
+## 多本作品并行创作与署名
 
-一个使用方工程 MAY 同时管理多本作品：每本书是 `works/<work-id>/` 下的独立子空间
-（各自独立的 `cards/` / `manuscript/` / `index/` / `graph/` / `registry/` 命名空间 +
-独立 `tree_id` 族），彼此数据隔离；工程级共享物（`registry/` 词表、`tools/`、`build.sh`）
-留在工程根。`config/project.yaml` 的可选 `works[]` 清单索引全部作品，`active_work`
-指针标记当前默认书。
+一个使用方工程 MAY 同时管理**多本独立作品**，在一个目录下并行推进多部小说的创作，
+无需为每本书单独建仓库。
 
-- **新建一本书**：`nc-初始化 --new-work`（在既有工程内追加，不另起工程）。
-- **作用域**：全部 `nc-*` 创作 / 审计 / 导出技能接受可选 `--work <work-id>`；缺省按
-  「显式 `--work` → `active_work` → `works[]` 恰好一条 → 否则提示」规则解析，绝不静默猜错书。
-- **跨书检索 / 总览**：`nc-检索 --all-works` 跨全部作品检索（结果带 work-id 归属），
-  或查询「本工程有哪些书」。
-- **多笔名署名**：笔名经 `registry/pen-names.yaml` 白名单管理（`nc-注册` 登记）；每本
-  作品声明 `default_pen_name`，单章可用 frontmatter 的 `pen_name` 覆写；`nc-导出` /
-  `nc-成稿` 按生效笔名落款。**向后兼容**：存量单本工程无 `works[]` 时视为隐式单本，
-  行为与引入前完全一致。详见 `references/layout.md` §多本作品工作区 与
-  `references/card-schema.md` §署名与多笔名。
+### 目录结构
+
+```
+~/my-novels/                  ← 使用方工程根（一个 git 仓库）
+  config/project.yaml         # works[] 清单 + active_work 指针
+  registry/                   # 工程级共享白名单（类型/track/原型/笔名）
+  tools/                      # 可选只读运行时
+  build.sh                    # 构建脚本
+  works/
+    book-a/                   # 第一本书的完整子空间
+      cards/ manuscript/ index/ graph/ registry/
+    book-b/                   # 第二本书的完整子空间
+      cards/ manuscript/ index/ graph/ registry/
+    book-c/                   # 第三本书 ……
+      cards/ manuscript/ index/ graph/ registry/
+```
+
+每本书拥有**独立**的 `cards/` / `manuscript/` / `index/` / `graph/` / `registry/`
+命名空间与独立 `tree_id` 族，彼此数据隔离、互不串卡。工程级共享物（`registry/` 词表、
+`tools/`、`build.sh`）留在工程根，所有书共用。
+
+### 日常操作手册
+
+| 操作 | 命令 / 说法 | 说明 |
+|---|---|---|
+| **再开一本** | `nc-初始化 --new-work` | 在既有工程内追加新作品子空间，不另起工程 |
+| **限定作用域** | 任意 `nc-*` 技能加 `--work <work-id>` | 如 `nc-角色 --work book-b "新建角色 …"`，只在 book-b 子空间读写 |
+| **缺省作用域** | 不带 `--work` | 按「显式 `--work` → `active_work` → `works[]` 恰好一条 → 否则提示」解析，绝不静默猜错书 |
+| **切换默认书** | 修改 `config/project.yaml` 的 `active_work: <work-id>` | 后续不带 `--work` 的技能都作用于该书 |
+| **跨书检索** | `nc-检索 --all-works "关键词"` | 跨全部作品检索，结果带 work-id 归属标签 |
+| **作品总览** | 「看看这个项目有哪些书」 | 列出 `works[]` 全部条目（work-id / title / mode / 默认笔名 / 卡片数量概览） |
+| **多笔名署名** | `nc-注册` 登记笔名 → 每本设 `default_pen_name` | 单章可用 frontmatter `pen_name` 覆写；`nc-导出` / `nc-成稿` 按生效笔名落款 |
+
+### 典型工作流示例
+
+```
+# 1. 已有 book-a，现在要开第二本
+nc-初始化 --new-work
+→ 系统生成 works/book-b/ 完整骨架，追加进 config/project.yaml 的 works[]
+
+# 2. 在 book-b 里建角色（显式指定作用域）
+nc-角色 --work book-b "新建主角 姜璃，她是……"
+
+# 3. 切回 book-a 继续写（切换 active_work 后省略 --work）
+#    编辑 config/project.yaml: active_work: book-a
+nc-桥段 chapter-012          # 自动作用于 book-a
+
+# 4. 跨两本书搜素材
+nc-检索 --all-works "月光审判"
+→ 返回 [book-a] pp-moonlit-trial / [book-b] sc-moonlit-arena
+
+# 5. 查看工程全貌
+"看看这个项目有哪些书"
+→ book-a《XXX》(long, 笔名:夜行客, 42张卡) / book-b《YYY》(mid, 笔名:明月, 17张卡)
+```
+
+### 向后兼容
+
+存量单本工程（`config/project.yaml` 不含 `works[]`）视为**隐式单本工作区**
+（唯一 work-id = 工程根），全部 `nc-*` 技能行为与引入本能力前完全一致；
+MUST NOT 因缺 `works[]` 报错或强制迁移。
+
+详见 `references/layout.md` §多本作品工作区 与 `references/card-schema.md` §署名与多笔名。
 
 ## HTML 关系图谱
 
