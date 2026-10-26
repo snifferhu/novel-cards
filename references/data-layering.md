@@ -6,6 +6,12 @@ yaml 配置约定，以及 html 视图由 json 重生成的投影规则。
 
 ## 1. 四层数据分层铁律
 
+> **面向对象透镜**：四层是同一批 `NcObject` 实例的四种存储投影——`.md` = 对象的可读
+> 序列化（frontmatter 即公共属性 + 子类属性），`.json` = 对象间引用关系与数值的机器真值
+> （`StoryWorld.objects` 的关系森林），`.yaml` = `StoryWorld.config` 的白名单，`.html` =
+> `StoryWorld.export()` 的 graph 投影。OO 视角不改变任何层的职责边界与读写规则。完整类
+> 层次见 `references/oo-model.md`。
+
 | 文件类型 | 底层数据结构 | 主要位置 | 核心定位 | 能否改逻辑 |
 |---|---|---|---|---|
 | `.md` | 文档（内嵌 yaml frontmatter） | `cards/**`、`reflections`、`manuscript` | 【人类主编辑载体】卡片、积木、指标、反思、正文、摘抄 | ✅ 直接改，业务源头 |

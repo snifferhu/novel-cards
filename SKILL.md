@@ -35,6 +35,15 @@ frontmatter 结构化维护 15+ 类创作卡，通过提案制协作保持卡与
 本 skill 是双端兼容的（OpenCode + Claude Code），frontmatter 只保留
 `name` / `description` / `license` 三个键，其余规则全部写在 body。
 
+> **面向对象透镜**：每张卡都是一个 `NcObject` 子类实例（通用五字段 = 基类公共属性，
+> 各类型专属字段 = 子类属性），每个 `nc-*` 技能都是对 `StoryWorld` 容器或某个对象的一次
+> 方法调用；正文是参与对象按 timeline 顺序 `render()` 拼接的文本投影——文字只是视图，
+> 真相在对象实例里。完整类层次、方法契约与「技能 → 方法」映射见 `references/oo-model.md`；
+> 事件驱动的连锁推演（enter→perceive→act→fire → ChangePlan）见
+> `references/event-inference.md`。**OO 视角不改变任何字段契约、技能集合、六组分类与提案制
+> 铁律**，仅换叙述框架。可选只读运行时 `tools/nc_validate.py`（Python3 标准库单文件）承载
+> validate/audit/simulate 三子命令，缺失时降级纸面校验，绝不写盘、绝不替代提案制。
+
 ---
 
 ## 1. 用途
@@ -97,6 +106,7 @@ skill 读写均以**使用方工程根**为基准，走相对路径。骨架由 
   reflections/         # type: reflection（rf-，独立于 cards/）
   manuscript/          # 正文章节
   graph/               # .html 可视化看板（消费 card-graph.json 渲染）
+  tools/               # 可选只读运行时（nc_validate.py：validate/audit/simulate，缺失降级纸面校验）
   export/ release/     # nc-导出 中间产物 / 成品
   history/             # nc-定稿 工程快照归档
   drafts/practice/     # 练习稿（过滤器未通过 / 用户标记）
@@ -297,6 +307,8 @@ Novel-Cards 仅提供轻量化单点内容摘录辅助。工具会主动遵从�
 
 ## 9. 参考文件
 
+- `references/oo-model.md` — 面向对象透镜：NcObject 基类（五字段 + render/validate/snapshot/patch 四方法）、8 子类属性/方法契约、StoryWorld 容器（5 属性 / 8 方法）、29 技能 → 方法全量映射、草稿命名 → 既有 schema 对齐表。
+- `references/event-inference.md` — 事件驱动连锁推演：dispatch_event → enter→perceive→act→fire 链 → ChangePlan → 作者审核 → patch → render；冲突三选一；「文字即视图」render 阶段；short/mid/long 模式门控。
 - `references/skill-catalog.md` — 29 技能六组分类、双语别名映射、auto_invokable 标记、入参/产物、旧 12→新 29 对照。
 - `references/card-schema.md` — 全类型 frontmatter 字段定义与最小示例（含 character_tendency/tend-）。
 - `references/data-layering.md` — 四层铁律、card-graph.json 图森林 schema、registry/index 清单。

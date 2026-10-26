@@ -55,6 +55,7 @@ if [[ -n "$PROJECT" ]]; then
     "$PROJECT/registry" \
     "$PROJECT/index" \
     "$PROJECT/templates" \
+    "$PROJECT/tools" \
     "$PROJECT/res/inbox" \
     "$PROJECT/cards/characters" \
     "$PROJECT/cards/plotpoints" \
@@ -87,6 +88,7 @@ if [[ -n "$PROJECT" ]]; then
     "$PROJECT/registry" \
     "$PROJECT/index" \
     "$PROJECT/templates" \
+    "$PROJECT/tools" \
     "$PROJECT/res/inbox" \
     "$PROJECT/cards/characters" \
     "$PROJECT/cards/plotpoints" \
@@ -114,6 +116,15 @@ if [[ -n "$PROJECT" ]]; then
     "$PROJECT/drafts/practice"; do
     [ -e "$d/.gitkeep" ] || touch "$d/.gitkeep"
   done
+
+  # tools/nc_validate.py：轻量只读校验器分发到使用方工程根（幂等，重复执行零变更）。
+  # 本 skill 的 tools/ 为可选运行时——缺失时 skill 降级为纸面校验约定。
+  if [ -f "$SRC/tools/nc_validate.py" ]; then
+    if [ ! -f "$PROJECT/tools/nc_validate.py" ]; then
+      cp "$SRC/tools/nc_validate.py" "$PROJECT/tools/nc_validate.py"
+      chmod +x "$PROJECT/tools/nc_validate.py"
+    fi
+  fi
 
   # config/project.yaml：默认占位（仅当不存在时写入；nc-初始化 会交互式覆写）
   if [ ! -f "$PROJECT/config/project.yaml" ]; then

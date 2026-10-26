@@ -8,6 +8,8 @@
 - **不含**：小说正文、任何具体人物/桥段/道具/伏笔卡、使用方工程目录结构。
 - **使用方工程**：外部小说仓库，须已有 `cards/`（按类型分目录）与 `manuscript/` 目录；本 skill 读写时以使用方工程根为基准，走相对路径。
 - **16+ 类卡**（v1.0，含新增建模类型）：角色(actor) / 桥段(plotpoint) / 道具(item) / 场景(scene) / 伏笔(foreshadow) / 动线(timeline) / 势力(faction) / 快照(snapshot) / 暗线(darklayer) / 积木(module) / 词频(lexstat) / 语料(corpus) / 量化(metric) / 姿态(pose) / 感官标记(sensory_cue) / 角色动向(character_tendency) / 对标作品(refwork)，外加不入 `cards/` 的**反思卡（reflection）**。完整字段契约见 `references/card-schema.md`。
+- **面向对象透镜**：每张卡都是一个 `NcObject` 子类实例（五字段 = 基类公共属性），每个 `nc-*` 技能都是对 `StoryWorld` 容器或某个对象的一次方法调用；正文是参与对象按 timeline 顺序 `render()` 拼接的文本投影。完整类层次 / 方法契约 / 技能→方法映射见 `references/oo-model.md`，事件驱动连锁推演见 `references/event-inference.md`。**OO 视角不改变任何字段契约与提案制铁律**。
+- **可选只读运行时**：`tools/nc_validate.py`（Python3 标准库单文件，validate/audit/simulate 三子命令）承载机器校验，**只读、绝不写盘、绝不替代提案制**；缺失时 skill 降级纸面校验。本仓库内该文件是交付物本体，使用方工程经 `install.sh --project` 拷入。
 - **四层数据分层**：`.md` 业务源头 / `.json` 图森林真值（`index/card-graph.json`）/ `.yaml` 配置白名单（`registry/`、`config/`）/ `.html` 展示投影（`graph/`）。详见 `references/data-layering.md`。
 - **HTML 关系图谱**：复杂关系网络用 HTML + SVG 表达，存放于使用方工程的 `graph/` 目录，是 `index/card-graph.json` 图森林的纯展示投影。
 - **反思卡目录**：写作闭环的锚点，存放于使用方工程的 `reflections/` 目录，独立于 `cards/`。
@@ -45,7 +47,7 @@
 | 全局 · Claude Code | `~/.claude/skills/novel-cards/` | Claude Code 全项目通用 |
 | 软链（开发期推荐） | 由 `--link` 处理 | 本仓库直接改、双端同步生效 |
 
-`--project` 生成的使用方工程骨架包含：`cards/`（16+ 类子目录，含 characters / plotpoints / items / scenes / foreshadow / timeline / factions / snapshots / darklayer / modules / lexstats / corpus / metrics / pose-bank / tendencies / custom）+ `registry/` + `index/` + `res/inbox/` + `templates/` + `config/project.yaml` + `config/skills.yaml` + `reflections/` + `manuscript/` + `graph/` + `export/` + `release/` + `history/` + `drafts/practice/`，每个目录都有 `.gitkeep`，并写入 `agents.md` 兜底 / `quickstart.md` 兜底 / `skill-reference.md` 兜底 / `build.sh` / `build.cmd` / `README.md` / `CHANGELOG.md` / `latest.md` 占位文件。
+`--project` 生成的使用方工程骨架包含：`cards/`（16+ 类子目录，含 characters / plotpoints / items / scenes / foreshadow / timeline / factions / snapshots / darklayer / modules / lexstats / corpus / metrics / pose-bank / tendencies / custom）+ `registry/` + `index/` + `res/inbox/` + `templates/` + `tools/` + `config/project.yaml` + `config/skills.yaml` + `reflections/` + `manuscript/` + `graph/` + `export/` + `release/` + `history/` + `drafts/practice/`，每个目录都有 `.gitkeep`，并写入 `agents.md` 兜底 / `quickstart.md` 兜底 / `skill-reference.md` 兜底 / `build.sh` / `build.cmd` / `README.md` / `CHANGELOG.md` / `latest.md` 占位文件；`tools/nc_validate.py` 由本仓库幂等拷入（重复执行零变更）。
 
 **注意**：本仓库**不提供**项目级 `.opencode/skills/` 与 `.claude/skills/` 的
 安装路径 —— 项目级 skill 属于使用方工程内联，用户可手工把本仓库复制到
@@ -76,6 +78,8 @@
 - **不新增** opencode.json / package.json / 依赖锁 / 构建配置 —— 本 skill 无构建、无依赖、无测试命令。
 - **不写**真实小说内容示例；`examples/` 只放结构骨架与假名占位（如 `角色-甲`、`章节-001`）。
 - **不修改** `LICENSE`（AGPL-3.0，全文保留）。
+- **tools/nc_validate.py 只读铁律**：该运行时 MUST 零第三方依赖（仅 Python3 标准库）、MUST 只读不写盘、MUST NOT 替代提案制或自动回写卡片；在本仓库内它是交付物本体，但绝不在本仓库内用它对真实工程做写操作。
+- **OO 文档与 schema 对齐**：`references/oo-model.md` / `references/event-inference.md` 中的类层次、方法契约、技能→方法映射 MUST 与 `references/card-schema.md` 的 type/前缀表、`references/skill-catalog.md` 的 29 技能集合保持一致；草稿命名（uuid/create_at/disposition_slide/pose_bank/MoodLine）只作概念别名说明，MUST NOT 作为 frontmatter 字段落地。
 
 ## 7. 编辑 SKILL.md / references / templates 时的自检
 
@@ -99,3 +103,6 @@
 - [ ] 四层数据分层表述一致：`.md` / `.json` / `.yaml` / `.html` 的分工在 SKILL.md / README / `references/data-layering.md` 三处措辞一致。
 - [ ] 触发词前缀 `nc-` 在 SKILL.md description / README / USAGE 三处一致（v1.0 主体 24 前缀；2026-10-23 追加 `nc-动向` / `nc-研判` / `nc-编排` / `nc-更名` 后为 29 前缀）。
 - [ ] `baseline_prototype` 为 registry-backed 可选枚举：`npd-*` 等词表只在 references/templates 以「需经 nc-注册」标注的示例出现；`nc-初始化` 骨架（`registry/tendency-prototypes.yaml`）零预置具体条目；`nc-校阅` 检查④为建议级（提示而非禁止）；未声明该字段的存量 tend- 卡行为不变。
+- [ ] OO 透镜一致性：`references/oo-model.md` 的 NcObject 基类五字段 / 8 子类 / StoryWorld 容器 / 29 技能→方法映射，与 `references/card-schema.md` type/前缀表、`references/skill-catalog.md` 六组 29 技能集合完全对齐；草稿命名（uuid/create_at/disposition_slide/pose_bank/MoodLine）仅作概念别名，未作为 frontmatter 字段落地。
+- [ ] 事件推演文档对齐：`references/event-inference.md` 的 ChangePlan 五类任务（create_plot/edit_plot/archive_plot/update_tendency/bind_sensory_cue）与 `references/skill-catalog.md` 中 `nc-编排` 产物描述一致；enter→perceive→act→fire 链引用的对象类型均在 card-schema 中存在。
+- [ ] tools/ 只读铁律：`tools/nc_validate.py` 零第三方依赖（仅 Python3 标准库）、只读不写盘、不替代提案制；SKILL.md / README / AGENTS.md 三处对「可选运行时 + 缺失降级纸面校验」的表述一致。

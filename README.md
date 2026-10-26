@@ -7,6 +7,13 @@
 `.yaml` 配置白名单 / `.html` 展示投影）、**反思卡**沉淀单章复盘、**通胀过滤器**做
 新素材入口 gate。以**提案制**方式与作者协作。统一触发前缀 `nc-`（均支持英文别名）。
 
+> **面向对象透镜**：每张卡都是一个 `NcObject` 子类实例，每个 `nc-*` 技能都是对
+> `StoryWorld` 容器或某个对象的一次方法调用；正文是参与对象按 timeline 顺序 `render()`
+> 拼接的文本投影——文字只是视图，真相在对象实例里。完整类层次见 `references/oo-model.md`，
+> 事件驱动连锁推演见 `references/event-inference.md`。可选只读运行时
+> `tools/nc_validate.py`（Python3 标准库单文件）承载 validate/audit/simulate，缺失时降级
+> 纸面校验。**OO 视角不改变任何字段契约、技能集合、六组分类与提案制铁律**。
+
 ## 这个仓库是什么
 
 本仓库**不是**任何小说工程本身，而是一个 skill 定义仓库。交付物是：
@@ -80,6 +87,7 @@
   reflections/            # 反思卡 rf-（独立于 cards/）+ 审计意见书
   manuscript/             # 正文章节
   graph/                  # 关系图谱 HTML（消费 index/card-graph.json 渲染）
+  tools/                  # 可选只读运行时（nc_validate.py：validate/audit/simulate，缺失降级纸面校验）
   export/                 # nc-导出 中间产物
   release/                # nc-导出 成品（PDF/Word）
   history/                # nc-定稿 工程快照归档
@@ -106,6 +114,8 @@ novel-cards/
   LICENSE                 # AGPL-3.0（不可修改）
   install.sh              # 一键安装 / 项目初始化
   references/
+    oo-model.md           # 面向对象透镜：NcObject 基类 + 8 子类 + StoryWorld 容器 + 29 技能→方法映射
+    event-inference.md    # 事件驱动连锁推演：dispatch_event → enter/perceive/act/fire → ChangePlan → patch → render
     skill-catalog.md      # 29 技能六组分类、双语别名映射、auto_invokable 标记、入参/产物、旧 12→新 29 对照
     card-schema.md        # 全类型 frontmatter 字段定义与最小示例（含 character_tendency/tend-）
     data-layering.md      # 四层铁律、card-graph.json 图森林 schema、registry/index 清单
@@ -115,6 +125,8 @@ novel-cards/
     hard-rules.md         # 26 条硬规则详解
     layout.md             # 使用方工程目录树、install.sh 与 nc-初始化 双入口边界
     filter.md             # 通胀过滤器三问（nc-素材 入库前自动 gate + 手动 nc-过滤 复检）
+  tools/
+    nc_validate.py        # 可选只读运行时（Python3 标准库单文件，validate/audit/simulate 三子命令）
   templates/
     characters.md         # 角色卡（type: actor，ac-）
     plotpoints.md         # 桥段卡

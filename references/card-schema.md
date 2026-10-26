@@ -7,6 +7,12 @@ corpus / metric / sensory_cue / refwork 等新增类型的完整字段契约。
 
 所有卡片必须包含「通用五字段」；各类型专属字段列在下方。模板位于 `templates/`。
 
+> **面向对象透镜**：本 schema 描述的每张卡都是一个 `NcObject` 子类实例——通用五字段
+> 是基类公共属性，各类型专属字段是子类特有属性，`render()` 把对象状态序列化为文本投影
+> （正文 = 参与对象按 timeline 顺序 `render()` 拼接的结果）。完整类层次、方法契约与
+> 「技能 → 方法」映射见 `references/oo-model.md`；事件驱动的连锁推演见
+> `references/event-inference.md`。**OO 视角不改变任何字段契约**，仅换叙述框架。
+
 ## 通用五字段（必备）
 
 | 字段 | 类型 | 说明 |
@@ -89,6 +95,10 @@ draft → active → archived
 
 ## actor（角色卡，替代原 character）
 
+> **OO 视角**：本卡 = `Role` 子类实例；`render()` 产出其人物描写投影。性格/心智倾向的
+> 连续滑动经 `character_tendency`(`tend-`) 引用表达（`Role.act()`），姿态经 `pose`(`po-`)
+> / `pose_refs` 引用（`Role.get_pose()`）。详见 `references/oo-model.md` §2.1。
+
 `actor`（`ac-`）替代原 `character`（`ch-`）。定义为「拥有独立主观视角、可参与
 桥段、可绑定感知/抽象动线、具备状态变化的叙事行动单元」，**与是否人类无关**。
 
@@ -137,6 +147,9 @@ first_appearance: chapter-001
 
 ## plotpoint（桥段卡）
 
+> **OO 视角**：本卡 = `PlotBeat` 子类实例；`render()` 产出其情节段落投影，`fire()` 在
+> 前置条件满足时引爆并派发事件给在场对象。详见 `references/oo-model.md` §2.5。
+
 | 字段 | 必填 | 说明 |
 |---|---|---|
 | `chapter` | ✅ | 所在章节 |
@@ -169,6 +182,11 @@ strategic_burst: false
 ```
 
 ## item（道具卡，黑盒三层建模）
+
+> **OO 视角**：本卡 = `Prop` 子类实例；`render()` 产出其道具描写投影，`move_to()` 表达
+> 动线位置变更、`emit_sensory()` 释放感知层信号。一旦拥有独立意志主动行动则升级为
+> `Role`（object-spirit），原 `Prop` 保留物理本体，经 `cross_ref` 互引。详见
+> `references/oo-model.md` §2.2。
 
 `item`（`it-`）SHALL 支持黑盒三层内部结构。默认黑盒模式：作者只自然描述道具，
 skill 自动拆解写入图森林；高级模式开关打开后展示三层分区并允许手动调整感知
@@ -228,6 +246,10 @@ blackbox:
 
 ## scene（场景卡）
 
+> **OO 视角**：本卡 = `Scene` 子类实例；`render()` 产出其环境铺陈投影，`enter(role)`
+> 刷新环境插槽并向场内广播 `SensoryCue`、`refresh_env()` 更新环境变量供 pose 插槽 P2
+> 填充消费。详见 `references/oo-model.md` §2.3。
+
 | 字段 | 必填 | 说明 |
 |---|---|---|
 | `name` | ✅ | 场景名 |
@@ -251,6 +273,9 @@ blackbox:
 `status: unresolved` 时 `payoff_chapter` 可缺。详见 `hard-rules.md`。
 
 ## timeline（动线卡，节点由积木驱动）
+
+> **OO 视角**：本卡 = `StoryTrack` 子类实例；`step(timeline)` 沿时间轴推进输出下一节点
+> 状态变更（经 `bind_module` 联动多对象）。详见 `references/oo-model.md` §2.6。
 
 | 字段 | 必填 | 说明 |
 |---|---|---|
@@ -304,6 +329,9 @@ nodes:
 
 ## snapshot（快照卡，时间锚点状态切片）
 
+> **OO 视角**：本卡 = `Snapshot` 子类实例；`restore()` 回滚整套对象到该快照记录的状态，
+> 供前后对比与逻辑校验。详见 `references/oo-model.md` §2.8。
+
 ❌ **不是**：姿势库、插画、动态素材库。
 ✅ **定义**：在某确定章节/时间锚点上，一套锁定的、瞬时的全局状态切片；可单聚焦
 actor，也可定格场景内多方角色/道具/势力/动线状态。用途：前后对比、校验逻辑
@@ -321,6 +349,10 @@ actor，也可定格场景内多方角色/道具/势力/动线状态。用途：
 | `related_cards` | ✅ | 关联卡片 id 数组 |
 
 ## darklayer（暗线卡）
+
+> **OO 视角**：本卡 = `DarkLine` 子类实例，独立命名空间；`check_converge()` 扫描全场判断
+> 所挂接伏笔/桥段是否集齐、可否回收揭示。与主书对象**只**经 `references_to_main` 单向
+> 引用串接。详见 `references/oo-model.md` §2.7。
 
 > **语义定义（v1.0 扩展）**：暗线**不是仅指代角色**。它是「整条明面叙事中，
 > 没有明说、需要读者自行推敲的隐性逻辑」——可以是一条贯穿全书的隐秘设定、
@@ -344,6 +376,10 @@ actor，也可定格场景内多方角色/道具/势力/动线状态。用途：
 写 `references_to_darklayer`，保持命名空间隔离）。详见 `hard-rules.md`。
 
 ## module（积木模块卡，最小调度单元）
+
+> **OO 视角**：本卡是跨动线同步的唯一通道——`StoryTrack.step()` 经 `bind_module` 联动
+> 多对象状态变更；`Prop.move_to()` 的跨动线同步 MUST 走 `trigger_map`，禁止零散写联动。
+> 详见 `references/oo-model.md` §2.6 与 `references/event-inference.md` §2.2。
 
 `module`（`md-`）是最小调度单元，其 `trigger_map` SHALL 可自由绑定任意数量、
 任意 track 类型的 timeline 节点 + pose + 自定义类型卡片（symbol/metric 等），
@@ -385,6 +421,11 @@ trigger_expect: 情绪基线铺垫，为后续第14章发簪摘落爆点蓄力
 ```
 
 ## lexstat（词频张力卡）
+
+> **OO 视角**：本卡是 `render()`（nc-成稿）的强约束输入——提供词频向量与感官均衡约束，
+> 本身不出正文。草稿中的 `MoodLine`（情绪/张力走向）是其概念别名之一，映射到本卡的
+> `tension_curve`（0~10 标尺）+ `metric`(`mt-`) 数值承载，MUST NOT 作为 frontmatter 字段
+> 落地。详见 `references/oo-model.md` §5。
 
 `lexstat`（`lx-`）是写稿环节的核心控制点，强约束：爆点段落高密词集中释放，
 爆点之后强制留白，禁止持续堆叠感官描写。
@@ -471,6 +512,11 @@ notes: 表层光影词与深层凝视隐喻词分开标记
 
 ## pose（姿态卡，招牌动作库）
 
+> **OO 视角**：本卡是 `Role.get_pose(state_id)` 消费的独立对象集合——桥段/快照经
+> `pose_refs` / `used_pose` 引用，插槽填充遵循 P1>P2>P3 优先级。草稿中的 `pose_bank[]`
+> （作为 Role 属性）是其概念别名，MUST NOT 作为 frontmatter 字段落地。详见
+> `references/oo-model.md` §5。
+
 `pose`（`po-`，存放于 `cards/pose-bank/`）解决跨场景复用一致性。一个 pose =
 【固定内核（招牌不变）+ 环境变量插槽（每次调用替换）+ 多视角文案 + 使用约束】。
 内核锁死不改，保证辨识度统一；插槽随环境/伤势/情绪变化，适配场景，不出戏。
@@ -516,6 +562,9 @@ extra_constraint: 左臂受伤时左臂不得抬起
 
 ## sensory_cue（感官标记卡）
 
+> **OO 视角**：本卡 = `SensoryCue` 子类实例；`broadcast()` 向绑定范围内 `Role` 广播
+> 氛围信号，范围内角色自动 `perceive()` 捕获。详见 `references/oo-model.md` §2.4。
+
 `sensory_cue`（`su-`，存放于 `cards/custom/sensory_cue/`）：声音/乐曲/气味/光影
 等氛围触发器，可绑定角色/场景，供桥段引用；**本身不是剧情事件**，用于塑造标志性
 氛围信号。
@@ -556,6 +605,11 @@ description: 人还没进院子，笑声先传过来，所有人安静下来
 | `tree_id` | ✅ | 归属子图标记（与原创主线隔离） |
 
 ## character_tendency（角色动向卡，性格/心智倾向滑动标尺）
+
+> **OO 视角**：本卡是 `Role.act()` 依赖的独立对象——刻画角色性格/心智倾向的带触发事件
+> 连续滑动标尺，依附角色（`target_role` 引用 `ac-*`）、经 `trigger_plot` 引用 `pp-*` 推手。
+> 草稿中的 `disposition_slide:Track` 是其概念别名，MUST NOT 作为 frontmatter 字段落地。
+> 详见 `references/oo-model.md` §2.1 与 §5。
 
 `character_tendency`（`tend-`，存放于 `cards/tendencies/`）：刻画角色性格 / 心智
 倾向的**带触发事件的连续滑动标尺**——有基准刻度、长期趋势方向、当前刻度，每一次

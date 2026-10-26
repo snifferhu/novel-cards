@@ -18,38 +18,41 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
 
 ### A. 工程初始化 & 素材资产组
 
-| # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | 备注 |
-|---|---|---|---|---|---|
-| 1 | `nc-初始化` | `nc-init` | 新建创作工程，一键生成目录骨架、build 脚本、三份引导文档（agents/quickstart/skill-reference）、config/skills.yaml；支持 `--lang zh/en`，可指定长短篇预设 | false | 项目起点，一个项目只运行一次 |
-| 2 | `nc-素材` | `nc-material` | 原始素材收纳入库，原样封存，分配 id + 来源/版权/分类标签；入库前过通胀过滤器 gate | false | 素材录入入口 |
-| 3 | `nc-清洗` | `nc-clean` | 素材降噪预处理，生成独立干净副本，原始素材保留不动 | false | 素材杂乱才用，可选 |
-| 4 | `nc-检索` | `nc-query` | 检索素材、全部卡片资产（含 `type:character_tendency` 与按角色过滤），返回候选资产池 | false | 系统底层自带私有查重 |
-| 5 | `nc-注册` | `nc-reg` | 注册自定义卡片类型、自定义动线 track 标签、动向卡人格基线原型枚举取值（写入 registry 白名单） | false | 需要扩展类型时使用 |
-| 6 | `nc-更名` | `nc-rename` | 全局标识符替换：改故事书名 / 全局代号重命名（跨卡片/伏笔/快照/桥段/图谱引用统一替换）；先出【替换预览清单】确认后批量写入，不动 res/ 原始素材与正文口语称呼 | false | 工程维护类，非创作主线强制节点 |
+> **OO 归属列**：每个技能都能表述为 `StoryWorld` 或某个 `NcObject` 子类的成员方法，完整映射见
+> `references/oo-model.md` §4。本列仅换 OO 视角表述，六组分类 / 双语别名 / auto_invokable 取值零差异。
+
+| # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | OO 归属 | 备注 |
+|---|---|---|---|---|---|---|
+| 1 | `nc-初始化` | `nc-init` | 新建创作工程，一键生成目录骨架、build 脚本、三份引导文档（agents/quickstart/skill-reference）、config/skills.yaml；支持 `--lang zh/en`，可指定长短篇预设 | false | `StoryWorld.constructor()` | 项目起点，一个项目只运行一次 |
+| 2 | `nc-素材` | `nc-material` | 原始素材收纳入库，原样封存，分配 id + 来源/版权/分类标签；入库前过通胀过滤器 gate | false | `StoryWorld.import_raw()` | 素材录入入口 |
+| 3 | `nc-清洗` | `nc-clean` | 素材降噪预处理，生成独立干净副本，原始素材保留不动 | false | `StoryWorld.clean_object()` | 素材杂乱才用，可选 |
+| 4 | `nc-检索` | `nc-query` | 检索素材、全部卡片资产（含 `type:character_tendency` 与按角色过滤），返回候选资产池 | false | `StoryWorld.query()` | 系统底层自带私有查重 |
+| 5 | `nc-注册` | `nc-reg` | 注册自定义卡片类型、自定义动线 track 标签、动向卡人格基线原型枚举取值（写入 registry 白名单） | false | `StoryWorld.config.register_type()` | 需要扩展类型时使用 |
+| 6 | `nc-更名` | `nc-rename` | 全局标识符替换：改故事书名 / 全局代号重命名（跨卡片/伏笔/快照/桥段/图谱引用统一替换）；先出【替换预览清单】确认后批量写入，不动 res/ 原始素材与正文口语称呼 | false | `StoryWorld.rename_identifier()` | 工程维护类，非创作主线强制节点 |
 
 ### B. 叙事卡片建模组
 
-| # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | 备注 |
-|---|---|---|---|---|---|
-| 7 | `nc-角色` | `nc-role` | 新建/更新叙事行动单元（人、蛤蟆、器灵、抽象意志，不限于人类） | false | 原「nc-人物」改名 |
-| 8 | `nc-姿态` | `nc-pose` | 角色招牌动作库：内核固定 + 环境插槽 + 多视角模板（P1>P2>P3 优先级） | false | 长篇精细人设 |
-| 9 | `nc-道具` | `nc-item` | 新建/更新道具卡，黑盒自动拆分物理/感知/抽象三层动线 | false | 黑盒优先，高级模式解锁底层 |
-| 10 | `nc-场景` | `nc-scene` | 新建/更新场景卡片，记录环境基础参数 | false | — |
-| 11 | `nc-感官标记` | `nc-sensorycue` | 创建/编辑感官标记卡（声音、乐曲、气味、光影等氛围触发器），可绑定角色/场景，供桥段引用 | false | 本身不是剧情事件 |
-| 12 | `nc-动向` | `nc-tendency` | 创建/编辑 `character_tendency`（`tend-`）角色动向滑动标尺卡：刻画性格/心智倾向的带触发事件连续滑动标尺，每次变动绑定具体桥段事件作为推手；可选声明人格基线原型 `baseline_prototype`（须经 nc-注册） | false | 依附角色（target_role 引用 ac-），引用桥段（trigger_plot 引用 pp-） |
+| # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | OO 归属 | 备注 |
+|---|---|---|---|---|---|---|
+| 7 | `nc-角色` | `nc-role` | 新建/更新叙事行动单元（人、蛤蟆、器灵、抽象意志，不限于人类） | false | `Role.create()` / `Role.patch()` | 原「nc-人物」改名 |
+| 8 | `nc-姿态` | `nc-pose` | 角色招牌动作库：内核固定 + 环境插槽 + 多视角模板（P1>P2>P3 优先级） | false | `Pose.create()` / `Role.get_pose()` | 长篇精细人设 |
+| 9 | `nc-道具` | `nc-item` | 新建/更新道具卡，黑盒自动拆分物理/感知/抽象三层动线 | false | `Prop.create()` / `Prop.patch()` | 黑盒优先，高级模式解锁底层 |
+| 10 | `nc-场景` | `nc-scene` | 新建/更新场景卡片，记录环境基础参数 | false | `Scene.create()` / `Scene.patch()` | — |
+| 11 | `nc-感官标记` | `nc-sensorycue` | 创建/编辑感官标记卡（声音、乐曲、气味、光影等氛围触发器），可绑定角色/场景，供桥段引用 | false | `SensoryCue.create()` / `SensoryCue.broadcast()` | 本身不是剧情事件 |
+| 12 | `nc-动向` | `nc-tendency` | 创建/编辑 `character_tendency`（`tend-`）角色动向滑动标尺卡：刻画性格/心智倾向的带触发事件连续滑动标尺，每次变动绑定具体桥段事件作为推手；可选声明人格基线原型 `baseline_prototype`（须经 nc-注册） | false | `Tendency.create()` / `Role.act()` | 依附角色（target_role 引用 ac-），引用桥段（trigger_plot 引用 pp-） |
 
 ### C. 剧情结构组
 
-| # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | 备注 |
-|---|---|---|---|---|---|
-| 13 | `nc-桥段` | `nc-plot` | 构思剧情单元、绑定角色/道具/pose、标记章节、标注战略爆点 | false | 剧情核心载体 |
-| 14 | `nc-伏笔` | `nc-foreshadow` | 预埋长线伏笔、登记预期回收位置（长线四方对齐 ≥8 章） | false | 短篇默认关闭 |
-| 15 | `nc-快照` | `nc-snapshot` | 时间锚点全局状态切片，定格角色伤势、情报、环境等多方状态 | false | 长篇群像优先 |
-| 16 | `nc-势力` | `nc-faction` | 多方势力、立场、关系网络建模 | false | 长篇默认开启 |
-| 17 | `nc-暗线` | `nc-thread` | 整条明面叙事的隐性逻辑链路（setting/plot/character/mixed），秘密信息流 | false | 长篇默认开启，独立命名空间 |
-| 18 | `nc-积木` | `nc-module` | 积木编排：trigger_map 绑定动线、伏笔、pose，组装触发关系 | false | 最小调度单元 |
-| 19 | `nc-研判` | `nc-analyze` | 读取选定剧情/角色/动向/感官标记资产 + 作者诉求，做创作层面推演，输出结构化分析报告 + 可选方案 A/B/C（附利弊与连锁影响）；**只出建议报告，绝不直接改动任何 cards/素材** | false | 操作技能，不生成驻留卡片；与 nc-校阅 互补（校阅找茬、研判出主意） |
-| 20 | `nc-编排` | `nc-compose` | 根据素材/原有剧情资产/情节目标/模式自动生成结构化【编排执行计划】（create_plot/edit_plot/archive_plot/update_tendency/bind_sensory_cue 五类任务），交作者逐条审核后前置跑 nc-校阅 扫冲突再顺序执行 | false | 批量剧情迭代三段式（计划→审核→执行），全程禁止静默修改 |
+| # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | OO 归属 | 备注 |
+|---|---|---|---|---|---|---|
+| 13 | `nc-桥段` | `nc-plot` | 构思剧情单元、绑定角色/道具/pose、标记章节、标注战略爆点 | false | `PlotBeat.create()` / `PlotBeat.fire()` | 剧情核心载体 |
+| 14 | `nc-伏笔` | `nc-foreshadow` | 预埋长线伏笔、登记预期回收位置（长线四方对齐 ≥8 章） | false | `Foreshadow.create()` / `DarkLine.check_converge()` | 短篇默认关闭 |
+| 15 | `nc-快照` | `nc-snapshot` | 时间锚点全局状态切片，定格角色伤势、情报、环境等多方状态 | false | `Snapshot.create()` / `Snapshot.restore()` | 长篇群像优先 |
+| 16 | `nc-势力` | `nc-faction` | 多方势力、立场、关系网络建模 | false | `Faction.create()` / `Faction.patch()` | 长篇默认开启 |
+| 17 | `nc-暗线` | `nc-thread` | 整条明面叙事的隐性逻辑链路（setting/plot/character/mixed），秘密信息流 | false | `DarkLine.create()` / `DarkLine.patch()` | 长篇默认开启，独立命名空间 |
+| 18 | `nc-积木` | `nc-module` | 积木编排：trigger_map 绑定动线、伏笔、pose，组装触发关系 | false | `Module.create()` / `StoryTrack.step()` | 最小调度单元 |
+| 19 | `nc-研判` | `nc-analyze` | 读取选定剧情/角色/动向/感官标记资产 + 作者诉求，做创作层面推演，输出结构化分析报告 + 可选方案 A/B/C（附利弊与连锁影响）；**只出建议报告，绝不直接改动任何 cards/素材** | false | `StoryWorld.deliberate()` | 操作技能，不生成驻留卡片；与 nc-校阅 互补（校阅找茬、研判出主意） |
+| 20 | `nc-编排` | `nc-compose` | 根据素材/原有剧情资产/情节目标/模式自动生成结构化【编排执行计划】（create_plot/edit_plot/archive_plot/update_tendency/bind_sensory_cue 五类任务），交作者逐条审核后前置跑 nc-校阅 扫冲突再顺序执行 | false | `StoryWorld.plan_modify()` | 批量剧情迭代三段式（计划→审核→执行），全程禁止静默修改 |
 
 > 注：`nc-对标`(nc-refwork) 是 v1.0 主体保留的**分析模式专用技能**（外部作品拆解
 > 学习，独立 `tree_id` 隔离），服务于「拆解现成外部作品」流程，**不计入**面向用户的
@@ -58,28 +61,28 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
 
 ### D. 生成与可视化组
 
-| # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | 备注 |
-|---|---|---|---|---|---|
-| 21 | `nc-量化` | `nc-metric` | 挂载张力、爆点、信息载荷等量化指标，供长篇深度打磨与批量统计 | true | 可被其他技能内部自动唤起 |
-| 22 | `nc-图谱` | `nc-graph` | 渲染叙事森林时序图、角色关系、动线链路图、积木联动总图 | true | 可被其他技能内部自动唤起 |
-| 23 | `nc-成稿` | `nc-draft` | **自动出正文初稿**：读取已备好的设定/桥段/大纲/暗线/角色等卡片，按 `--length short/mid/long` 控制篇幅，生成 `manuscript/` 手稿提案供作者校阅调整 | false | 写稿环节核心；与 nc-词频 配合（成稿出内容，词频管约束） |
-| 24 | `nc-词频` | `nc-wordfreq` | 词频向量 + 感官均衡强约束校验工具（纯约束，不出正文）；为 nc-成稿 提供约束输入 | false | 约束工具，长篇精细打磨 |
+| # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | OO 归属 | 备注 |
+|---|---|---|---|---|---|---|
+| 21 | `nc-量化` | `nc-metric` | 挂载张力、爆点、信息载荷等量化指标，供长篇深度打磨与批量统计 | true | `Metric.create()` / `NcObject.validate()` | 可被其他技能内部自动唤起 |
+| 22 | `nc-图谱` | `nc-graph` | 渲染叙事森林时序图、角色关系、动线链路图、积木联动总图 | true | `StoryWorld.export()` 的 graph 投影 | 可被其他技能内部自动唤起 |
+| 23 | `nc-成稿` | `nc-draft` | **自动出正文初稿**：读取已备好的设定/桥段/大纲/暗线/角色等卡片，按 `--length short/mid/long` 控制篇幅，生成 `manuscript/` 手稿提案供作者校阅调整 | false | `StoryWorld.export()` 的 render 阶段 | 写稿环节核心；与 nc-词频 配合（成稿出内容，词频管约束） |
+| 24 | `nc-词频` | `nc-wordfreq` | 词频向量 + 感官均衡强约束校验工具（纯约束，不出正文）；为 nc-成稿 提供约束输入 | false | `LexStat.create()` / `render()` 强约束输入 | 约束工具，长篇精细打磨 |
 
 ### E. 审计校验组
 
-| # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | 备注 |
-|---|---|---|---|---|---|
-| 25 | `nc-校阅` | `nc-review` | 叙事审计：设定、pose 约束、动线、伏笔、动机、OOC 一致性 + character_tendency 动向逻辑冲突检查（含原型边界漂移建议级检查④）；内置调用 nc-节奏 输出作为节奏模块 | false | 只出意见不改稿 |
-| 26 | `nc-节奏` | `nc-rhythm` | 章节桥段疏密、爆点密度、留白校验，战略爆点自动豁免 | true | 可被 nc-校阅 内部自动唤起 |
-| 27 | `nc-守卫` | `nc-safetyguard` | 隐私 + 合规内容扫描，区分【渲染加害红线】/【揭露批判疑点】 | false | 低频，分发前使用，默认隐藏 |
+| # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | OO 归属 | 备注 |
+|---|---|---|---|---|---|---|
+| 25 | `nc-校阅` | `nc-review` | 叙事审计：设定、pose 约束、动线、伏笔、动机、OOC 一致性 + character_tendency 动向逻辑冲突检查（含原型边界漂移建议级检查④）；内置调用 nc-节奏 输出作为节奏模块 | false | `NcObject.validate()` + `StoryWorld.audit()` | 只出意见不改稿 |
+| 26 | `nc-节奏` | `nc-rhythm` | 章节桥段疏密、爆点密度、留白校验，战略爆点自动豁免 | true | `Rhythm.validate()`（nc-校阅 内置模块） | 可被 nc-校阅 内部自动唤起 |
+| 27 | `nc-守卫` | `nc-safetyguard` | 隐私 + 合规内容扫描，区分【渲染加害红线】/【揭露批判疑点】 | false | `StoryWorld.safety_guard.scan()` | 低频，分发前使用，默认隐藏 |
 
 ### F. 归档导出 & 复盘组
 
-| # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | 备注 |
-|---|---|---|---|---|---|
-| 28 | `nc-定稿` | `nc-finalize` | 生成工程快照归档、打上锁定标记 | false | 可选分支，自娱可跳过 |
-| 29 | `nc-导出` | `nc-export` | Pandoc 底层，跨平台（Windows/Mac/Ubuntu）导出 PDF / Word | false | 需导出文件才走 |
-| 30 | `nc-复盘` | `nc-retrospect` | 沉淀经验、洞察，回流素材库，开启新一轮构思 | false | 收尾节点 |
+| # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | OO 归属 | 备注 |
+|---|---|---|---|---|---|---|
+| 28 | `nc-定稿` | `nc-finalize` | 生成工程快照归档、打上锁定标记 | false | `StoryWorld.snapshot()` 批量 + 锁定标记 | 可选分支，自娱可跳过 |
+| 29 | `nc-导出` | `nc-export` | Pandoc 底层，跨平台（Windows/Mac/Ubuntu）导出 PDF / Word | false | `StoryWorld.export()` 序列化落盘 | 需导出文件才走 |
+| 30 | `nc-复盘` | `nc-retrospect` | 沉淀经验、洞察，回流素材库，开启新一轮构思 | false | `Reflection.create()` + `StoryWorld.import_raw()` 反哺 | 收尾节点 |
 
 ### 内部流水线视角 → 六组映射
 

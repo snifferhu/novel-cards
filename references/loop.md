@@ -5,6 +5,14 @@
 > 本文档描述三场景流程编排图、长短篇分级矩阵、写稿/审稿/修稿/定稿分支开关，
 > 以及「文章 → 复盘 → 反哺 → 再写」这条回路的完整流程与硬约束。
 
+> **面向对象透镜**：把每个流程节点读作一次对象方法调用——`nc-成稿` =
+> `StoryWorld.export()` 的 render 阶段（按 timeline 顺序调各对象 `render()` 拼正文）、
+> `nc-校阅` = `NcObject.validate()` + `StoryWorld.audit()`、`nc-研判` =
+> `StoryWorld.deliberate()`、`nc-编排` = `StoryWorld.plan_modify()`（产出 ChangePlan）。
+> 文字只是视图，真相在对象实例里；改剧情 = 改状态再重渲。完整类层次见
+> `references/oo-model.md`，事件连锁推演见 `references/event-inference.md`。
+> **OO 视角不改变任何流程节点与数值**，仅换叙述框架。
+
 ## 1. 为什么需要闭环
 
 线性流程（素材→AI→卡片→文章）会退化成「用一次素材就耗尽」的一次性消费系统。
@@ -28,6 +36,11 @@ nc-初始化(long) → nc-素材 → [nc-清洗] → nc-检索
   → nc-复盘(反哺) → 回到 nc-素材/构思
 ```
 
+> **OO 方法调用标注**：`nc-初始化`=`StoryWorld.constructor()`、`nc-素材`=`import_raw()`、
+> `nc-检索`=`query()`、建卡各技能=`NcObject.create()/patch()`、`nc-研判`=`deliberate()`、
+> `nc-编排`=`plan_modify()`、`nc-成稿`=`export()` 的 render 阶段、`nc-校阅`=`validate()+audit()`、
+> `nc-定稿`=`snapshot()` 批量、`nc-导出`=`export()` 序列化落盘。
+
 全技能开启：含 nc-伏笔 / nc-势力 / nc-暗线 / nc-量化 / nc-姿态 / nc-守卫 / nc-动向。
 **写稿分工**：`nc-成稿`(nc-draft) 读全部卡片出正文初稿（内容生成），
 `nc-词频`(nc-wordfreq) 提供词频向量 + 感官均衡约束（纯约束校验）。
@@ -45,6 +58,10 @@ nc-初始化(mid) → nc-素材 → nc-检索
   → nc-复盘(反哺) → 回到构思
 ```
 
+> **OO 方法调用标注**：与场景 A 同一套映射（`constructor()` / `import_raw()` / `query()` /
+> `create()+patch()` / `deliberate()` / `plan_modify()` / `export()` render / `validate()+audit()`
+> / `snapshot()`），仅启用的对象类型集合更小（关闭势力/暗线/量化/姿态）。
+
 关闭：nc-势力 / nc-暗线 / nc-量化 / nc-姿态（按需手动开启）。
 `nc-研判` / `nc-编排` 在 mid 下默认不主动推荐（作者需明确表达推演/批量意图才触发）。
 
@@ -56,6 +73,10 @@ nc-初始化(short) → nc-素材
   → nc-成稿(--length short, 出精简初稿) + [nc-词频]
   → (跳过审稿/定稿) → nc-复盘(可选)
 ```
+
+> **OO 方法调用标注**：`constructor()` / `import_raw()` / `create()+patch()`（仅基础对象类型）/
+> `export()` render（`--length short`）。short 模式下 DarkLine / 长期 disposition_slide 等能力
+> 关闭，事件连锁不跨越未启用对象类型（门控见 `references/event-inference.md` §5.3）。
 
 关闭：nc-伏笔 / nc-势力 / nc-暗线 / nc-量化 / nc-对标 / nc-姿态 / nc-守卫 / nc-定稿 /
 nc-校阅（全部默认关闭，作者可手动开启个别技能）。短篇 `nc-成稿` 用 `--length short`
