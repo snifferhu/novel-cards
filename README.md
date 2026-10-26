@@ -31,9 +31,30 @@
 > 📖 日常使用、FAQ 与 **v0→v1 迁移指引**请看 **[USAGE.md](./USAGE.md)**。
 > 本文档聚焦项目结构、安装方式与技术约定。
 
-## 快速开始
+## 快速开始（四步落地闭环）
 
-### 一键安装
+从「拿到 novel-cards」到「建出第一张卡」的完整路径。详细分步见使用方工程的
+`quickstart.md`（由 `nc-初始化` 生成）。
+
+### 第 1 步 · 获取来源（二选一）
+
+```bash
+# 方式 A：git clone（持续开发跟更，推荐）
+git clone https://github.com/snifferhu/novel-cards.git
+cd novel-cards
+
+# 方式 B：下载 release 归档包（一次性快照；升级需重新下载）
+#   GitHub 仓库页 → Releases → Source code (tar.gz)；若尚无 tag，取最新 commit 的归档
+#   解压后目录结构与克隆结果等价（含 install.sh），可走同一套安装命令
+```
+
+### 第 2 步 · 放置约定
+
+`install.sh` 以**脚本自身所在目录**为源码根（`SRC`），因此克隆 / 解压目录可放在
+任意位置，无需安装到特定系统路径。注意：`--link` 软链模式要求源目录长期保留
+（移动 / 删除会断开全局 skills 下的软链）；copy 模式复制独立副本后不再依赖源目录。
+
+### 第 3 步 · 安装 skill 到 agent（copy vs link × 双端）
 
 ```bash
 # 复制模式（默认）：装到全局 OpenCode + Claude Code
@@ -43,15 +64,31 @@
 ./install.sh --target opencode
 ./install.sh --target claude
 
-# 软链模式（开发期推荐，本仓库改动即时生效）
+# 软链模式（开发期推荐，本仓库改动即时生效；源目录须长期保留）
 ./install.sh --link
 ```
 
-### 初始化使用方工程骨架
+**装后自检**：在 agent 的 skills 面板确认 `novel-cards` 可见且描述正确；或用触发词
+试探（如输入「维护小说卡片体系」看是否命中本 skill）。
 
 ```bash
-./install.sh --project ~/path/to/your/novel
+ls -la ~/.config/opencode/skills/novel-cards/   # 若 target 含 opencode
+ls -la ~/.claude/skills/novel-cards/            # 若 target 含 claude
 ```
+
+### 第 4 步 · 落地使用方工程 → 第一张卡
+
+```bash
+./install.sh --project ~/path/to/your/novel     # 生成 v1.0 空目录骨架
+cd ~/path/to/your/novel                          # 进入使用方工程
+# 运行 nc-初始化（skill 指令）交互式补全 agents.md + registry 默认值 + config
+# 第一条创作指令建出第一张卡（提案制，你确认后自行落盘）：
+#   nc-角色 "新建主角 …"
+```
+
+**同项目再开一本**（不另起工程）：`nc-初始化 --new-work` 在 `works/<新work-id>/`
+追加作品子空间；多书操作加 `--work <work-id>` 限定作用域。署名经 `nc-注册` 登记笔名
+后由 `nc-导出` / `nc-成稿` 落款。详见下文「多本作品与署名」。
 
 生成的 v1.0 空目录骨架（每目录含 `.gitkeep`，并写入 `config/project.yaml` /
 `agents.md` 兜底 / `build.sh` / `build.cmd` / `README.md` / `CHANGELOG.md` /
@@ -280,6 +317,25 @@ novel-cards/
 铁律：`.html` MUST 由 `index/card-graph.json` 重生成，不存业务逻辑；`.md` 是唯一
 业务源头；`.json` 是图森林真值（节点 id/type/tree_id + 边 source/target/relation）；
 `.yaml` 是配置白名单。详见 `references/data-layering.md`。
+
+## 多本作品与署名
+
+一个使用方工程 MAY 同时管理多本作品：每本书是 `works/<work-id>/` 下的独立子空间
+（各自独立的 `cards/` / `manuscript/` / `index/` / `graph/` / `registry/` 命名空间 +
+独立 `tree_id` 族），彼此数据隔离；工程级共享物（`registry/` 词表、`tools/`、`build.sh`）
+留在工程根。`config/project.yaml` 的可选 `works[]` 清单索引全部作品，`active_work`
+指针标记当前默认书。
+
+- **新建一本书**：`nc-初始化 --new-work`（在既有工程内追加，不另起工程）。
+- **作用域**：全部 `nc-*` 创作 / 审计 / 导出技能接受可选 `--work <work-id>`；缺省按
+  「显式 `--work` → `active_work` → `works[]` 恰好一条 → 否则提示」规则解析，绝不静默猜错书。
+- **跨书检索 / 总览**：`nc-检索 --all-works` 跨全部作品检索（结果带 work-id 归属），
+  或查询「本工程有哪些书」。
+- **多笔名署名**：笔名经 `registry/pen-names.yaml` 白名单管理（`nc-注册` 登记）；每本
+  作品声明 `default_pen_name`，单章可用 frontmatter 的 `pen_name` 覆写；`nc-导出` /
+  `nc-成稿` 按生效笔名落款。**向后兼容**：存量单本工程无 `works[]` 时视为隐式单本，
+  行为与引入前完全一致。详见 `references/layout.md` §多本作品工作区 与
+  `references/card-schema.md` §署名与多笔名。
 
 ## HTML 关系图谱
 

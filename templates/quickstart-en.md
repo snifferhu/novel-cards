@@ -6,6 +6,22 @@
 > You may edit this file freely. See `skill-reference.md` for the full skill list;
 > see `agents.md` for the Agent behavior contract.
 
+## Fetch & Install (First-Time Onboarding)
+
+If you just obtained novel-cards, walk the four-step "fetch → place → install → first card" path:
+
+1. **Fetch**: `git clone https://github.com/snifferhu/novel-cards.git` (recommended for
+   ongoing updates), or download a release tarball (one-shot snapshot; re-download to upgrade).
+2. **Place**: put the clone / extracted directory anywhere — `install.sh` uses its own
+   directory as the source root, with no fixed-path dependency (`--link` symlink mode
+   requires keeping the source directory in place).
+3. **Install**: `./install.sh` (global OpenCode + Claude Code) / `--target opencode|claude`
+   (single end) / `--link` (dev-mode symlinks). Afterwards confirm `novel-cards` is visible
+   in your agent's skills panel.
+4. **Land it**: `./install.sh --project <path>` generates the skeleton → `cd` into it and run
+   `nc-初始化` → the first `nc-角色` / `nc-桥段` command builds your first card
+   (steps 1–2 of the mainline below).
+
 ## Mainline Six Steps (Minimal Loop)
 
 Run the minimal "build cards → draft → retrospect" creative loop in six steps:
@@ -55,6 +71,21 @@ aliases):
 - `nc-导出` — cross-platform PDF / Word export
 - `nc-更名` — rename book title / global codename (**preview first, then replace; never touches raw material**)
 - `nc-检索` / `nc-清洗` / `nc-注册` — query assets / denoise material / register custom types
+
+## Multi-Work & Pen Names (Same Project)
+
+One project can manage several works at once: each book is an isolated `works/<work-id>/`
+subspace with no cross-contamination of data.
+
+- **Start another book**: `nc-初始化 --new-work` (appends within the existing project, no new repo).
+- **Scope an operation**: append `--work <work-id>` to any `nc-*` skill; when omitted it
+  resolves via "explicit → active_work → single work → else prompt", never guessing silently.
+- **Cross-book search / overview**: `nc-检索 --all-works` (results tagged with work-id) or
+  query "what books does this project have".
+- **Multiple pen names**: register pen names into `registry/pen-names.yaml` via `nc-注册`;
+  set each work's `default_pen_name`, override per chapter with the frontmatter `pen_name`;
+  `nc-导出` / `nc-成稿` sign with the effective pen name.
+- A single-work project (no `works[]`) behaves exactly as before.
 
 ## Length-Tier Differences
 

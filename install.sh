@@ -1,6 +1,19 @@
 #!/usr/bin/env bash
 # novel-cards install script
 #
+# 一键落地四步（从获取到第一张卡）：
+#   1. 获取来源（二选一）：
+#        - git clone https://github.com/snifferhu/novel-cards.git   # 持续开发跟更，推荐
+#        - 下载 release tarball（GitHub 仓库页 Releases → Source code (tar.gz)；
+#          若尚无 tag 则取最新 commit 的归档）。归档包是一次性快照，升级需重新下载。
+#   2. 放置约定：本脚本以自身所在目录为源码根（SRC），克隆 / 解压目录可放任意位置，
+#        无需安装到特定系统路径。注意：--link 软链模式要求源目录长期保留（删除即断链）；
+#        copy 模式复制独立副本后不再依赖源目录。
+#   3. 安装 skill 到 agent（copy vs link × 双端）：见下方 Modes / Examples。
+#   4. 落地使用方工程：./install.sh --project <path> 生成空骨架 → 进入该目录跑
+#        nc-初始化 交互式补全 → 第一条 nc-角色 / nc-桥段 指令建出第一张卡。
+#        装完自检：在 agent 的 skills 面板确认 novel-cards 可见且描述正确。
+#
 # Usage:
 #   ./install.sh [--target opencode|claude|both] [--link] [--project <path>]
 #
@@ -8,7 +21,7 @@
 #   --target opencode   Install to ~/.config/opencode/skills/novel-cards/
 #   --target claude     Install to ~/.claude/skills/novel-cards/
 #   --target both       Install to both (default)
-#   --link              Use symlinks instead of copying (dev mode)
+#   --link              Use symlinks instead of copying (dev mode; source dir must persist)
 #   --project <path>    Initialize consumer project skeleton at <path>
 #
 # Examples:
@@ -25,7 +38,7 @@ MODE="copy"
 PROJECT=""
 
 usage() {
-  sed -n '2,22p' "$0" | sed 's/^# \{0,1\}//'
+  sed -n '2,31p' "$0" | sed 's/^# \{0,1\}//'
   exit 0
 }
 
@@ -80,7 +93,8 @@ if [[ -n "$PROJECT" ]]; then
     "$PROJECT/export" \
     "$PROJECT/release" \
     "$PROJECT/history" \
-    "$PROJECT/drafts/practice"
+    "$PROJECT/drafts/practice" \
+    "$PROJECT/works"
 
   # .gitkeep：仅当不存在时写入（幂等，不覆盖已有文件）
   for d in \
@@ -113,7 +127,8 @@ if [[ -n "$PROJECT" ]]; then
     "$PROJECT/export" \
     "$PROJECT/release" \
     "$PROJECT/history" \
-    "$PROJECT/drafts/practice"; do
+    "$PROJECT/drafts/practice" \
+    "$PROJECT/works"; do
     [ -e "$d/.gitkeep" ] || touch "$d/.gitkeep"
   done
 
@@ -137,6 +152,30 @@ pipeline_option:
   enable_review: false        # 是否启用审稿分支（nc-校阅 + nc-节奏）
   enable_finalize: false      # 是否启用定稿分支（nc-定稿）
   enable_safety_guard: true   # 是否启用合规守卫（nc-守卫）
+# 多本作品工作区（可选）：缺省 = 隐式单本工程（唯一 work-id = 工程根），行为与引入前一致。
+# 经 nc-初始化 --new-work 追加新书时填充；每元素含 id/title/mode/lang/default_pen_name/tree_id_root。
+# works:
+#   - id: book-a
+#     title: <书名>
+#     mode: short            # 可覆写工程默认 mode
+#     lang: zh
+#     default_pen_name: pen-xxx   # 指向 registry/pen-names.yaml 的笔名 key（可选，须经 nc-注册）
+#     tree_id_root: tree-book-a   # 该书图森林子树根标记
+# active_work: book-a       # 当前默认书指针（--work 缺省时解析到此；多书无指针时技能会提示显式指定）
+YAML
+  fi
+
+  # registry/pen-names.yaml 笔名白名单骨架（零预置条目，经 nc-注册 填充；仅当不存在时写入）
+  if [ ! -f "$PROJECT/registry/pen-names.yaml" ]; then
+    cat > "$PROJECT/registry/pen-names.yaml" <<'YAML'
+# novel-cards v1.0 笔名白名单（install.sh --project 生成的空骨架）
+# 多书署名用：每本作品在 config/project.yaml 的 works[].default_pen_name 引用此处的 key。
+# 零预置条目——具体笔名经 nc-注册 写入（沿用「注册前置」硬规则，skill 不内置锁死词表）。
+# 条目结构：key（全局唯一，供 default_pen_name / 章节 pen_name 覆写引用）/ display_name（落署名的显示名）/ note（备注，可选）。
+# pen_names:
+#   - key: pen-yexingke
+#     display_name: 夜行客
+#     note: 长篇玄幻用
 YAML
   fi
 
@@ -323,10 +362,15 @@ MD
       '' > "$PROJECT/latest.md"
   fi
 
-  echo "Done. Project skeleton created (v1.0 full directory tree)."
+  echo "Done. Project skeleton created (v1.0 full directory tree, incl. works/ + registry/pen-names.yaml)."
   echo "Reminder: this skill does NOT write card / reflection / graph files —"
   echo "you must author them (with AI proposals)."
-  echo "For interactive init (agents.md + registry defaults), run: nc-初始化"
+  echo ""
+  echo "Next steps (落地到第一张卡):"
+  echo "  1. cd $PROJECT && 运行 nc-初始化   # 交互式补全 agents.md + registry 默认值 + config"
+  echo "  2. nc-角色 \"新建主角 …\"            # 第一条创作指令，建出第一张卡（提案制，你确认后落盘）"
+  echo "  3. 同项目再开一本：nc-初始化 --new-work   # 在 works/<新work-id>/ 追加作品，不另起工程"
+  echo "  4. 多书操作加 --work <work-id>；署名经 nc-注册 登记笔名后由 nc-导出 落款"
   exit 0
 fi
 

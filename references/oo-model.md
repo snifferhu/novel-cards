@@ -171,6 +171,12 @@ frontmatter；它们要么已被现有专属字段承载（如 `actor.name`、`c
 > 真值）；`.yaml`（`registry/`）= `config` 白名单；`.html`（`graph/`）= 图森林的纯展示
 > 投影。详见 `references/data-layering.md`。
 
+> **多本作品对齐**：一个工程 MAY 容纳多本书，表述为 `StoryWorld` 下挂多个「作品子容器」
+> （每个子容器自身也是一组 `NcObject` + 局部 `index` 图森林，对应 `works/<work-id>/`
+> 子空间）。这是 `StoryWorld` 容器的天然延伸——**不新增 `NcObject` 基类 / 子类，不改变
+> 八核心类层次与技能→方法映射**；`--work <id>` 即选定在哪个子容器上调用方法。详见
+> `references/layout.md` §多本作品工作区。
+
 ### 3.2 容器方法 ↔ 既有技能映射
 
 | StoryWorld 方法 | 对应技能 | 语义 |

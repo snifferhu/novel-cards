@@ -730,6 +730,20 @@ notes: npd-grandiose 共情 hint：constrained_direction higher、max_drift 2；
 `tl-hairstyle` 节点、`md-action-entry`/`md-action-unpin` 模块、`lx-ch03`/`lx-ch14`
 词频卡。
 
+## 署名与多笔名（pen-name signing）
+
+多书工程下，作品 / 章节的署名主体是「本工程署名 / 笔名」，经 `registry/pen-names.yaml`
+白名单管理（骨架 only，经 `nc-注册` 写入；未注册取值拦截）。**与 `refwork.author` 正交**：
+后者指外部对标作品的作者，本节约束的是本工程自身落款。
+
+- **作品默认笔名**：`config/project.yaml` 的 `works[].default_pen_name` 引用
+  `pen-names.yaml` 的 key（可选）；缺省时回落到工程级作者名（若有），否则留空，MUST NOT 报错。
+- **章节级覆写**：`manuscript/chapter-*.md` 的 frontmatter MAY 含可选字段 `pen_name`
+  （引用已注册笔名 key），覆写该章署名；未声明则用所属作品的 `default_pen_name`。
+  这是与五必备字段并列的**可选项**，不改变任何卡片类型契约。
+- **落款时机**：`nc-导出` 出成品、`nc-成稿` 提案头部按「章节 `pen_name` > 作品
+  `default_pen_name` > 工程级作者名 > 留空」优先级取生效笔名。
+
 ## 字段命名规范
 
 - 一律 snake_case

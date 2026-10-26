@@ -4,6 +4,19 @@
 > 工程模式：{{MODE}}（short / mid / long）。
 > 作者可手动编辑本文件。完整技能清单见 `skill-reference.md`；Agent 行为契约见 `agents.md`。
 
+## 获取与安装（首次落地）
+
+若你刚拿到 novel-cards，按四步走通「获取 → 放置 → 安装 → 落地首卡」：
+
+1. **获取**：`git clone https://github.com/snifferhu/novel-cards.git`（跟更推荐），
+   或下载 release 归档包（一次性快照，升级需重新下载）。
+2. **放置**：克隆 / 解压目录放任意位置即可——`install.sh` 以脚本所在目录为源码根，
+   无固定路径依赖（`--link` 软链模式须长期保留源目录）。
+3. **安装**：`./install.sh`（装到全局 OpenCode + Claude Code）/ `--target opencode|claude`
+   （单端）/ `--link`（开发期软链）。装后在 agent skills 面板确认 `novel-cards` 可见。
+4. **落地**：`./install.sh --project <path>` 生成骨架 → 进入该目录跑 `nc-初始化` →
+   第一条 `nc-角色` / `nc-桥段` 指令建出第一张卡（即下方主线第 1–2 步）。
+
 ## 主线六步（最小闭环）
 
 走通「建卡 → 成稿 → 复盘」的最小创作闭环，只需以下六步：
@@ -51,6 +64,18 @@
 - `nc-导出` — 跨平台导出 PDF / Word
 - `nc-更名` — 改书名 / 全局代号重命名（**先预览后替换，不动原始素材**）
 - `nc-检索` / `nc-清洗` / `nc-注册` — 检索资产 / 素材降噪 / 注册自定义类型
+
+## 多本作品与署名（同项目）
+
+一个工程可同时管理多本书：每本是 `works/<work-id>/` 独立子空间，数据互不串卡。
+
+- **再开一本**：`nc-初始化 --new-work`（在既有工程内追加，不另起工程）。
+- **限定作用域**：任意 `nc-*` 技能加 `--work <work-id>`；缺省按「显式 → active_work →
+  唯一书 → 否则提示」解析，绝不静默猜错书。
+- **跨书检索 / 总览**：`nc-检索 --all-works`（结果带 work-id 归属）或查询「本工程有哪些书」。
+- **多笔名署名**：`nc-注册` 登记笔名到 `registry/pen-names.yaml`；每本设 `default_pen_name`，
+  单章可用 frontmatter `pen_name` 覆写；`nc-导出` / `nc-成稿` 按生效笔名落款。
+- 单本工程（无 `works[]`）行为与引入前完全一致。
 
 ## 长短篇差异
 

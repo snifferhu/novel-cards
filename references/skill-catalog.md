@@ -23,11 +23,11 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
 
 | # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | OO 归属 | 备注 |
 |---|---|---|---|---|---|---|
-| 1 | `nc-初始化` | `nc-init` | 新建创作工程，一键生成目录骨架、build 脚本、三份引导文档（agents/quickstart/skill-reference）、config/skills.yaml；支持 `--lang zh/en`，可指定长短篇预设 | false | `StoryWorld.constructor()` | 项目起点，一个项目只运行一次 |
+| 1 | `nc-初始化` | `nc-init` | 新建创作工程，一键生成目录骨架、build 脚本、三份引导文档（agents/quickstart/skill-reference）、config/skills.yaml；支持 `--lang zh/en`，可指定长短篇预设；`--new-work` 在既有工程内追加一本书（works/<id>/ 子空间 + works[] 条目） | false | `StoryWorld.constructor()` | 新工程走 constructor；既有工程内 `--new-work` 追加作品子容器 |
 | 2 | `nc-素材` | `nc-material` | 原始素材收纳入库，原样封存，分配 id + 来源/版权/分类标签；入库前过通胀过滤器 gate | false | `StoryWorld.import_raw()` | 素材录入入口 |
 | 3 | `nc-清洗` | `nc-clean` | 素材降噪预处理，生成独立干净副本，原始素材保留不动 | false | `StoryWorld.clean_object()` | 素材杂乱才用，可选 |
-| 4 | `nc-检索` | `nc-query` | 检索素材、全部卡片资产（含 `type:character_tendency` 与按角色过滤），返回候选资产池 | false | `StoryWorld.query()` | 系统底层自带私有查重 |
-| 5 | `nc-注册` | `nc-reg` | 注册自定义卡片类型、自定义动线 track 标签、动向卡人格基线原型枚举取值（写入 registry 白名单） | false | `StoryWorld.config.register_type()` | 需要扩展类型时使用 |
+| 4 | `nc-检索` | `nc-query` | 检索素材、全部卡片资产（含 `type:character_tendency` 与按角色过滤）；`--all-works` 跨书检索（结果带 work-id 归属）+ 作品总览，返回候选资产池 | false | `StoryWorld.query()` | 系统底层自带私有查重；多书工程可跨 works/ 子空间检索 |
+| 5 | `nc-注册` | `nc-reg` | 注册自定义卡片类型、自定义动线 track 标签、动向卡人格基线原型枚举取值、笔名（写入 registry 白名单，含 pen-names.yaml） | false | `StoryWorld.config.register_type()` | 需要扩展类型 / 登记笔名时使用 |
 | 6 | `nc-更名` | `nc-rename` | 全局标识符替换：改故事书名 / 全局代号重命名（跨卡片/伏笔/快照/桥段/图谱引用统一替换）；先出【替换预览清单】确认后批量写入，不动 res/ 原始素材与正文口语称呼 | false | `StoryWorld.rename_identifier()` | 工程维护类，非创作主线强制节点 |
 
 ### B. 叙事卡片建模组
@@ -65,7 +65,7 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
 |---|---|---|---|---|---|---|
 | 21 | `nc-量化` | `nc-metric` | 挂载张力、爆点、信息载荷等量化指标，供长篇深度打磨与批量统计 | true | `Metric.create()` / `NcObject.validate()` | 可被其他技能内部自动唤起 |
 | 22 | `nc-图谱` | `nc-graph` | 渲染叙事森林时序图、角色关系、动线链路图、积木联动总图 | true | `StoryWorld.export()` 的 graph 投影 | 可被其他技能内部自动唤起 |
-| 23 | `nc-成稿` | `nc-draft` | **自动出正文初稿**：读取已备好的设定/桥段/大纲/暗线/角色等卡片，按 `--length short/mid/long` 控制篇幅，生成 `manuscript/` 手稿提案供作者校阅调整 | false | `StoryWorld.export()` 的 render 阶段 | 写稿环节核心；与 nc-词频 配合（成稿出内容，词频管约束） |
+| 23 | `nc-成稿` | `nc-draft` | **自动出正文初稿**：读取已备好的设定/桥段/大纲/暗线/角色等卡片，按 `--length short/mid/long` 控制篇幅，生成 `manuscript/` 手稿提案供作者校阅调整；提案头部标注署名（作品默认笔名 / 章节 `pen_name` 覆写） | false | `StoryWorld.export()` 的 render 阶段 | 写稿环节核心；与 nc-词频 配合（成稿出内容，词频管约束） |
 | 24 | `nc-词频` | `nc-wordfreq` | 词频向量 + 感官均衡强约束校验工具（纯约束，不出正文）；为 nc-成稿 提供约束输入 | false | `LexStat.create()` / `render()` 强约束输入 | 约束工具，长篇精细打磨 |
 
 ### E. 审计校验组
@@ -81,7 +81,7 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
 | # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | OO 归属 | 备注 |
 |---|---|---|---|---|---|---|
 | 28 | `nc-定稿` | `nc-finalize` | 生成工程快照归档、打上锁定标记 | false | `StoryWorld.snapshot()` 批量 + 锁定标记 | 可选分支，自娱可跳过 |
-| 29 | `nc-导出` | `nc-export` | Pandoc 底层，跨平台（Windows/Mac/Ubuntu）导出 PDF / Word | false | `StoryWorld.export()` 序列化落盘 | 需导出文件才走 |
+| 29 | `nc-导出` | `nc-export` | Pandoc 底层，跨平台（Windows/Mac/Ubuntu）导出 PDF / Word；按生效笔名（作品 `default_pen_name` / 章节 `pen_name` 覆写）落署名 | false | `StoryWorld.export()` 序列化落盘 | 需导出文件才走；多书工程加 `--work` 限定目标书 |
 | 30 | `nc-复盘` | `nc-retrospect` | 沉淀经验、洞察，回流素材库，开启新一轮构思 | false | `Reflection.create()` + `StoryWorld.import_raw()` 反哺 | 收尾节点 |
 
 ### 内部流水线视角 → 六组映射
@@ -145,13 +145,19 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
 下表给出每个技能的典型入参（作者提供的信息）与主要产物（落盘位置）。所有
 产物均遵守提案制：AI 出完整草案，作者确认后自行落盘。
 
+> **多书作用域**：全部创作 / 审计 / 导出技能接受可选 `--work <work-id>`，把操作限定到
+> 指定作品子空间（`works/<id>/`）；缺省按「当前默认书」规则解析——① 显式 `--work` →
+> 用之；② 否则读 `config/project.yaml` 的 `active_work` 指针；③ 否则 `works[]` 恰好一条
+> → 即之；④ 否则（多书且无指针）**不静默猜测**，提示作者用 `--work` 指定并列出候选。
+> 单本工程（无 `works[]`）缺省即唯一书，行为与引入前逐字一致。详见 `references/layout.md`。
+
 | 技能 | 典型入参 | 主要产物（相对使用方工程根） |
 |---|---|---|
-| `nc-初始化` | `--lang zh/en`、`--mode short/mid/long` | 工程骨架目录 + `agents.md`/`quickstart.md`/`skill-reference.md` 三份引导文档 + `config/project.yaml` + `config/skills.yaml` + build 脚本 |
+| `nc-初始化` | `--lang zh/en`、`--mode short/mid/long`；`--new-work`（既有工程内追加一本书） | 新工程：工程骨架目录 + `agents.md`/`quickstart.md`/`skill-reference.md` 三份引导文档 + `config/project.yaml` + `config/skills.yaml` + build 脚本；`--new-work`：`works/<work-id>/` 子空间骨架 + `works[]` 条目追加 + `active_work` 指针更新 |
 | `nc-素材` | 本地文件路径 / 纯文本 / 网页 URL | `res/inbox/` 封存记录 + `cards/corpus/co-*.md` 语料卡；入库前过通胀过滤器 gate |
 | `nc-清洗` | 目标素材 id | 独立干净副本（`res/` 下派生文件），原始素材不动 |
-| `nc-检索` | 关键词 + 类型/标签/来源/状态筛选（支持 `type:character_tendency`、`role:ac-*`） | 候选资产池（对话输出，不落盘） |
-| `nc-注册` | 自定义类型名 / track 标签名 / 动向人格基线原型 key（含 label、boundary_hints） | `registry/` 白名单追加条目 |
+| `nc-检索` | 关键词 + 类型/标签/来源/状态筛选（支持 `type:character_tendency`、`role:ac-*`）；`--all-works`（跨书）/ `--work <id>`（限单书）/ 作品总览查询 | 候选资产池（对话输出，不落盘；跨书结果带 work-id 归属标签）+ 作品总览清单 |
+| `nc-注册` | 自定义类型名 / track 标签名 / 动向人格基线原型 key（含 label、boundary_hints）/ 笔名（key + display_name + note） | `registry/` 白名单追加条目（含 `pen-names.yaml` 笔名条目） |
 | `nc-更名` | 旧标识符 → 新标识符（书名或全局代号） | 【替换预览清单】→ 确认后批量写入 cards/ 各层 + history 快照 + CHANGELOG 追加 + latest.md 更新（不动 res/ 与正文口语称呼） |
 | `nc-角色` | 名字、分类标签、动机、首出场 | `cards/characters/ac-*.md`（type: actor） |
 | `nc-姿态` | pose_tag、内核、插槽、多视角文案 | `cards/pose-bank/po-*.md` |
@@ -169,13 +175,13 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
 | `nc-编排` | `--source` 素材 / `--reference` 原有资产 / `--prompt` 情节目标 / `--mode expand/rewrite/restructure` | compose_plan（create_plot/edit_plot/archive_plot/update_tendency/bind_sensory_cue 五类任务）→ 审核定稿 → 前置 nc-校阅 → 顺序执行（每步调底层技能 + CHANGELOG + latest.md）；计划存为素材（tag:compose-plan） |
 | `nc-量化` | 章节区间、指标维度 | `cards/metrics/mt-*.md` + `index/metric-index.json` 追加 |
 | `nc-图谱` | 对象/主题 | `graph/*.html`（由 `index/card-graph.json` 重渲染） |
-| `nc-成稿` | 章节/桥段 id + `--length short/mid/long`（篇幅档位） | `manuscript/chapter-*.md` 正文初稿（走提案制，作者校阅后落盘） |
+| `nc-成稿` | 章节/桥段 id + `--length short/mid/long`（篇幅档位）+ `--work <id>`（多书限定） | `manuscript/chapter-*.md` 正文初稿（走提案制，作者校阅后落盘）；提案头部标注署名（作品默认笔名 / 章节 `pen_name` 覆写） |
 | `nc-词频` | 章节/桥段 id | `cards/lexstats/lx-*.md` 词频向量 + 感官均衡约束报告（纯约束，不出正文） |
 | `nc-校阅` | 章节/范围 | `reflections/review-*.md` + `review-*.json`（只出意见；含动向逻辑冲突检查，内置调用 nc-节奏） |
 | `nc-节奏` | 章节区间 | 节奏评估报告 + `reflections/rhythm-rt-*.json`（只给建议） |
 | `nc-守卫` | （无，整体扫描） | `reflections/safety-check/sg-*.md` + `.json`（只告警） |
 | `nc-定稿` | （无，整体操作） | `history/` 快照 + `CHANGELOG.md` 追加 + `latest.md` 更新 |
-| `nc-导出` | 目标格式（pdf/docx） | `export/` 中间产物 + `release/` 成品 |
+| `nc-导出` | 目标格式（pdf/docx）+ `--work <id>`（多书限定） | `export/` 中间产物 + `release/` 成品（按生效笔名落署名：作品 `default_pen_name` / 章节 `pen_name` 覆写） |
 | `nc-复盘` | 章节 id | `reflections/rf-*.md`（五段结构） |
 | `nc-对标`（分析模式） | 作品名、基础信息 | `cards/custom/refwork/rw-*.md`（refwork 档案，独立 tree_id） |
 

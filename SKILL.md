@@ -79,12 +79,13 @@ skill 读写均以**使用方工程根**为基准，走相对路径。骨架由 
 
 ```
 <consumer-project>/
-  agents.md            # Agent 引导（nc-初始化 生成，可编辑）
-  config/project.yaml  # lang / mode / pipeline_option
-  registry/            # .yaml 静态配置白名单（7 个文件）
-  index/               # .json 机器索引 / 图森林真值
-    card-graph.json    # 图森林（节点+边+tree_id）
-  res/inbox/           # 原始素材封存区
+   agents.md            # Agent 引导（nc-初始化 生成，可编辑）
+   config/project.yaml  # lang / mode / pipeline_option（+ 可选 works[] 多书清单 / active_work 指针）
+   registry/            # .yaml 静态配置白名单（含 pen-names.yaml 笔名白名单）
+   works/               # 多本作品工作区：每本书 = works/<work-id>/ 独立子空间（缺省单本工程时为空）
+   index/               # .json 机器索引 / 图森林真值
+     card-graph.json    # 图森林（节点+边+tree_id）
+   res/inbox/           # 原始素材封存区
   cards/               # .md 人类主编辑载体（业务源头）
     characters/        # type: actor（ac-）
     plotpoints/        # type: plotpoint（pp-）
@@ -113,11 +114,19 @@ skill 读写均以**使用方工程根**为基准，走相对路径。骨架由 
   CHANGELOG.md latest.md
 ```
 
-详细布局与各目录职责见 `references/layout.md`。
+ 详细布局与各目录职责见 `references/layout.md`。
 
----
+ **多本作品作用域**：一个工程 MAY 容纳多本书（`works/<work-id>/` 子空间，数据隔离）。
+ 全部 `nc-*` 创作 / 审计 / 导出技能接受可选 `--work <work-id>` 把操作限定到指定书；
+ 缺省按「当前默认书」规则解析（显式 `--work` → `active_work` 指针 → `works[]` 恰好一条
+ → 否则提示作者显式指定，绝不静默猜错书）。单本工程（无 `works[]`）行为与引入前完全
+ 一致。`nc-初始化 --new-work` 在既有工程内追加一本书（不另起工程）；署名经
+ `registry/pen-names.yaml` 笔名白名单管理（`nc-注册` 登记），`nc-导出` / `nc-成稿` 落款。
+ 详见 `references/layout.md` §多本作品工作区。
 
-## 3. 29 技能速查总表（六组）
+ ---
+
+ ## 3. 29 技能速查总表（六组）
 
 按功能分六组。所有技能支持中文与英文双向别名调用，新手优先中文；输入任一别名
 内部自动映射，返回提示仍以中文为主、英文名括号附带。面向作者呈现的是**用户可主动
@@ -129,11 +138,11 @@ skill 读写均以**使用方工程根**为基准，走相对路径。骨架由 
 
 | 中文 | 英文 | 职责 |
 |---|---|---|
-| `nc-初始化` | `nc-init` | 新建工程骨架 + agents/quickstart/skill-reference 三文档 + config；`--lang zh/en`、长短篇预设 |
+| `nc-初始化` | `nc-init` | 新建工程骨架 + agents/quickstart/skill-reference 三文档 + config；`--lang zh/en`、长短篇预设；`--new-work` 在既有工程内追加一本书（works/<id>/ 子空间） |
 | `nc-素材` | `nc-material` | 原素材收纳入库（本地/纯文本/URL），入库前自动过通胀过滤器 gate |
 | `nc-清洗` | `nc-clean` | 素材降噪预处理，生成独立干净副本，原始素材保留不动 |
-| `nc-检索` | `nc-query` | 检索素材与全部卡片资产（含 `type:character_tendency`、按角色过滤），返回候选资产池 |
-| `nc-注册` | `nc-reg` | 注册自定义卡片类型 / 动线 track 标签 / 动向人格基线原型（写入 registry 白名单） |
+| `nc-检索` | `nc-query` | 检索素材与全部卡片资产（含 `type:character_tendency`、按角色过滤）；`--all-works` 跨书检索 + 作品总览，返回候选资产池 |
+| `nc-注册` | `nc-reg` | 注册自定义卡片类型 / 动线 track 标签 / 动向人格基线原型 / 笔名（写入 registry 白名单） |
 | `nc-更名` | `nc-rename` | 全局标识符替换（书名/代号），先预览后批量写入，不动 res/ 与口语称呼 |
 
 ### 3.B 叙事卡片建模组
@@ -166,7 +175,7 @@ skill 读写均以**使用方工程根**为基准，走相对路径。骨架由 
 |---|---|---|
 | `nc-量化` | `nc-metric` | 挂载张力、爆点、信息载荷等量化指标（长篇/深度打磨）〔auto_invokable〕 |
 | `nc-图谱` | `nc-graph` | 渲染叙事森林时序图、角色关系、动线链路图、积木联动总图〔auto_invokable〕 |
-| `nc-成稿` | `nc-draft` | 读全部卡片出正文初稿，`--length short/mid/long` 控篇幅（走提案制） |
+| `nc-成稿` | `nc-draft` | 读全部卡片出正文初稿，`--length short/mid/long` 控篇幅（走提案制）；提案头部标注署名（作品默认笔名 / 章节覆写） |
 | `nc-词频` | `nc-wordfreq` | 词频向量 + 感官均衡强约束校验（纯约束，不出正文），为成稿提供输入 |
 
 ### 3.E 审计校验组
@@ -182,7 +191,7 @@ skill 读写均以**使用方工程根**为基准，走相对路径。骨架由 
 | 中文 | 英文 | 职责 |
 |---|---|---|
 | `nc-定稿` | `nc-finalize` | 生成工程快照归档、打上锁定标记（可选分支） |
-| `nc-导出` | `nc-export` | Pandoc 底层，跨平台导出 PDF / Word |
+| `nc-导出` | `nc-export` | Pandoc 底层，跨平台导出 PDF / Word；按生效笔名（作品默认 / 章节覆写）落署名 |
 | `nc-复盘` | `nc-retrospect` | 沉淀经验、洞察，回流素材库，开启新一轮构思 |
 
 > **分析模式专用**：`nc-对标`(nc-refwork) 是 v1.0 主体保留的外部作品拆解学习技能

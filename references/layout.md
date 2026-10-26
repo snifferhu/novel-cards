@@ -23,7 +23,11 @@
     tracks-registry.yaml      # 自定义动线 track 标签白名单
     tags-registry.yaml        # 语义标签白名单
     burst-tags-registry.yaml  # 爆点标注白名单
-    tendency-prototypes.yaml  # 动向卡人格基线原型白名单（骨架 only，经 nc-注册 写入）
+     tendency-prototypes.yaml  # 动向卡人格基线原型白名单（骨架 only，经 nc-注册 写入）
+     pen-names.yaml            # 笔名白名单（key/display_name/note；骨架 only，经 nc-注册 写入；多书署名用）
+  works/                     # 多本作品工作区：每本书 = works/<work-id>/ 独立子空间（含该书 cards/manuscript/index/graph/registry + 单书 config 片段）
+    <work-id>/               # 例：works/book-a/、works/book-b/；与工程根共享 registry 词表与 tools/
+      cards/ manuscript/ index/ graph/ registry/   # 该书私有命名空间（数据隔离，互不串卡）
   index/                   # .json 机器索引 / 图森林真值
     card-graph.json          # 图森林（节点+边+tree_id）
     metric-index.json        # 量化数值索引
@@ -81,7 +85,8 @@
 | `reflections/` | `.md` / `.json` | 反思卡 + 审计意见书 | ✅ 直接改 |
 | `manuscript/` | `.md` | 正文章节手稿 | ✅ 直接改 |
 | `index/` | `.json` | 机器索引、图森林真值、数值索引 | ⚠️ 系统同步生成，优先经 nc- 指令改动 |
-| `registry/` | `.yaml` | 静态配置白名单 | ✅ 人工少量维护（或经 nc-注册） |
+| `registry/` | `.yaml` | 静态配置白名单（含 `pen-names.yaml` 笔名白名单） | ✅ 人工少量维护（或经 nc-注册） |
+| `works/<work-id>/` | 混合 | 多本作品工作区子空间（每本书独立 cards/manuscript/index/graph/registry） | ✅ 直接改（限该书子空间内） |
 | `graph/` | `.html` | 可视化看板，纯展示投影 | ❌ 由 json 重生成，不存业务逻辑 |
 | `res/inbox/` | 原始格式 | 原始素材封存 | ✅ 原样封存，不可原地覆盖 |
 | `export/` / `release/` | 多格式 | 导出中间产物 / 成品 | — |
@@ -193,6 +198,27 @@
 - **回炉机制**：后续若出现新的独家洞察，可以按 `nc-过滤` 重新评估，
   判定通过后转入 `cards/`。
 
+## 多本作品工作区（works/）
+
+一个使用方工程 MAY 容纳多本独立作品。每本书是 `works/<work-id>/` 下的独立子空间，
+拥有各自独立的 `cards/` / `manuscript/` / `index/` / `graph/` / `registry/` 命名空间与
+独立 `tree_id` 族，彼此数据隔离、互不串卡；工程级共享物（`registry/` 的类型 / track /
+原型 / 笔名白名单、`tools/`、`build.sh`）留在工程根。
+
+- **单本工程向后兼容**：`config/project.yaml` 不含 `works[]` 字段时，整个工程视为唯一
+  隐式 work（work-id = 工程根），全部 `nc-*` 技能行为与引入本能力前完全一致；MUST NOT
+  因缺 `works[]` 报错或强制迁移。
+- **作品清单**：`config/project.yaml` 的可选 `works[]` 数组索引全部作品，每元素含
+  `id`（work-id，全局唯一）/ `title` / `mode`（可覆写工程默认）/ `lang` /
+  `default_pen_name`（指向 `registry/pen-names.yaml` 的笔名 key，可选）/ `tree_id_root`
+  （该书图森林子树根标记）。
+- **作用域参数**：全部 `nc-*` 创作 / 审计 / 导出技能接受可选 `--work <work-id>`，把操作
+  限定在指定作品子空间内；缺省按「当前默认书」规则解析（显式 `--work` → `active_work`
+  指针 → `works[]` 恰好一条 → 否则提示作者用 `--work` 指定，绝不静默猜错书）。
+- **OO 对齐**：`works/` 表述为 `StoryWorld` 容器下挂多个「作品子容器」（每个子容器自身
+  也是一组 `NcObject` + 局部 `index` 图森林），是 `references/oo-model.md` 类层次的延伸，
+  不新增基类 / 子类。详见 `references/oo-model.md`。
+
 ## 路径引用规范
 
 - 所有路径引用必须使用**相对使用方工程根**的相对路径，例如
@@ -242,7 +268,8 @@ novel-cards skill 支持四种安装方式：
     project.yaml           # lang / mode / pipeline_option 占位
     skills.yaml            # 29 技能条目骨架占位（auto_invokable 默认值）
     .gitkeep
-  registry/.gitkeep
+  registry/.gitkeep            # pen-names.yaml 等白名单由 nc-初始化 填充
+  works/.gitkeep               # 多本作品工作区（每本书 = works/<work-id>/ 子空间）
   index/.gitkeep
   templates/.gitkeep
   res/inbox/.gitkeep

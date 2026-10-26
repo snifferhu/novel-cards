@@ -20,8 +20,8 @@
 
 ## 1. v0 → v1 迁移指引（旧使用方工程升级必读）
 
-如果你是从 **v0（九类卡 + `ch-` 前缀 + 12 触发词）** 升级到 **v1.0（15+ 类卡 +
-`ac-` 前缀 + 24 技能）** 的旧工程，请按本节执行一次性硬切换。**不做双轨兼容逻辑**：
+如果你是从 **v0（九类卡 + `ch-` 前缀 + 12 触发词）** 升级到 **v1.0（16+ 类卡 +
+`ac-` 前缀 + 29 技能）** 的旧工程，请按本节执行一次性硬切换。**不做双轨兼容逻辑**：
 迁移完成后旧写法不再被识别。
 
 ### 1.1 批量替换 frontmatter（sed 命令）
@@ -59,7 +59,7 @@ cd /path/to/novel-cards && ./install.sh --project /path/to/your/novel
 `registry/`、`index/`、`res/inbox/`、`history/`、`release/`、`export/`、
 `config/project.yaml` 等。
 
-### 1.3 触发词对照表（旧 12 → 新 24）
+### 1.3 触发词对照表（旧 12 → 新 29）
 
 | 旧触发词（v0） | 新触发词（v1.0） | 变化说明 |
 |---|---|---|
@@ -78,9 +78,10 @@ cd /path/to/novel-cards && ./install.sh --project /path/to/your/novel
 
 **新增技能（v0 无对应）**：`nc-初始化` / `nc-素材` / `nc-清洗` / `nc-检索` /
 `nc-姿态` / `nc-感官标记` / `nc-对标` / `nc-积木` / `nc-量化` / `nc-词频` /
-`nc-成稿` / `nc-校阅` / `nc-节奏` / `nc-守卫` / `nc-定稿` / `nc-导出`。
+`nc-成稿` / `nc-校阅` / `nc-节奏` / `nc-守卫` / `nc-定稿` / `nc-导出` /
+`nc-动向` / `nc-研判` / `nc-编排` / `nc-更名`。
 
-完整 24 技能清单见 `references/skill-catalog.md`。
+完整 29 技能清单见 `references/skill-catalog.md`。
 
 ### 1.4 迁移后验证
 
@@ -95,12 +96,24 @@ grep -rnE '^type: character$' cards/ --include='*.md'
 
 ---
 
-## 2. 三种安装方式
+## 2. 获取与安装
+
+### 2.0 获取来源（二选一）
+
+| 途径 | 命令 / URL | 适用场景 |
+|---|---|---|
+| **① 克隆仓库** | `git clone git@github.com:snifferhu/novel-cards.git && cd novel-cards` | 持续开发、跟更升级（可 `git pull`） |
+| **② release 归档包** | 下载并解压最新 release tarball（含 `install.sh`，目录结构与克隆等价） | 一次性快照使用；**不含后续更新**，升级需重新下载 |
+
+### 放置约定（无固定路径依赖）
+
+`install.sh` 以**脚本自身所在目录**为源码根（`SRC`），因此仓库 / 解压目录可放在任意位置，无需安装到特定系统路径。注意：`--link` 软链模式要求源目录长期保留（移动 / 删除会断开全局 skills 下的软链）；copy 模式把文件复制到目标 skills 目录后不再依赖源目录。
+
+### 2.1 三种安装方式
 
 ```bash
-# 克隆本仓库
-git clone git@github.com:snifferhu/novel-cards.git
-cd novel-cards
+# 在克隆 / 解压后的目录内执行
+./install.sh                        # 同时装到 OpenCode 与 Claude Code 全局
 ```
 
 ### 方式 A · 复制模式（推荐日常使用）
@@ -131,6 +144,20 @@ mkdir -p <project>/.opencode/skills
 cp -r novel-cards <project>/.opencode/skills/
 ```
 
+### 装后自检（确认 skill 已生效）
+
+完成安装后，用以下任一方法确认 `novel-cards` 已被当前 agent 加载、描述正确、可正常触发：
+
+- **skills 面板**：在 OpenCode / Claude Code 的 skills 列表里确认 `novel-cards` 可见且描述字段正确；
+- **目录核对**：
+
+```bash
+ls -la ~/.config/opencode/skills/novel-cards/   # 若 target 含 opencode
+ls -la ~/.claude/skills/novel-cards/            # 若 target 含 claude
+```
+
+- **触发词试探**：对 agent 输入「维护小说卡片体系」，看是否命中本 skill。
+
 ---
 
 ## 3. 初始化使用方工程骨架
@@ -149,12 +176,14 @@ cp -r novel-cards <project>/.opencode/skills/
 ~/my-novel/
   agents.md               # Agent 引导（兜底版；nc-初始化 生成交互式完整版）
   config/
-    project.yaml          # lang / mode / pipeline_option
-  registry/               # .yaml 静态配置白名单
+    project.yaml          # lang / mode / pipeline_option（可选 works[] / active_work）
+  registry/               # .yaml 静态配置白名单（含 pen-names.yaml 笔名白名单）
   index/                  # .json 机器索引 / 图森林真值
   res/inbox/              # 原始素材封存区
   templates/              # 每类卡独立模板
-  cards/
+  tools/                  # 可选只读运行时（nc_validate.py：validate/audit/simulate，缺失降级纸面校验）
+  works/                  # 多本作品工作区（单本工程可空；每本书一个子空间，见「多本作品与署名」）
+  cards/                  # 单本工程 = 工程根即唯一作品；多本工程下位于 works/<work-id>/cards/
     characters/           # type: actor（id 前缀 ac-，目录名保留 characters）
     plotpoints/           # 桥段卡 pp-
     items/                # 道具卡 it-（黑盒三层）
@@ -256,32 +285,72 @@ nc-素材（原始文本入库原样留底）→ nc-清洗（杂乱素材降噪�
 
 ---
 
+## 4.5 多本作品与署名（可选）
+
+一个使用方工程 MAY 同时管理**多本独立作品**：每本书是 `works/<work-id>/` 下的独立
+子空间（各自独立的 `cards/` / `manuscript/` / `index/` / `graph/` / `registry/` 命名空间 +
+独立 `tree_id` 族），彼此数据隔离、互不串卡；工程级共享物（`registry/` 词表、`tools/`、
+`build.sh`）留在工程根。**向后兼容**：存量单本工程无 `works[]` 时视为隐式单本工作区
+（唯一 work-id = 工程根），全部 `nc-*` 技能行为与引入前完全一致。
+
+- **新建一本书**（不另起工程）：`nc-初始化 --new-work`（或自然语言「在这个项目里再开一本」），
+  在 `works/<新work-id>/` 生成该书完整骨架并追加进 `config/project.yaml` 的 `works[]`。
+- **作用域**：全部 `nc-*` 创作 / 审计 / 导出技能接受可选 `--work <work-id>`；缺省按
+  「显式 `--work` → `active_work` 指针 → `works[]` 恰好一条 → 否则提示用 `--work` 指定」
+  规则解析，绝不静默猜错书。
+- **跨书检索 / 总览**：`nc-检索 --all-works "关键词"` 跨全部作品检索（结果带 work-id 归属标签），
+  或查询「本工程有哪些书」（列出 `works[]` 全部条目）。
+- **多笔名署名**：笔名经 `registry/pen-names.yaml` 白名单管理（先 `nc-注册` 登记，如
+  `夜行客`→key `pen-yexingke`）；每本作品声明 `default_pen_name`，单章可用 frontmatter 的
+  `pen_name` 覆写；`nc-导出` / `nc-成稿` 按生效笔名落款。未注册笔名被拦截（沿用「注册前置」）。
+  注意：`refwork.author` 指**外部对标作品的原作者**，与本项目笔名署名正交、互不影响。
+
+详见 `references/layout.md` §多本作品工作区 与 `references/card-schema.md` §署名与多笔名。
+
+---
+
 ## 5. 触发 skill：说什么话
 
-### 5.1 统一前缀触发（推荐，好记，24 个均支持英文别名）
+### 5.1 统一前缀触发（推荐，好记，29 个均支持英文别名）
 
-以 `nc-` 为统一前缀，后接操作对象：
+以 `nc-` 为统一前缀，后接操作对象（下表列高频示例；全量 29 技能六组分类见
+`references/skill-catalog.md`）：
 
 | 提示语 | 动作 |
 |---|---|
+| `nc-初始化` / `nc-初始化 --new-work` | 新建工程骨架 / 同工程再开一本 |
+| `nc-素材 <参考文本>` | 原素材收纳入库（自动过通胀过滤器 gate） |
+| `nc-清洗 <素材>` | 素材降噪预处理，生成干净副本 |
+| `nc-检索 "关键词"` / `nc-检索 --all-works "关键词"` | 检索资产 / 跨全部作品检索 |
+| `nc-注册 <取值>` | 注册自定义类型 / track / 动向原型 / 笔名（写 registry 白名单） |
+| `nc-更名 <代号>` | 全局标识符替换（先预览后批量写入） |
 | `nc-角色 姜璃` | 建/更新叙事行动单元卡（人/蛤蟆/器灵等） |
-| `nc-桥段 chapter-012` | 建桥段卡 |
+| `nc-姿态 招牌戒备` | 建角色招牌动作库（内核+插槽+多视角模板） |
 | `nc-道具 青铜钥匙` | 建道具卡（黑盒三层） |
 | `nc-场景 月光审判台` | 建场景卡 |
+| `nc-感官标记 王熙凤笑声` | 建感官标记卡（声音/乐曲/气味/光影触发器） |
+| `nc-动向 姜璃 克制↔放荡` | 建角色动向滑动标尺卡（tend-，每次变动绑桥段推手） |
+| `nc-桥段 chapter-012` | 建桥段卡 |
 | `nc-伏笔 孤儿院信件` | 建伏笔卡（payoff 硬约束） |
-| `nc-动线 青铜钥匙` | 建动线卡（追踪对象跨章节流向，积木驱动） |
-| `nc-势力 神智会` | 建势力卡 |
 | `nc-快照 chapter-050` | 建时间锚点状态切片卡 |
+| `nc-势力 神智会` | 建势力卡 |
 | `nc-暗线 母亲的舌头` | 建暗线卡（独立命名空间） |
 | `nc-积木 进门名场面` | 建积木模块（trigger_map 联动） |
+| `nc-研判 姜璃 突破底线` | 单点创作推演，出方案 A/B/C（只出建议不改卡） |
+| `nc-编排 --source ... --mode rewrite` | 批量剧情编排三段式（计划→审核→执行） |
 | `nc-图谱 青铜钥匙` | 生成 HTML 关系图谱 |
+| `nc-量化 第10~20章` | 挂载张力/爆点/信息载荷量化指标 |
 | `nc-成稿 chapter-012 --length long` | 读全部卡片出正文初稿提案 |
 | `nc-词频 chapter-012` | 词频向量+感官均衡约束校验 |
 | `nc-校阅 第5章` | 叙事审计（只出意见不改稿） |
+| `nc-节奏 第10~20章` | 章节疏密/爆点密度/留白校验 |
+| `nc-守卫 第5章` | 隐私+合规内容扫描 |
+| `nc-定稿` | 生成工程快照归档并锁定 |
+| `nc-导出 chapter-012 --format pdf` | Pandoc 导出 PDF/Word（按生效笔名落款） |
 | `nc-复盘 chapter-050` | 建反思卡（单章复盘） |
 | `nc-过滤 职场逆袭新角度` | 对新素材跑通胀过滤器三问（手动复检入口） |
 
-完整 24 技能中英双语映射见 `references/skill-catalog.md`。
+完整 29 技能中英双语映射见 `references/skill-catalog.md`。
 
 ### 5.2 自然语言触发（无前缀，兜底）
 
@@ -350,7 +419,7 @@ AI：（读上下文：manuscript/chapter-003.md、cards/factions/fa-shenzhi-hui
 
 ---
 
-## 7. 15+ 类卡：每类的典型提示语
+## 7. 16+ 类卡：每类的典型提示语
 
 | 卡片 | type | id 前缀 | 前缀式提示语 | 输出位置 |
 |---|---|---|---|---|
@@ -369,6 +438,7 @@ AI：（读上下文：manuscript/chapter-003.md、cards/factions/fa-shenzhi-hui
 | 量化 | `metric` | `mt-` | `nc-量化 第10~20章` | `cards/metrics/mt-*.md` |
 | 姿态 | `pose` | `po-` | `nc-姿态 招牌戒备` | `cards/pose-bank/po-001.md` |
 | 感官标记 | `sensory_cue` | `su-` | `nc-感官标记 王熙凤笑声` | `cards/custom/sensory_cue/su-*.md` |
+| 角色动向 | `character_tendency` | `tend-` | `nc-动向 姜璃 克制↔放荡` | `cards/tendencies/tend-jiang-li.md` |
 | 对标作品 | `refwork` | `rw-` | `nc-对标 <作品名>` | `cards/custom/refwork/rw-*.md` |
 | 反思 | `reflection` | `rf-` | `nc-复盘 chapter-050` | `reflections/chapter-050.md`（不入 `cards/`） |
 
