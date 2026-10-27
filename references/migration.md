@@ -101,7 +101,10 @@ novel-cards v1.0 提供**版本迁移文档**能力：定义版本策略、五�
 - **MUST NOT 自动清理旧快照**：由作者自行定期清理
 - **多次 build 累积**：连续执行 N 次 build.sh → `history/` 下累积 N 个不同时间戳的快照目录，互不覆盖
 
-详见 `references/build-contract.md`（build 脚本职责边界契约）。
+build 脚本职责边界（只做备份 / 目录准备 / 历史快照归档 / 生成 `export_request.json`，
+**不调 pandoc、不渲染文档**——真正的合并 / 转 docx / pdf 由 `nc-导出` skill 承接）见
+README「版本迁移与 build 脚本职责边界」节与 USAGE §14.5；使用方工程的 `build.sh` /
+`build.cmd` 骨架由 `install.sh --project` 生成。
 
 ## 7. 规范可见性
 

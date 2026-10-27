@@ -462,76 +462,6 @@ pose 卡的插槽填充 MUST 遵循三级优先级：
   过滤；`nc-校阅` 可校验动向逻辑冲突（偏移无推手、方向与 direction_rule 矛盾等）。
   详见 `references/card-schema.md` character_tendency 节与 `templates/tendencies.md`。
 
-## 规则 28：SPACE_001 空间物理校验（v1.0 增量）
-
-SPACE_001 是 nc-校阅 / nc-研判 / nc-编排 共用的空间合理性校验规则，消费 scene 卡的
-`usable_clearance` / `mobility_constraint` / `obstacle_list` 与 actor 卡的
-`base_bounds` / `pose_bounding_map` / `sensory_mask` 字段，对密闭 / 狭小场景中的角色
-位移、肢体舒展、碰撞穿墙做物理合理性推演，防止「小轿车里站起来跳舞」类空间矛盾进入正文。
-
-### 双模式行为差异
-
-| 校验维度 | simple 档 | deep 档 |
-|---|---|---|
-| 姿态包围盒 vs 场景净空 | 不校验（爽文特权保留） | L1_HARD：姿态包围盒超出 `usable_clearance` 即抛错（如净高 1.15m 内站立 h=1.72m → SPACE_001 L1） |
-| 穿墙 / 穿固体 | L1_HARD（双模式共用硬规则） | L1_HARD（双模式共用硬规则） |
-| 重心 / 平衡约束 | 不校验 | L2_WARN：狭小环境中大幅度动作无铺垫时提示触碰周边物体 / 重心失衡风险 |
-| 感官通道权限 | 仅拦失明硬错（`sensory_mask.sight: disabled` 却写视觉描写 → SENSE_001 L1） | 全七通道严格校验（前庭觉 / 内感受 / 感知缺陷精细校验） |
-
-### override_note 豁免机制
-
-deep 档 L2_WARN（重心 / 平衡违和）MAY 被卡片 frontmatter 的 `override_note` 字段豁免——
-作者填「专项训练」/「刻意控制」/「玄幻体质」等说明后，nc-校阅 不再对该条抛 L2。
-L1_HARD（穿墙 / 包围盒冲突）**不可**被 `override_note` 豁免，必须修改卡片或桥段描述。
-
-### 向后兼容铁律
-
-scene / actor 卡缺失 `usable_clearance` / `pose_bounding_map` / `sensory_mask` 任一字段时，
-SPACE_001 对该卡跳过空间推演，行为与引入本能力前完全一致；MUST NOT 因缺字段报错。
-
-详见 `references/card-schema.md` §scene / §actor 字段契约与 `references/review-rules.md`
-SPACE_001 条目。
-
-## 规则 29：机器可读校阅规则库驱动（v1.0 增量）
-
-nc-校阅 / nc-研判 / nc-编排 三个审计类技能的校验逻辑 SHALL 优先读取使用方工程
-`config/review-rules.json`（机器可读规则库，结构见 `references/review-rules.md`），
-按 `rule_set` 逐条匹配卡片 frontmatter 字段执行结构化校验，输出结果带 `rule_id` 标注。
-
-### 缺失降级铁律
-
-- **WHEN** 使用方工程无 `config/review-rules.json`
-- **THEN** nc-校阅 降级为纸面校验（按本文件 28 条硬规则 + references 自然语言规则执行），
-  不报错、不阻断；行为与引入本能力前完全一致
-- **WHEN** `config/review-rules.json` 存在但 JSON 损坏（解析失败）
-- **THEN** nc-校阅 抛出 L2_WARN 提示「规则库 JSON 损坏，已降级纸面校验」，继续执行
-  既有纸面校验逻辑，不阻断流程
-
-### 三级输出格式
-
-nc-校阅 输出 MUST 按三级分组呈现（定义见 `references/review-rules.md` §3）：
-
-| 级别 | 标识 | 输出内容 |
-|---|---|---|
-| `L1_HARD` | 🔴 | 附具体修改方案（如「移除焦点动线或修正 sensory_mask」）；**不可豁免** |
-| `L2_WARN` | 🔵 | 附两种处理选项：①「补充动机备注豁免」（填 `override_note`）②「微调描写贴合逻辑」 |
-| `L3_INSPIRATION` | 💡 | 附启发建议（非告警项） |
-
-### 与 audit 只读铁律的协同
-
-本规则驱动层**不改变**规则 12（审计类技能只读）的铁律边界：nc-校阅 仍 MUST 只输出
-意见，绝不自动修改、删除任何文稿或卡片内容。rules.json 仅作为校验逻辑的结构化驱动源，
-所有发现仍以「建议」形式呈现，由作者自行决定是否采纳并手动修改。
-
-### 与 hard-rules.md 的一致性
-
-`references/hard-rules.md`（本文件）是**自然语言权威**，`config/review-rules.json` 是
-**机器真值**。二者 MUST 保持一致：新增 / 修改本文件规则时，同步更新 rules.json 对应
-条目；反之亦然。当二者冲突时，**本文件优先**（人类权威），nc-校阅 应报告冲突并降级
-纸面校验。
-
-详见 `references/review-rules.md` 完整规则库契约与 `templates/review-rules.json` 骨架模板。
-
 ## 规则 27：双模式剖面开关（v1.0 增量）
 
 `config/project.yaml` MAY 含 `world_base_profile` 字段（取值 `simple` / `deep`），作为
@@ -571,6 +501,76 @@ nc-校阅 输出 MUST 按三级分组呈现（定义见 `references/review-rules
 自动联动结果。完整映射表见 `references/data-layering.md` §3。
 
 详见 `references/data-layering.md` §3 与 `references/review-rules.md` 的规则库契约。
+
+## 规则 28：SPACE_001 空间物理校验（v1.0 增量）
+
+SPACE_001 是 nc-校阅 / nc-研判 / nc-编排 共用的空间合理性校验规则，消费 scene 卡的
+`usable_clearance` / `mobility_constraint` / `obstacle_list` 与 actor 卡的
+`base_bounds` / `pose_bounding_map` / `sensory_mask` 字段，对密闭 / 狭小场景中的角色
+位移、肢体舒展、碰撞穿墙做物理合理性推演，防止「小轿车里站起来跳舞」类空间矛盾进入正文。
+
+### 双模式行为差异
+
+| 校验维度 | simple 档 | deep 档 |
+|---|---|---|
+| 姿态包围盒 vs 场景净空 | 不校验（爽文特权保留） | L1_HARD：姿态包围盒超出 `usable_clearance` 即抛错（如净高 1.15m 内站立 h=1.72m → SPACE_001 L1） |
+| 穿墙 / 穿固体 | L1_HARD（双模式共用硬规则） | L1_HARD（双模式共用硬规则） |
+| 重心 / 平衡约束 | 不校验 | L2_WARN：狭小环境中大幅度动作无铺垫时提示触碰周边物体 / 重心失衡风险 |
+| 感官通道权限 | 仅拦失明硬错（`sensory_mask.sight: disabled` 却写视觉描写 → SENSE_001 L1） | 全七通道严格校验（前庭觉 / 内感受 / 感知缺陷精细校验） |
+
+### override_note 豁免机制
+
+deep 档 L2_WARN（重心 / 平衡违和）MAY 被卡片 frontmatter 的 `override_note` 字段豁免——
+作者填「专项训练」/「刻意控制」/「玄幻体质」等说明后，nc-校阅 不再对该条抛 L2。
+L1_HARD（穿墙 / 包围盒冲突）**不可**被 `override_note` 豁免，必须修改卡片或桥段描述。
+
+### 向后兼容铁律
+
+scene / actor 卡缺失 `usable_clearance` / `pose_bounding_map` / `sensory_mask` 任一字段时，
+SPACE_001 对该卡跳过空间推演，行为与引入本能力前完全一致；MUST NOT 因缺字段报错。
+
+详见 `references/card-schema.md` §scene / §actor 字段契约与 `references/review-rules.md`
+SPACE_001 条目。
+
+## 规则 29：机器可读校阅规则库驱动（v1.0 增量）
+
+nc-校阅 / nc-研判 / nc-编排 三个审计类技能的校验逻辑 SHALL 优先读取使用方工程
+`config/review-rules.json`（机器可读规则库，结构见 `references/review-rules.md`），
+按 `rule_set` 逐条匹配卡片 frontmatter 字段执行结构化校验，输出结果带 `rule_id` 标注。
+
+### 缺失降级铁律
+
+- **WHEN** 使用方工程无 `config/review-rules.json`
+- **THEN** nc-校阅 降级为纸面校验（按本文件 29 条硬规则 + references 自然语言规则执行），
+  不报错、不阻断；行为与引入本能力前完全一致
+- **WHEN** `config/review-rules.json` 存在但 JSON 损坏（解析失败）
+- **THEN** nc-校阅 抛出 L2_WARN 提示「规则库 JSON 损坏，已降级纸面校验」，继续执行
+  既有纸面校验逻辑，不阻断流程
+
+### 三级输出格式
+
+nc-校阅 输出 MUST 按三级分组呈现（定义见 `references/review-rules.md` §3）：
+
+| 级别 | 标识 | 输出内容 |
+|---|---|---|
+| `L1_HARD` | 🔴 | 附具体修改方案（如「移除焦点动线或修正 sensory_mask」）；**不可豁免** |
+| `L2_WARN` | 🔵 | 附两种处理选项：①「补充动机备注豁免」（填 `override_note`）②「微调描写贴合逻辑」 |
+| `L3_INSPIRATION` | 💡 | 附启发建议（非告警项） |
+
+### 与 audit 只读铁律的协同
+
+本规则驱动层**不改变**规则 12（审计类技能只读）的铁律边界：nc-校阅 仍 MUST 只输出
+意见，绝不自动修改、删除任何文稿或卡片内容。rules.json 仅作为校验逻辑的结构化驱动源，
+所有发现仍以「建议」形式呈现，由作者自行决定是否采纳并手动修改。
+
+### 与 hard-rules.md 的一致性
+
+`references/hard-rules.md`（本文件）是**自然语言权威**，`config/review-rules.json` 是
+**机器真值**。二者 MUST 保持一致：新增 / 修改本文件规则时，同步更新 rules.json 对应
+条目；反之亦然。当二者冲突时，**本文件优先**（人类权威），nc-校阅 应报告冲突并降级
+纸面校验。
+
+详见 `references/review-rules.md` 完整规则库契约与 `templates/review-rules.json` 骨架模板。
 
 ## 违规响应模板
 

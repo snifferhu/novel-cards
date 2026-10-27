@@ -337,7 +337,7 @@ Novel-Cards 仅提供轻量化单点内容摘录辅助。工具会主动遵从�
 - `references/compliance.md` — robots.txt 校验链路、四套中英文案、版权提醒、工具定位声明。
 - `references/agents-guide.md` — agents.md 四块、意图匹配表、显式指令优先、文档三分拆、可编辑性。
 - `references/loop.md` — 三场景流程编排、长短篇分级矩阵、研判/编排迭代分支、动向弧光链、写稿/审稿/修稿/定稿分支开关。
-- `references/hard-rules.md` — 26 条硬规则详解（含 24 研判/编排只出建议 / 25 更名先预览后替换 / 26 动向变动绑定桥段）。
+- `references/hard-rules.md` — 29 条硬规则详解（含 24 研判/编排只出建议 / 25 更名先预览后替换 / 26 动向变动绑定桥段 / 27 双模式剖面开关 / 28 SPACE_001 空间物理校验 / 29 机器可读校阅规则库驱动）。
 - `references/layout.md` — 使用方工程目录树、install.sh 与 nc-初始化 双入口边界。
 - `references/filter.md` — 通胀过滤器三问（现为 nc-素材 入库前自动 gate + 手动 nc-过滤 复检）。
 

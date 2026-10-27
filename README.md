@@ -174,7 +174,7 @@ novel-cards/
     compliance.md         # robots.txt 校验链路、四套中英文案、版权提醒、工具定位声明
     agents-guide.md       # agents.md 四块、意图匹配表、显式指令优先、文档三分拆、可编辑性
     loop.md               # 三场景流程编排、长短篇分级矩阵、研判/编排迭代分支、动向弧光链、分支开关
-    hard-rules.md         # 26 条硬规则详解
+    hard-rules.md         # 29 条硬规则详解
     layout.md             # 使用方工程目录树、install.sh 与 nc-初始化 双入口边界
     filter.md             # 通胀过滤器三问（nc-素材 入库前自动 gate + 手动 nc-过滤 复检）
   tools/
@@ -450,7 +450,7 @@ Novel-Cards 仅提供轻量化单点内容摘录辅助。工具会主动遵从�
 页面；不尝试绕过反爬/登录/动态渲染；任何不确定情况按「禁止」处理终止；抓取成功
 必附版权提醒。详见 `references/compliance.md`。
 
-## 硬规则速览（26 条，违反即视为失败）
+## 硬规则速览（29 条，违反即视为失败）
 
 1. **禁止直接写卡**：AI 绝不 `edit` / `write` 使用方工程的卡片、图谱、反思卡、练习稿文件。
 2. **提案制**：AI 回写卡片以完整 Markdown 提案、图谱以完整 HTML 提案输出，用户确认后自行落盘。
