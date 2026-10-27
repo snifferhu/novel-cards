@@ -138,7 +138,7 @@ skill 读写均以**使用方工程根**为基准，走相对路径。骨架由 
 
 | 中文 | 英文 | 职责 |
 |---|---|---|
-| `nc-初始化` | `nc-init` | 新建工程骨架 + agents/quickstart/skill-reference 三文档 + config；`--lang zh/en`、长短篇预设；`--new-work` 在既有工程内追加一本书（works/<id>/ 子空间） |
+| `nc-初始化` | `nc-init` | 新建工程骨架 + agents/quickstart/skill-reference 三文档 + config；`--lang zh/en`、长短篇预设；`--new-work` 在既有工程内追加一本书（works/<id>/ 子空间）。**接管存量工程前先扫描工作空间，产出逐目录迁移规划表交作者确认**（源路径/建议目标目录/建议 type·id 前缀/处置动作四列）；无法机械转写的历史素材封存 `res/inbox/` 并提醒清洗（走 `nc-清洗`/`nc-素材`）；skill 仅在归位后接管，绝不自动移动/改写存量文件 |
 | `nc-素材` | `nc-material` | 原素材收纳入库（本地/纯文本/URL），入库前自动过通胀过滤器 gate |
 | `nc-清洗` | `nc-clean` | 素材降噪预处理，生成独立干净副本，原始素材保留不动 |
 | `nc-检索` | `nc-query` | 检索素材与全部卡片资产（含 `type:character_tendency`、按角色过滤）；`--all-works` 跨书检索 + 作品总览，返回候选资产池 |
@@ -228,6 +228,19 @@ skill 读写均以**使用方工程根**为基准，走相对路径。骨架由 
 16. **actor 与 item 区分**：拥有独立意志主动行动的道具 SHALL 建模为 actor（object-spirit）。
 17. **跨动线同步走 module**：MUST 走积木 `trigger_map`，禁止零散写联动。
 18. **长线四方对齐**：长线爆点 MUST 满足 fs- + tl- + md- + lx- 提前 ≥8 章预埋。
+19. **双模式剖面开关**：`config/project.yaml` 的 `world_base_profile`（simple/deep，缺省隐式
+   simple，存量工程行为不变不报错）控制 nc-校阅/nc-研判/nc-编排 校验松紧度——simple 只拦 L1
+   硬错、deep 全链路严格校验；单卡片 frontmatter 的 `profile_override` 可局部覆写全局值，仅作用
+    于该卡及其直接关联资产；子模块开关按 auto_enable_map 联动，显式覆盖优先。详见
+    `references/data-layering.md` §3 与 `references/review-rules.md`。
+ 20. **初始化先扫描后接管**：`nc-初始化`（含 `--new-work`）接管存量工程前 MUST 先扫描
+     工作空间、产出逐目录迁移规划表交作者确认；无法机械转写的历史素材封存 `res/inbox/`
+     并提醒清洗；skill 仅在归位后接管，MUST NOT 自动移动 / 重命名 / 改写任何存量文件。
+ 21. **防空炮铁律**：有卡有据、无卡停推、越界告警、转变留档、零空炮脑补。nc-研判/nc-校阅/
+     nc-编排 执行推演前 MUST 先检查资产卡存在性——缺卡直接返回「资产不足」，MUST NOT 基于
+     想象补全设定继续推演；deep 模式人格突破原型轴边界须同时满足触发事件 + override_note +
+     change_log 三条件；感官/空间/物理缺卡即停推理不脑补；剧情输出遵守伏笔闭环/时序合法/
+     人格自洽/资产对应四原则。详见 `references/anti-hallucination.md`。
 
 完整规则见 `references/hard-rules.md`。
 

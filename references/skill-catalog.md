@@ -39,7 +39,7 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
 | 9 | `nc-道具` | `nc-item` | 新建/更新道具卡，黑盒自动拆分物理/感知/抽象三层动线 | false | `Prop.create()` / `Prop.patch()` | 黑盒优先，高级模式解锁底层 |
 | 10 | `nc-场景` | `nc-scene` | 新建/更新场景卡片，记录环境基础参数 | false | `Scene.create()` / `Scene.patch()` | — |
 | 11 | `nc-感官标记` | `nc-sensorycue` | 创建/编辑感官标记卡（声音、乐曲、气味、光影等氛围触发器），可绑定角色/场景，供桥段引用 | false | `SensoryCue.create()` / `SensoryCue.broadcast()` | 本身不是剧情事件 |
-| 12 | `nc-动向` | `nc-tendency` | 创建/编辑 `character_tendency`（`tend-`）角色动向滑动标尺卡：刻画性格/心智倾向的带触发事件连续滑动标尺，每次变动绑定具体桥段事件作为推手；可选声明人格基线原型 `baseline_prototype`（须经 nc-注册） | false | `Tendency.create()` / `Role.act()` | 依附角色（target_role 引用 ac-），引用桥段（trigger_plot 引用 pp-） |
+| 12 | `nc-动向` | `nc-tendency` | 创建/编辑 `character_tendency`（`tend-`）角色动向滑动标尺卡：刻画性格/心智倾向的带触发事件连续滑动标尺，每次变动绑定具体桥段事件作为推手；可选声明人格基线原型 `baseline_prototype`（爽文 6 / deep 10 共 16 个原型，须经 nc-注册；一人一原型铁律） | false | `Tendency.create()` / `Role.act()` | 依附角色（target_role 引用 ac-），引用桥段（trigger_plot 引用 pp-） |
 
 ### C. 剧情结构组
 
@@ -149,11 +149,13 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
 > 指定作品子空间（`works/<id>/`）；缺省按「当前默认书」规则解析——① 显式 `--work` →
 > 用之；② 否则读 `config/project.yaml` 的 `active_work` 指针；③ 否则 `works[]` 恰好一条
 > → 即之；④ 否则（多书且无指针）**不静默猜测**，提示作者用 `--work` 指定并列出候选。
-> 单本工程（无 `works[]`）缺省即唯一书，行为与引入前逐字一致。详见 `references/layout.md`。
+> 单本工程（无 `works[]`）缺省即唯一书，行为与引入前逐字一致。`nc-初始化` 的存量扫描
+> 同样遵循此解析链：多本工程按每个纳入范围的 `works/<id>/` 子空间分别出带 work-id 归属
+> 标签的迁移规划表，单本工程为单张无标签表。详见 `references/layout.md` §存量工程接入。
 
 | 技能 | 典型入参 | 主要产物（相对使用方工程根） |
 |---|---|---|
-| `nc-初始化` | `--lang zh/en`、`--mode short/mid/long`；`--new-work`（既有工程内追加一本书） | 新工程：工程骨架目录 + `agents.md`/`quickstart.md`/`skill-reference.md` 三份引导文档 + `config/project.yaml` + `config/skills.yaml` + build 脚本；`--new-work`：`works/<work-id>/` 子空间骨架 + `works[]` 条目追加 + `active_work` 指针更新 |
+| `nc-初始化` | `--lang zh/en`、`--mode short/mid/long`；`--new-work`（既有工程内追加一本书） | 新工程：工程骨架目录 + `agents.md`/`quickstart.md`/`skill-reference.md` 三份引导文档 + `config/project.yaml` + `config/skills.yaml` + build 脚本；`--new-work`：`works/<work-id>/` 子空间骨架 + `works[]` 条目追加 + `active_work` 指针更新。**存量工程**：接管前先扫描工作空间，产出迁移规划表（源路径 / 建议目标目录 / 建议 type·id 前缀 / 处置动作四列，处置动作 ∈ 直接归位 / 需转写为现行标准 / 封存 res/inbox 待清洗 / 忽略）交作者确认；无法机械转写的历史素材标「封存 res/inbox 待清洗」并附清洗提醒（指向 `nc-清洗`/`nc-素材`）；多本工程按 `works/<id>/` 子空间分别出带归属标签的规划表，单本工程为单张无标签表；skill 仅在归位后接管，绝不自动移动/改写存量文件 |
 | `nc-素材` | 本地文件路径 / 纯文本 / 网页 URL | `res/inbox/` 封存记录 + `cards/corpus/co-*.md` 语料卡；入库前过通胀过滤器 gate |
 | `nc-清洗` | 目标素材 id | 独立干净副本（`res/` 下派生文件），原始素材不动 |
 | `nc-检索` | 关键词 + 类型/标签/来源/状态筛选（支持 `type:character_tendency`、`role:ac-*`）；`--all-works`（跨书）/ `--work <id>`（限单书）/ 作品总览查询 | 候选资产池（对话输出，不落盘；跨书结果带 work-id 归属标签）+ 作品总览清单 |

@@ -59,3 +59,55 @@ payoff_of: null
 ## 与伏笔的关联
 
 - 是否为某伏笔的埋点 / 回收：<参见 foreshadow 卡 `fs-xxx`>
+
+## 张力参数与因果链路增强（可选字段）
+
+deep 模式 SHALL 校验前置桥段是否提前发生、单章节爆点密度（战略爆点豁免）、预埋-回收
+链路完整性；simple 模式仅登记。新字段全部可选，缺失时 MUST 按现有行为处理（向后兼容）。
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `tension_base` | int | 基础张力值 1~10（BEAT_001 张力密度校验依据） |
+| `is_strategic_climax` | bool | 是否战略高潮（与既有 `strategic_burst` 语义等价，二选一使用：`strategic_burst` 为节奏豁免标记，`is_strategic_climax` 为张力密度豁免标记；二者同时为 true 时以 `strategic_burst` 为准） |
+| `beat_type` | enum | 桥段类型：`normal` / `foreshadow` / `payoff` / `turning` / `climax` / `resolution` |
+| `sequence_index` | int | 章节内顺序索引（用于 BEAT_001 张力曲线排序） |
+| `precondition_beat_ids[]` | array | 前置桥段 id 数组（pp-*），本桥段发生前 MUST 已发生 |
+| `postcondition_beat_ids[]` | array | 后置桥段 id 数组（pp-*），依赖本桥段结果 |
+| `foreshadow_link` | object | 伏笔链路：`plant_beat_id`（埋点桥段 pp-*）/ `payoff_beat_id`（回收桥段 pp-*） |
+| `mood_shift_summary` | string | 情绪转变摘要（如「从容→警觉」） |
+| `personality_trigger_actor_ids[]` | array | 触发性格变动的角色 id 数组（ac-*），联动 tend-* 动向卡 |
+| `actor_involved_ids[]` | array | 参与角色 id 数组（ac-*） |
+| `prop_involved_ids[]` | array | 参与道具 id 数组（it-*） |
+| `cue_trigger_ids[]` | array | 触发的感官标记 id 数组（su-*） |
+| `space_id` | string | 场景 id（sc-*），SPACE_001 空间校验依据 |
+| `pose_refs[]` | array | 引用的姿态卡 id 数组（po-*，既有字段） |
+
+### 最小示例（车内争吵，假名占位）
+
+```yaml
+title: 车内争吵
+chapter: chapter-012
+summary: 角色-甲与角色-乙在密闭车厢内因旧玉佩归属爆发争执
+participants: [ac-角色-甲, ac-角色-乙, it-旧青玉佩, sc-车厢]
+lexstat_bind: lx-chapter-012-tension
+module_list: []
+pose_refs: [po-斜倚握扇]
+foreshadow_links: [fs-jade-origin]
+strategic_burst: false
+pivotal: true
+tension_base: 7
+is_strategic_climax: false
+beat_type: turning
+sequence_index: 3
+precondition_beat_ids: [pp-玉佩拾取]
+postcondition_beat_ids: [pp-玉佩断裂]
+foreshadow_link:
+  plant_beat_id: pp-玉佩拾取
+  payoff_beat_id: pp-玉佩断裂
+mood_shift_summary: 表面从容→暗流涌动→爆发
+personality_trigger_actor_ids: [ac-角色-甲]
+actor_involved_ids: [ac-角色-甲, ac-角色-乙]
+prop_involved_ids: [it-旧青玉佩]
+cue_trigger_ids: [su-jade-warm-01]
+space_id: sc-车厢
+```

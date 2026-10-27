@@ -102,7 +102,7 @@
 | `nc-图谱` | 对象/主题 | `graph/*.html`（由 `index/card-graph.json` 重渲染） |
 | `nc-成稿` | 章节/桥段 id + `--length short/mid/long` | `manuscript/chapter-*.md` 正文初稿（提案制） |
 | `nc-词频` | 章节/桥段 id | `cards/lexstats/lx-*.md` 词频向量 + 感官均衡约束报告 |
-| `nc-校阅` | 章节/范围 | `reflections/review-*.md` + `.json`（只出意见） |
+| `nc-校阅` | 章节/范围；校验深度由 `config/project.yaml` 的 `world_base_profile`（simple/deep，缺省隐式 simple）+ 单卡 `profile_override` 局部覆写决定 | `reflections/review-*.md` + `.json`（只出意见） |
 | `nc-节奏` | 章节区间 | 节奏评估报告 + `reflections/rhythm-rt-*.json` |
 | `nc-守卫` | （无，整体扫描） | `reflections/safety-check/sg-*.md` + `.json`（只告警） |
 | `nc-定稿` | （无，整体操作） | `history/` 快照 + CHANGELOG 追加 + latest.md 更新 |

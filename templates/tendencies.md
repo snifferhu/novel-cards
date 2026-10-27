@@ -8,7 +8,15 @@ target_role: ac-<slug>        # 依附的角色 id（ac-*），本卡刻画该�
 dimension: <克制↔放荡>         # 倾向维度名，两端语义须明确
 baseline: 0                   # 基准刻度（故事起点时的初始倾向位置，通常为 0）
 direction_rule: <长期趋势方向>  # 如「长期向放荡偏移」「总体回稳」
-# baseline_prototype: <原型 key>  # 可选：人格基线原型（如 npd-grandiose），取值须经 nc-注册 写入 registry/tendency-prototypes.yaml
+# baseline_prototype: <原型 key>  # 可选：人格基线原型（爽文 6 / deep 10，共 16 个），取值须经 nc-注册 写入 registry/tendency-prototypes.yaml；一人一原型铁律（MUST NOT 数组多值）
+# slide_axes:                    # 可选：六轴滑动标尺初始值（-10~+10），从原型 six_axes 加载后手动微调
+#   risk: 0                      # 风险倾向（负=规避/正=冒险）
+#   empathy: 0                   # 共情能力（负=冷漠/正=高共情）
+#   impulse_control: 0           # 冲动控制（负=易冲动/正=克制）
+#   trust: 0                     # 信任倾向（负=戒备/正=开放）
+#   desire_orient: 0             # 欲望导向（负=克制/正=即时满足）
+#   aggression: 0                # 攻击性（负=温和/正=好斗）
+# prototype_note: <原型备注占位>  # 从 registry 条目的 prototype_note 复制；含滑动方向约束 + 适用身份 + 避雷点（不预置具体数值，需经 nc-注册）
 current_value: 0              # 当前刻度值（= history[] 最后一条的 value）
 history:                      # 变动历史数组，每条绑定一个具体桥段事件作为推手
   - value: 1
@@ -40,7 +48,9 @@ notes: <补充说明：与其他维度的联动、作者备注等>
 | `dimension` | ✅ | 倾向维度名（如「克制↔放荡」「信任↔戒备」），两端语义须明确 |
 | `baseline` | ✅ | 基准刻度（通常为 0） |
 | `direction_rule` | ❌ | 长期趋势方向描述 |
-| `baseline_prototype` | ❌ | 可选：人格病理类稳定基线原型 key（registry-backed 枚举，如 `npd-grandiose`），须经 `nc-注册` 写入 `registry/tendency-prototypes.yaml`；创作参考锚点，非临床诊断 |
+| `baseline_prototype` | ❌ | 可选：人格基线原型 key（registry-backed 枚举，爽文 6 / deep 10 共 16 个），须经 `nc-注册` 写入 `registry/tendency-prototypes.yaml`；**一人一原型铁律**（MUST NOT 数组多值）；障碍类仅创作基线非临床诊断。详见 `references/personality-prototypes.md` |
+| `slide_axes` | ❌ | 可选：六轴滑动标尺初始值对象（risk/empathy/impulse_control/trust/desire_orient/aggression，取值 -10~+10），从原型 `six_axes` 加载后可手动微调；缺省 = 不做六轴校验 |
+| `prototype_note` | ❌ | 可选：从 registry 条目的 `prototype_note` 复制的备注文本（含滑动方向约束 + 适用身份 + 避雷点）；deep 模式据此做 PERSON_001 边界漂移校验 |
 | `current_value` | ✅ | 当前刻度值（= history[] 最后一条的 value） |
 | `history` | ✅ | 变动历史数组，每条含 `{value, trigger_plot, description}` |
 | `notes` | ❌ | 补充说明（与其他维度的联动等） |

@@ -100,7 +100,61 @@ yaml 配置约定，以及 html 视图由 json 重生成的投影规则。
 该示例可被任意 JSON 解析器解析。多作品对标场景下，`trees` 数组含多个子图对象，
 分别以不同 `tree_id` 标记。
 
-## 3. registry yaml 文件清单与结构约定
+## 3. config/project.yaml 双模式剖面开关（v1.0 增量）
+
+`config/project.yaml` MAY 含以下可选字段，控制 nc-校阅 / nc-研判 / nc-编排 三个技能的
+校验松紧度。**存量工程缺这些字段时 MUST 视为隐式 `simple` 模式**，全部技能行为与
+引入本能力前完全一致；MUST NOT 因缺字段报错或强制迁移。
+
+| 字段 | 取值 | 说明 |
+|---|---|---|
+| `world_base_profile` | `simple` / `deep` / 缺省 | 全局校验松紧度的唯一来源。缺省 = 隐式 `simple` |
+| `profile_override` | — | 不在此处声明；单卡片局部覆写走各卡 frontmatter 的 `profile_override` 字段（见下） |
+| `check_visual_focus` | `true` / `false` / 缺省 | 视觉焦点校验子模块开关。simple 档默认仅拦失明硬错；deep 档升级完整权重验算 |
+| `check_vestibular` | `true` / `false` / 缺省 | 前庭觉（平衡/眩晕/失重）校验子模块开关 |
+| `check_interoception` | `true` / `false` / 缺省 | 内感受（饥饿/疼痛/体温/心跳）校验子模块开关 |
+| `check_hormone_mutex` | `true` / `false` / 缺省 | 激素互斥组合合理性校验子模块开关 |
+| `check_perception_defect` | `true` / `false` / 缺省 | 感知缺陷精细校验子模块开关 |
+| `check_space_physics` | `true` / `false` / 缺省 | 空间物理（包围盒/位移/穿墙）校验子模块开关 |
+
+### auto_enable_map 联动表
+
+切换 `world_base_profile` 时，系统按以下映射自动启用 / 关闭六个子模块校验开关，
+作者无需逐项手动配置：
+
+| 子模块开关 | simple 档默认 | deep 档默认 |
+|---|---|---|
+| `check_visual_focus` | false（仅拦失明硬错） | true（完整权重验算） |
+| `check_vestibular` | false | true |
+| `check_interoception` | false | true |
+| `check_hormone_mutex` | false | true |
+| `check_perception_defect` | false | true |
+| `check_space_physics` | false（仅拦离谱穿墙/穿固体） | true（包围盒/位移/重心全推演） |
+
+**显式覆盖优先**：作者 MAY 在 `config/project.yaml` 显式设置任一子模块开关以突破
+默认联动；显式覆盖值 MUST 优先于 auto_enable_map 自动联动结果。例：`world_base_profile:
+simple` 但显式设 `check_space_physics: true` → 空间物理校验保持开启，其余子模块仍按
+simple 默认关闭。
+
+### 单卡片局部覆写（profile_override）
+
+每张卡片 frontmatter MAY 含 `profile_override` 字段（取值 `simple` / `deep` / 缺省）。
+当 `profile_override` 存在且非空时，MUST 优先于全局 `world_base_profile` 生效，仅作用于
+该卡片及其直接关联的桥段 / 快照 / 动线节点；不得污染其他卡片的校验上下文。
+
+- **WHEN** 全局 `world_base_profile: deep`，某桥段卡 frontmatter 含 `profile_override: simple`
+- **THEN** 该桥段及其绑定资产按 simple 规则校验，其余卡片仍按 deep 校验
+- **WHEN** 全局 `world_base_profile: simple`，某幻境 / 心理博弈桥段卡 frontmatter 含
+  `profile_override: deep`
+- **THEN** 该桥段按 deep 规则完整校验，其余卡片仍按 simple 校验
+- **WHEN** 某卡 `profile_override` 取值不在 `{simple, deep}` 集合内
+- **THEN** nc-校阅 抛出 L2_WARN 提示非法取值，按全局 `world_base_profile` 兜底处理，
+  不阻断流程
+
+详见 `references/hard-rules.md` 规则 27 与 `references/review-rules.md` 的
+auto_enable_map 定义。
+
+## 4. registry yaml 文件清单与结构约定
 
 `registry/` 目录 SHALL 包含以下配置文件（偏静态配置，人工少量维护）：
 
@@ -130,7 +184,7 @@ pipeline_option:
   enable_safety_guard: false  # 守卫默认关闭，需要时手动打开
 ```
 
-## 4. index/ 产物清单
+## 5. index/ 产物清单
 
 `index/` 目录 SHALL 包含（由 skill 指令驱动生成/更新）：
 
@@ -147,7 +201,7 @@ pipeline_option:
 `index/metric-index.json` + `index/card-graph.json` 中的 foreshadow 边计算，
 不重新解析全部 md 文件。
 
-## 5. html 重生成规则
+## 6. html 重生成规则
 
 - `graph/*.html` 是纯展示层，消费 `index/card-graph.json` 图数据渲染。
 - **json 一变，html 重生成**：`nc-图谱` 检测到 `card-graph.json` 变更后重新渲染，
@@ -156,7 +210,7 @@ pipeline_option:
   不被视为卡片，无 frontmatter。
 - 模板：`templates/relation-graph.html`（自包含 SVG，无外部依赖）。
 
-## 6. 迁移与备份友好
+## 7. 迁移与备份友好
 
 整个使用方工程目录 MUST 可直接同步/备份/换机：md 可读、json 可解析、yaml 可校验，
 资产不锁死在任何私有二进制格式。作者把整个工程目录复制到新机器，所有资产可用，

@@ -75,6 +75,10 @@
 - **跨书检索 / 总览**：`nc-检索 --all-works`（结果带 work-id 归属）或查询「本工程有哪些书」。
 - **多笔名署名**：`nc-注册` 登记笔名到 `registry/pen-names.yaml`；每本设 `default_pen_name`，
   单章可用 frontmatter `pen_name` 覆写；`nc-导出` / `nc-成稿` 按生效笔名落款。
+- **老项目接入**：已有内容的工程先跑 `nc-初始化` 出迁移规划表再归位——skill 扫描工作空间、
+  逐目录给出「源路径 / 建议目标目录 / 建议 type·id 前缀 / 处置动作」四列表交你确认；历史设定 /
+  章节规划等无法直接转写的进 `res/inbox/` 待清洗（后续走 `nc-清洗` / `nc-素材`）。skill 只在
+  归位后接管，绝不自动移动 / 改写你的存量文件。
 - 单本工程（无 `works[]`）行为与引入前完全一致。
 
 ## 长短篇差异
@@ -87,6 +91,21 @@
 | 量化/姿态/守卫 | 默认关闭 | 部分开启 | 全开 |
 
 > 详细分级矩阵见 skill 仓库 `references/loop.md`。
+
+## 双模式剖面（simple / deep）
+
+校验松紧度与长短篇 mode 正交，由 `config/project.yaml` 的 `world_base_profile` 控制：
+
+- **simple**（缺省）：nc-校阅 / nc-研判 / nc-编排 只拦 L1 硬错（感官权限冲突 / 空间穿墙 /
+  因果断裂），适合爽文快节奏创作。
+- **deep**：全链路严格校验（感官通道 + 前庭觉 + 内感受 + 激素互斥 + 感知缺陷 + 空间物理 +
+  性格滑动），适合深度写实推演。
+- **单卡覆写**：某张桥段 / 快照卡 frontmatter 加 `profile_override: simple|deep` 可局部切换，
+  仅作用于该卡及其直接关联资产。
+- 存量工程缺 `world_base_profile` 字段时按隐式 simple 处理，行为不变、不报错。
+
+> 完整 auto_enable_map 联动表与子模块开关说明见 skill 仓库 `references/data-layering.md` §3
+> 与 `references/review-rules.md`。
 
 ## 下一步
 

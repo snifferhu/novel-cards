@@ -138,6 +138,34 @@ ls -la ~/.claude/skills/novel-cards/            # 若 target 含 claude
 
 `.gitkeep` 是占位文件，不影响 skill 读取，可保留（推荐）或删除。
 
+### 2.1 初始化后冒烟测试
+
+完成 `install.sh --project` + `nc-初始化` 后，建议用本仓库自带的闭环测试 Demo
+（`examples/car-demo/`）做一次冒烟验证，确认四技能在 deep/simple 双模式下行为正确：
+
+```bash
+# 将 examples/car-demo/ 的 6 张假名卡拷入使用方工程的 cards/ 对应子目录
+# （sc-车厢 → cards/scenes/、ac-角色-甲 → cards/characters/、tend-角色-甲 →
+#  cards/tendencies/、it-旧青玉佩 → cards/items/、pp-车内争吵 → cards/plotpoints/、
+#  sn-定格 → cards/snapshots/），然后执行以下四条指令：
+
+# ① nc-校阅：审计校验（deep 模式预期输出 🔴L1 + 🔵L2 + 💡L3 三级分组；simple 仅 🔴L1 + 💡L3）
+nc-校阅
+
+# ② nc-研判：单点推演（"角色-甲在车厢内站起来会怎样？"→ deep 出 SPACE_001 告警 + 方案 A/B/C）
+nc-研判 "角色-甲在车厢内站起来会怎样？"
+
+# ③ nc-检索：资产检索（"旧青玉佩"→ 返回 item/plotpoint/snapshot/foreshadow 候选池）
+nc-检索 "旧青玉佩"
+
+# ④ nc-导出：归档导出（--chapter chapter-012 --format md → export/chapter-012-export.md）
+nc-导出 --chapter chapter-012 --format md
+```
+
+完整预期告警对照表与四条指令的详细预期输出见
+[`examples/car-demo/expected-output.md`](examples/car-demo/expected-output.md)。
+测试完成后删除拷入的 6 张假名卡即可恢复工程原状。
+
 ---
 
 ## 3. 三种使用场景的操作路径
@@ -819,6 +847,25 @@ rm -rf ~/my-novel/cards ~/my-novel/manuscript ~/my-novel/graph \
 find ~/my-novel/cards ~/my-novel/reflections ~/my-novel/graph \
      ~/my-novel/drafts -name '.gitkeep' -delete
 ```
+
+---
+
+## 14.5 版本迁移
+
+跨版本升级（如 0.x → 1.x 或 1.0 → 1.1）时，参考 `references/migration.md` 的完整指南：
+
+- **版本策略**：0.x 实验版（schema 可能变动，建议升级前手动备份 `history/` + `cards/`）；1.x 稳定正式版（优先兼容层，重大改动才强制迁移）
+- **五条兼容原则**：字段新增不改旧卡 / 改名删除需迁移脚本 / skill 别名永久保留 / 规则 ID 永久不变 / profile_override 机制保留
+- **升级判定四档**：✅ 非破坏性（直接继续用旧卡）/ ⚠️ 破坏性（提供迁移步骤）/ 🧪 实验版（建议备份）/ 🚀 稳定版（内置自动迁移）
+- **回滚四步**：找 history/ 快照 → 覆盖 cards+meta → 恢复 project.yaml → nc-检索 抽查引用
+- **废弃三档**：废弃 skill 保留别名软提示 / 废弃字段 L3 提示 / 超两大版本彻底移除
+
+使用方工程的 `MIGRATION.md`（由 `install.sh --project` 生成占位）是上述指南的最小投影，
+每次版本升级在「待填充区」追加改动点清单 / 迁移步骤 / 验证命令。
+
+**build 脚本职责边界**：`build.sh` / `build.cmd` 只做备份 / 目录准备 / 历史快照归档 /
+生成 `export_request.json`，**不调 pandoc、不渲染文档**——真正的合并 / 转 docx / pdf
+由 `nc-导出` skill 承接（读取 `export_request.json` 后执行 Pandoc 底层跨平台导出）。
 
 ---
 

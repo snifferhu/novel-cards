@@ -57,3 +57,49 @@ extra_constraint: 左臂受伤时左臂不得抬起
   `pose_refs` 引用。
 - P2 填充依赖 `snapshot`（`sn-*`）的 `used_pose` 字段反向校验「此刻状态能否支撑
   该 pose」。
+
+## 包围盒与多视角增强（可选字段）
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `pose_bounds` | object | 姿态包围盒 `{h, w, d}`（米），对接 actor_bounding 空间校验；deep 模式 SPACE_001 据此判定姿态是否超出场景净空间 |
+| `part_detail` | object | 六部位细节：`head` / `shoulder` / `hand_arm` / `torso` / `leg_foot` / `facial_tendency` |
+| `multi_view_module` | object | 五视角文案：`view_self` / `view_front` / `view_side` / `view_back` / `view_distant` |
+| `fit_mood` | array | 适配情绪列表（如 `[戒备, 专注]`） |
+| `unfit_mood` | array | 不适配情绪列表（如 `[狂喜, 崩溃]`） |
+| `variant_text` | object | 长短两版描写文本 `{short, full}` |
+
+deep 模式 SHALL 调用 space_snapshot 校验姿态包围盒是否超出场景净空间（SPACE_001）；
+simple 模式仅作描写素材调用。P1>P2>P3 插槽优先级铁律不变。
+
+### 最小示例（斜倚握扇，假名占位）
+
+```yaml
+name: 斜倚握扇
+pose_tag: relax
+core: 身体斜倚椅背，右手持扇轻抵下颌，目光微垂
+slots:
+  left_arm: {default: 搭在扶手上}
+  right_hand: {default: 持扇抵颌}
+slot_default: {left_arm: 搭在扶手上, right_hand: 持扇抵颌}
+pose_bounds: {h: 1.65, w: 0.65, d: 0.75}
+part_detail:
+  head: 微垂，目光半阖
+  shoulder: 放松下沉
+  hand_arm: 右手持扇轻抵下颌，左臂搭扶手
+  torso: 斜倚椅背约 15°
+  leg_foot: 右腿交叠于左腿上
+  facial_tendency: 似笑非笑，嘴角微扬
+multi_view_module:
+  view_self: 觉得此刻从容不迫
+  view_front: 对方看到斜倚的姿态与半阖的目光
+  view_side: 侧面轮廓呈慵懒弧线
+  view_back: 背影松散，肩线柔和
+  view_distant: 远处只见一个懒洋洋的剪影
+fit_mood: [从容, 慵懒, 审视]
+unfit_mood: [惊恐, 暴怒]
+variant_text:
+  short: 斜倚着，扇子抵在下巴上
+  full: 他整个人斜陷进椅背里，右手那柄折扇松松地抵着下颌，目光半阖，像是对眼前的一切都提不起真正的兴趣——但搭在扶手上的左手手指微微收紧，泄露了另一层心思
+extra_constraint: 坐姿类姿态，站立场景不可用
+```

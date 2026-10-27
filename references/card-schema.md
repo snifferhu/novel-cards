@@ -110,6 +110,9 @@ draft → active → archived
 | `affiliation` | ❌ | 所属势力 id |
 | `first_appearance` | ✅ | 首次出场章节 |
 | `cross_ref` | ❌ | 与 item 等的互相引用 id 数组（器灵觉醒场景用） |
+| `base_bounds` | ❌ | 角色基础包围盒：`height` / `width` / `depth`（米），供 SPACE_001 校验；缺省 = 不做空间推演 |
+| `pose_bounding_map` | ❌ | 各姿态包围盒映射，键为姿态名（如 `stand` / `sit` / `crouch`），值为 `{h, w, d}`；deep 模式据此判定姿态是否超出所在场景净空间 |
+| `sensory_mask` | ❌ | 七通道感官掩码对象：`sight` / `hearing` / `smell` / `taste` / `touch` / `vestibular` / `interoception`，取值 `ok` / `disabled`；某通道 `disabled` 时该角色禁止生成对应感官描写与动线（nc-校阅 抛 SENSE_001 L1_HARD） |
 
 **分类标签**（frontmatter 打标，不锁死枚举）：
 
@@ -161,6 +164,19 @@ first_appearance: chapter-001
 | `foreshadow_links` | ❌ | 关联伏笔 id 数组（`fs-*`） |
 | `strategic_burst` | ❌ | 是否战略爆点（boolean，触发节奏豁免） |
 | `pivotal` | ❌ | 是否关键转折（boolean） |
+| `tension_base` | ❌ | 基础张力值 1~10（BEAT_001 张力密度校验依据） |
+| `is_strategic_climax` | ❌ | 是否战略高潮（与 `strategic_burst` 语义等价，二选一使用；同时为 true 时以 `strategic_burst` 为准） |
+| `beat_type` | ❌ | 桥段类型：`normal` / `foreshadow` / `payoff` / `turning` / `climax` / `resolution` |
+| `sequence_index` | ❌ | 章节内顺序索引（BEAT_001 张力曲线排序） |
+| `precondition_beat_ids[]` | ❌ | 前置桥段 id 数组（pp-*），本桥段发生前 MUST 已发生 |
+| `postcondition_beat_ids[]` | ❌ | 后置桥段 id 数组（pp-*），依赖本桥段结果 |
+| `foreshadow_link` | ❌ | 伏笔链路对象：`plant_beat_id` / `payoff_beat_id`（pp-*） |
+| `mood_shift_summary` | ❌ | 情绪转变摘要（如「从容→警觉」） |
+| `personality_trigger_actor_ids[]` | ❌ | 触发性格变动的角色 id 数组（ac-*），联动 tend-* 动向卡 |
+| `actor_involved_ids[]` | ❌ | 参与角色 id 数组（ac-*） |
+| `prop_involved_ids[]` | ❌ | 参与道具 id 数组（it-*） |
+| `cue_trigger_ids[]` | ❌ | 触发的感官标记 id 数组（su-*） |
+| `space_id` | ❌ | 场景 id（sc-*），SPACE_001 空间校验依据 |
 
 最小示例：
 
@@ -201,6 +217,12 @@ track 绑定。
 | `blackbox` | ❌ | 三层结构对象（见下），黑盒模式由 skill 自动填充 |
 | `advanced_mode` | ❌ | boolean，打开后展示三层分区并允许手动调整感知 track 绑定 |
 | `cross_ref` | ❌ | 与觉醒 actor 的互相引用 id |
+| `physics` | ❌ | 物理参数对象：`bounding`（h/w/d）/ `mass` / `hardness` / `portable` / `penetrable`（SPACE_001 穿墙校验依据） |
+| `state_list[]` | ❌ | 道具状态列表，每条含 `state_name` / `description` / `linked_sensory_cue_id`（su-*） |
+| `perception_trace` | ❌ | 五感感知轨迹对象（visual/auditory/olfactory/gustatory/tactile + `perception_alias`） |
+| `foreshadow_timeline` | ❌ | 伏笔时序图谱：`pre_plant` / `pickup` / `hint_degree`（1~10） |
+| `interact_rule` | ❌ | 交互规则描述 |
+| `owner_history[]` | ❌ | 持有者流转历史，每条含 `chapter` / `owner_id`（ac-*）/ `event_note` |
 
 **黑盒三层**（`blackbox` 对象内部分区）：
 
@@ -257,6 +279,17 @@ blackbox:
 | `first_appearance` | ✅ | 首次出现章节 |
 | `atmosphere` | ❌ | 基调关键词 |
 | `recurrence` | ❌ | 是否重复出现 |
+| `usable_clearance` | ❌ | 空间净空对象：`width` / `depth` / `height`（米），供 SPACE_001 包围盒校验；缺省 = 不触发空间物理推演 |
+| `mobility_constraint` | ❌ | 活动约束对象：`can_stand` / `can_jump` / `can_spread_arms_wide`（boolean）；缺省 = 无约束 |
+| `obstacle_list` | ❌ | 障碍物数组，每项含 `name` / `penetrable`（boolean）；`penetrable: false` 的障碍 MUST NOT 被角色穿过（双模式共用硬规则） |
+| `env_note` | ❌ | 环境备注（如「密闭车厢，头顶距座椅约 30cm」） |
+
+**space_snapshot 子形态**（v1.0 增量，复用 `scene` type，不新建类型）：对密闭 / 狭小场景
+（小轿车 / 电梯 / 轿厢 / 密室等）声明 `usable_clearance` + `mobility_constraint` +
+`obstacle_list` 后，该场景即成为 SPACE_001 空间校验的输入。deep 模式下绑定此场景的桥段
+将触发姿态包围盒 vs 净空间的 L1 推演；simple 模式仅拦离谱穿墙 / 穿固体。开阔场景
+（`usable_clearance` 各维度 ≥ 3.0 且 `mobility_constraint` 全 true）不触发任何空间告警。
+存量 scene 卡缺失上述字段时行为不变（向后兼容）。
 
 ## foreshadow（伏笔卡）
 
@@ -326,6 +359,17 @@ nodes:
 | `members` | ❌ | 成员人物 id 数组 |
 | `goals` | ✅ | 势力目标描述 |
 | `influence` | ❌ | 影响范围文本 |
+| `core_purpose` | ❌ | 势力核心目的 |
+| `core_rule` | ❌ | 势力核心规则 |
+| `value_axis` | ❌ | 价值取向轴 |
+| `leader_actor_id` | ❌ | 领袖角色 id（ac-*），与 `members[]` 互补 |
+| `relation_map[]` | ❌ | 关系网络数组：`target_faction_id` / `relation_type`（ally/rival/hostile/subordinate/secret_collude）/ `relation_note` |
+| `signature_cue_ids[]` | ❌ | 感官招牌 id 数组（su-*） |
+| `default_reaction` | ❌ | 默认反应模式 |
+| `restraint_factor` | ❌ | 克制因素 |
+| `inner_factions[]` | ❌ | 内部派系数组：`sub_faction_name` / `advocate` / `leader_id` / `divergence_note` |
+| `controlled_prop_ids[]` | ❌ | 控制的道具 id 数组（it-*） |
+| `controlled_scene_ids[]` | ❌ | 控制的场景 id 数组（sc-*） |
 
 ## snapshot（快照卡，时间锚点状态切片）
 
@@ -347,6 +391,14 @@ actor，也可定格场景内多方角色/道具/势力/动线状态。用途：
 | `summary` | ✅ | 快照正文摘要 |
 | `used_pose` | ❌ | 引用姿态卡 id（校阅时校验「此刻状态能否支撑该 pose」） |
 | `related_cards` | ✅ | 关联卡片 id 数组 |
+| `beat_id` | ❌ | 依附桥段 id（pp-*），本快照定格该桥段的瞬时状态 |
+| `moment_tag` | ❌ | 时刻标签：`实拍` / `回忆` / `幻觉` / `传闻` / `梦境`（非实拍时 deep 模式放宽矛盾校验） |
+| `base_space_id` | ❌ | 基础场景 id（sc-*），SPACE_001 空间校验依据 |
+| `active_cue_ids[]` | ❌ | 此刻活跃的感官标记 id 数组（su-*） |
+| `active_props[]` | ❌ | 此刻活跃道具 id 数组（it-*） |
+| `perspectives[]` | ❌ | 多视角数组：`pov_actor_id` / `perception_text` / `cognition_bias` / `focus_point` / `known_info[]` / `unknown_info[]` |
+| `objective_fact` | ❌ | 客观真相（独立于任何 POV 的事实描述，deep 模式矛盾校验基准） |
+| `reuse_plans` | ❌ | 复用计划对象：`recall_beat_ids[]`（pp-*）/ `retell_by_actor_ids[]`（ac-*） |
 
 ## darklayer（暗线卡）
 
@@ -530,6 +582,12 @@ notes: 表层光影词与深层凝视隐喻词分开标记
 | `slot_default` | ✅ | P3 兜底值（未绑定快照时用） |
 | `multi_view` | ❌ | 多视角文案（host/self/hidden 等） |
 | `extra_constraint` | ❌ | 使用约束（如"水下不可鼓腮"） |
+| `pose_bounds` | ❌ | 姿态包围盒 `{h, w, d}`（米），对接 actor_bounding 空间校验；deep 模式 SPACE_001 据此判定 |
+| `part_detail` | ❌ | 六部位细节对象：`head` / `shoulder` / `hand_arm` / `torso` / `leg_foot` / `facial_tendency` |
+| `multi_view_module` | ❌ | 五视角文案对象：`view_self` / `view_front` / `view_side` / `view_back` / `view_distant` |
+| `fit_mood` | ❌ | 适配情绪列表 |
+| `unfit_mood` | ❌ | 不适配情绪列表 |
+| `variant_text` | ❌ | 长短两版描写文本对象 `{short, full}` |
 
 **插槽填充三级优先级**（MUST 遵循）：
 
@@ -574,6 +632,11 @@ extra_constraint: 左臂受伤时左臂不得抬起
 | `cue_type` | ✅ | `sound` / `music` / `scent` / `light` / `atmosphere` |
 | `bind_target` | ✅ | 绑定的角色/场景 id |
 | `description` | ✅ | 氛围信号描述 |
+| `sensory_signals[]` | ❌ | 五感信号数组，每条含 `sense_channel`（sight/hearing/smell/taste/touch）/ `perception_alias`（玄幻映射别名，写实留空）/ `signal_content` / `base_intensity`（1~10）/ `attenuation_rule`（distance/static/trigger）/ `max_distance` / `maskable` / `fade_note`；全部信号根 MUST 落在原生五感之一（延续五感公理） |
+| `timeline_trace` | ❌ | 时序动线对象：`pre_visible_delay`（秒数）/ `sequence_rule[]`（信号到达顺序），实现「人未到声先至」；deep 模式校验时序合理性（CUE_001） |
+| `attention_bias` | ❌ | 该信号对注意力的偏向影响 |
+| `induced_mood_tendency` | ❌ | 诱导的情绪倾向 |
+| `hormone_tendency` | ❌ | 激素反应倾向 |
 
 最小示例（王熙凤笑声）：
 
@@ -626,26 +689,31 @@ description: 人还没进院子，笑声先传过来，所有人安静下来
 | `direction_rule` | ❌ | 长期趋势方向描述（如「长期向放荡偏移」「总体回稳」） |
 | `current_value` | ✅ | 当前刻度值（= history[] 最后一条的 value） |
 | `history` | ✅ | 变动历史数组，每条含 `{value, trigger_plot, description}`；`trigger_plot` 引用 `pp-*` 桥段 id 作为该次变动的推手事件 |
-| `baseline_prototype` | ❌ | 可选：人格病理类稳定基线原型声明（registry-backed 枚举 key，如 `npd-grandiose`），取值 MUST 经 `nc-注册` 写入 `registry/tendency-prototypes.yaml`；创作参考锚点，非临床诊断 |
+| `baseline_prototype` | ❌ | 可选：人格基线原型声明（registry-backed 枚举 key）。v1.0 提供爽文默认 6 原型（steadfast/fierce/cunning/righteous/reckless/greedy）+ deep 扩展 10 原型（avoidant/anxious/npd-grandiose/npd-vulnerable/bpd/aspd/hpd/melancholic/zealot/stoic），共 16 个原型，每个含六轴初始值（risk/empathy/impulse_control/trust/desire_orient/aggression，取值 -10~+10）+ `prototype_note`（滑动方向约束 + 适用身份 + 避雷点）。取值 MUST 经 `nc-注册` 写入 `registry/tendency-prototypes.yaml` 后方可使用；**一人一原型铁律**：一个角色 MUST 只绑定一个 `baseline_prototype`，MUST NOT 同时标记两个原型（多原型叠加抛 L1_HARD）；想要混合特质时选主原型后手动微调六轴数值。障碍类原型（bpd/aspd/npd-* 等）仅小说创作基线，不能作为临床诊断。详见 `references/personality-prototypes.md` |
 | `notes` | ❌ | 补充说明（作者备注、与其他维度的联动等） |
 
 > **铁律**：`history[]` 中每一条 MUST 绑定一个**已存在**的桥段卡（`trigger_plot`
 > 指向真实 `pp-*` id），禁止无事件推手的凭空变性格。详见
 > `references/hard-rules.md`「动向每次变动必须绑定已存在桥段」。
 
-> **人格基线原型（可选）**：`baseline_prototype` 声明该维度标尺依附角色的人格病理类
-> 稳定基线（如自恋型人格的浮夸型 `npd-grandiose` / 脆弱型 `npd-vulnerable` 创作原型），
-> 只作**滑动边界的声明锚点**：维度与滑动逻辑仍完全由 `dimension` / `baseline` /
+> **人格基线原型（可选）**：`baseline_prototype` 声明该维度标尺依附角色的人格基线
+> 原型，只作**滑动边界的声明锚点**：维度与滑动逻辑仍完全由 `dimension` / `baseline` /
 > `direction_rule` / `history[]` 表达，本字段 MUST NOT 替代或修改任何现有滑动字段
-> 语义。取值须先经 `nc-注册` 写入使用方工程 `registry/tendency-prototypes.yaml`
-> （条目含 `boundary_hints`：`dimension_keywords` 子串匹配维度名 →
+> 语义。v1.0 提供 16 个原型（爽文默认 6 + deep 扩展 10），每个含六轴初始值
+> （risk/empathy/impulse_control/trust/desire_orient/aggression，取值 -10~+10）+
+> `prototype_note`（滑动方向约束 + 适用身份 + 避雷点）。取值须先经 `nc-注册` 写入
+> 使用方工程 `registry/tendency-prototypes.yaml`（条目含 `six_axes` 六轴初始值 +
+> `prototype_note` + `boundary_hints`：`dimension_keywords` 子串匹配维度名 →
 > `constrained_direction`（`higher`/`lower`/`both`）+ `max_drift` 容差 +
 > `note` 提醒文案）；`nc-校阅` 检查 ④ 据此做**建议级**边界漂移提醒（沿受限方向
 > 漂移超 `max_drift` 时提示而非禁止，作者可刻意写「受限维度缓慢松动」的反常弧光）。
+> **一人一原型铁律**：一个角色 MUST 只绑定一个 `baseline_prototype`，MUST NOT 同时
+> 标记两个原型（多原型叠加抛 L1_HARD）；想要混合特质时选主原型后手动微调六轴数值。
+> 障碍类原型（bpd/aspd/npd-* 等）仅小说创作基线，不能作为临床诊断。
 > 同一角色（同一 `target_role`）的多张 tend- 卡可共享同一原型 key，也可仅对受限
-> 维度的卡声明，跨维度声明不同原型属允许的建模自由；未声明的卡与存量卡行为完全
-> 不变。skill 仓库不内置锁死枚举，`npd-*` 等词表仅以「需经 nc-注册」标注的示例
-> 形式出现。
+> 维度的卡声明；未声明的卡与存量卡行为完全不变。skill 仓库不内置锁死枚举，
+> 16 原型的完整定义（六轴初始值 + prototype_note + 选型提问清单 + 快速对照表）
+> 见 `references/personality-prototypes.md`。
 
 最小示例（克制→放荡滑动标尺）：
 

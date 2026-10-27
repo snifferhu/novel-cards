@@ -107,7 +107,7 @@
 | `nc-图谱` | object/theme | `graph/*.html` (re-rendered from `index/card-graph.json`) |
 | `nc-成稿` | chapter/plotpoint id + `--length short/mid/long` | `manuscript/chapter-*.md` first draft (proposal system) |
 | `nc-词频` | chapter/plotpoint id | `cards/lexstats/lx-*.md` word-frequency vector + sensory-balance constraint report |
-| `nc-校阅` | chapter/range | `reflections/review-*.md` + `.json` (advice only) |
+| `nc-校阅` | chapter/range; validation depth driven by `world_base_profile` (simple/deep, omitted = implicit simple) in `config/project.yaml` + per-card `profile_override` local override | `reflections/review-*.md` + `.json` (advice only) |
 | `nc-节奏` | chapter range | rhythm assessment report + `reflections/rhythm-rt-*.json` |
 | `nc-守卫` | (none, full scan) | `reflections/safety-check/sg-*.md` + `.json` (warnings only) |
 | `nc-定稿` | (none, whole-project op) | `history/` snapshot + CHANGELOG append + latest.md update |

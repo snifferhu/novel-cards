@@ -131,9 +131,22 @@ cd ~/path/to/your/novel                          # 进入使用方工程
   release/                # nc-导出 成品（PDF/Word）
   history/                # nc-定稿 工程快照归档
   drafts/practice/        # 练习稿（过滤器未通过 / 用户标记）
-  build.sh build.cmd      # 构建脚本骨架
-  README.md CHANGELOG.md latest.md
+   build.sh build.cmd      # 构建脚本骨架（只做备份/目录/快照归档/export_request.json，渲染交给 nc-导出）
+   MIGRATION.md            # 版本迁移指南占位（当前基线版本 + 待填充区；真实内容由使用方工程随版本迭代填充）
+   README.md CHANGELOG.md latest.md
 ```
+
+### 版本迁移与 build 脚本职责边界
+
+`build.sh` / `build.cmd` 只做四件事：① 创建 `release/` 与 `history/` 目录 ② 归档版本快照到
+`history/`（卡片全量 + 元文件）③ 生成 `release/export_request.json`（含 `include_cards` /
+`include_draft` / `include_index` 三布尔，默认全 true）④ 提示调用 `nc-导出` 执行渲染。
+**MUST NOT** 在脚本内实现 Markdown→PDF/Word 转换、不调用 pandoc、不依赖第三方库——
+真正的合并 / 转 docx / pdf 由 `nc-导出` skill 承接。跨平台（Linux/macOS vs Windows）逻辑
+一一对应，仅时间戳命令等系统调用有差异。
+
+跨版本升级时参考 `references/migration.md`（版本策略 / 五条兼容原则 / 升级判定四档 /
+回滚四步 / 废弃三档）；使用方工程的 `MIGRATION.md` 是本文档的最小投影，每次升级追加改动点。
 
 ### 软链开发模式
 

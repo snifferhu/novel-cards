@@ -79,3 +79,62 @@ skill 自动拆解写入图森林；**高级模式**（`advanced_mode: true`）�
 - 是否为某伏笔的载体：<参见 foreshadow 卡 `fs-xxx`>
 - 长线四方对齐：若为长线感官爆点载体，MUST 同时存在对应 `tl-` 节点、`md-`
   模块、`lx-` 词频卡，提前 ≥8 章预埋（详见 hard-rules.md 规则 20）
+
+## 物理层与伏笔时序增强（可选字段）
+
+黑盒三层（physical/perceptual/abstract）铁律 MUST NOT 因新增字段而改变；新字段全部
+可选，缺失时 MUST 按现有行为处理（向后兼容）。deep 模式 SHALL 校验状态切换逻辑与
+预埋-回收时序完整性；simple 模式仅登记。
+
+| 字段 | 类型 | 说明 |
+|---|---|---|
+| `physics` | object | 物理参数：`bounding`（包围盒 h/w/d）/ `mass`（质量 kg）/ `hardness`（硬度等级）/ `portable`（是否可携带 bool）/ `penetrable`（是否可穿透 bool，SPACE_001 穿墙校验依据） |
+| `state_list[]` | array | 道具状态列表，每条含 `state_name`（default/active/broken 等）/ `description` / `linked_sensory_cue_id`（绑定的 su-* 感官标记 id，状态激活时触发） |
+| `perception_trace` | object | 五感感知轨迹（visual/auditory/olfactory/gustatory/tactile 各通道描述 + `perception_alias` 玄幻映射别名） |
+| `foreshadow_timeline` | object | 伏笔时序图谱：`pre_plant`（预埋章节）/ `pickup`（拾取/激活章节）/ `hint_degree`（暗示程度 1~10） |
+| `interact_rule` | string | 交互规则描述（如「触碰发热需持有者体温 >37°C」） |
+| `owner_history[]` | array | 持有者流转历史，每条含 `chapter` / `owner_id`（ac-*）/ `event_note` |
+
+### 最小示例（旧玉佩，假名占位）
+
+```yaml
+name: 旧青玉佩
+first_appearance: chapter-003
+owner: ac-角色-甲
+last_seen: chapter-027
+advanced_mode: false
+blackbox:
+  physical: {材质: 青玉, 尺寸: "5cm×3cm", 耐久: 高}
+  perceptual: {tactile: 持握微凉, visual: 温润青光}
+  abstract: [tl-family-secret]
+physics:
+  bounding: {h: 0.05, w: 0.03, d: 0.01}
+  mass: 0.08
+  hardness: 6
+  portable: true
+  penetrable: false
+state_list:
+  - state_name: default
+    description: 常态静置，无异常
+    linked_sensory_cue_id: null
+  - state_name: active
+    description: 触碰发热，青光微亮
+    linked_sensory_cue_id: su-jade-warm-01
+perception_trace:
+  tactile: 持握微凉，激活后转温热
+  visual: 常态温润青光，激活后亮度提升
+  perception_alias: ""
+foreshadow_timeline:
+  pre_plant: chapter-003
+  pickup: chapter-005
+  hint_degree: 4
+interact_rule: 持有者体温 >37°C 且情绪激动时触发发热
+owner_history:
+  - chapter: chapter-003
+    owner_id: ac-角色-乙
+    event_note: 遗落物被角色-甲拾获
+  - chapter: chapter-005
+    owner_id: ac-角色-甲
+    event_note: 正式收为己物
+cross_ref: []
+```

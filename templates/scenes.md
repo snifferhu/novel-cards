@@ -9,6 +9,19 @@ location: <地点描述>
 time_of_day: <时刻 / 时段 / 天气>
 associated_chapters: []
 atmosphere: <基调关键词>
+# 空间快照可选字段（v1.0 增量，space_snapshot 子形态；密闭/狭小场景才需声明，开阔场景可全缺省）：
+# usable_clearance:            # 净空尺寸（米），供 SPACE_001 包围盒校验
+#   width: 0.0                 # 可用宽度
+#   depth: 0.0                 # 可用深度
+#   height: 0.0                # 可用净高
+# mobility_constraint:         # 活动约束（boolean），缺省 = 无约束
+#   can_stand: true
+#   can_jump: true
+#   can_spread_arms_wide: true
+# obstacle_list:               # 障碍物清单；penetrable: false 的障碍 MUST NOT 被角色穿过（双模式共用硬规则）
+#   - name: <障碍物名>
+#     penetrable: false
+# env_note: <环境备注，如「密闭车厢，头顶距座椅约 30cm」>
 ---
 
 # 场景-甲
@@ -42,6 +55,34 @@ atmosphere: <基调关键词>
 
 - 光照基调：<自然光 / 顶冷白光 / 烛光摇曳 ……>（可被 `tl-light` 动线与 `sn-*` 快照引用）
 - 温度 / 声响 / 气味基调：<……>（五感公理：根落在视觉/听觉/嗅觉/味觉/触觉之一）
+
+## 空间快照（space_snapshot，可选）
+
+> 仅密闭 / 狭小场景（小轿车 / 电梯 / 轿厢 / 密室等）需声明；开阔场景全缺省即可。
+> 声明后该场景成为 SPACE_001 空间校验输入：deep 模式对绑定桥段做姿态包围盒 vs 净空间
+> L1 推演，simple 模式仅拦离谱穿墙 / 穿固体。字段均为可选，存量卡缺失行为不变。
+
+```yaml
+usable_clearance: {width: <米>, depth: <米>, height: <米>}   # 可用净空尺寸
+mobility_constraint: {can_stand: <true/false>, can_jump: <true/false>, can_spread_arms_wide: <true/false>}
+obstacle_list:
+  - name: <障碍物名>
+    penetrable: <true/false>   # false = 不可穿透，角色穿过即触发 SPACE_001 L1_HARD（双模式共用）
+env_note: <环境备注>
+```
+
+**假名示例**（小轿车车厢，结构占位非真实内容）：
+
+```yaml
+usable_clearance: {width: 1.4, depth: 2.5, height: 1.15}
+mobility_constraint: {can_stand: false, can_jump: false, can_spread_arms_wide: true}
+obstacle_list:
+  - name: 车顶内衬
+    penetrable: false
+  - name: 前排座椅靠背
+    penetrable: false
+env_note: 密闭车厢，后排头顶距座椅约 30cm，无法直立
+```
 
 ## 暗线视角
 

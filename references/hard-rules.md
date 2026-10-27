@@ -35,6 +35,9 @@ novel-cards skill 的所有行为准则集中于此。规则分为**不可变硬
 | 24 | **研判/编排只出建议与计划，绝不静默改卡**：`nc-研判`(nc-analyze) MUST 只输出结构化分析报告 + 方案 A/B/C，绝不直接改动任何 cards/素材；`nc-编排`(nc-compose) MUST 先生成 compose_plan 交作者逐条审核，执行前 MUST 前置跑 `nc-校阅` 扫冲突，遇红色冲突暂停退回计划页，全程禁止静默修改 | 硬性（v1.0 新增） |
 | 25 | **更名先预览后替换且不动原始素材**：`nc-更名`(nc-rename) MUST 先输出【替换预览清单】（每处文件 + 原文片段），作者确认批准后才批量写入；MUST NOT 修改 `res/` 原始素材文件夹内容，MUST NOT 改动正文描写文本里的自然口语称呼，只处理卡片注册的标识符 | 硬性（v1.0 新增） |
 | 26 | **动向每次变动必须绑定已存在桥段**：`character_tendency`（`tend-`）卡的 `history[]` 每一条 MUST 绑定一个**已存在**的桥段卡（`trigger_plot` 引用真实 `pp-*` id）作为推手事件，禁止无事件推手的凭空变性格；该卡依附角色（`target_role` 引用 `ac-*`），MUST NOT 替代角色基础卡 | 硬性（v1.0 新增） |
+| 27 | **双模式剖面开关**：`config/project.yaml` 的 `world_base_profile`（simple/deep）控制 nc-校阅/nc-研判/nc-编排 校验松紧度；缺省 = 隐式 simple（存量工程行为不变，MUST NOT 报错）；单卡片 frontmatter 的 `profile_override` 局部覆写优先于全局值，仅作用于该卡及其直接关联资产；子模块开关按 auto_enable_map 联动，作者显式覆盖优先 | 硬性（v1.0 增量） |
+| 28 | **SPACE_001 空间物理校验**：deep 档对桥段角色动作做姿态包围盒 vs 场景净空 L1 推演 + 重心/平衡 L2 商榷（可 `override_note` 豁免）；simple 档仅拦离谱穿墙/穿固体（L1 双模式共用硬规则）+ 失明硬错（SENSE_001）；scene/actor 缺失空间字段时跳过推演，存量卡行为不变 | 硬性（v1.0 增量） |
+| 29 | **机器可读校阅规则库驱动**：nc-校阅/nc-研判/nc-编排 优先读 `config/review-rules.json` 按 rule_set 结构化校验（带 rule_id 标注）；缺失或 JSON 损坏降级纸面校验不报错；输出按 🔴L1_HARD（附修改方案，不可豁免）/ 🔵L2_WARN（附豁免选项）/ 💡L3_INSPIRATION（启发）三级分组；不改变 audit 只读铁律（仍只出意见绝不改稿）；hard-rules.md 为自然语言权威、rules.json 为机器真值，冲突时前者优先 | 硬性（v1.0 增量） |
 
 ## 规则 1 & 2：提案制详解
 
@@ -419,6 +422,11 @@ pose 卡的插槽填充 MUST 遵循三级优先级：
 - **分工**：单点评估（少量资产、拿主意）走 `nc-研判`；批量整线迭代/扩写/重构
   （跨资产联动）走 `nc-编排`。两者都绝不静默改卡。详见 `references/skill-catalog.md`
   「技能职责不重叠原则」。
+- **无卡不推演（防空炮铁律）**：`nc-研判` / `nc-编排` 在执行任何剧情推演、行为判断、
+  心理分析前，MUST 先检查对应资产卡是否存在（角色 / 场景 / 道具 / 桥段）。缺少必要
+  资产卡时 MUST 直接返回「资产不足，无法研判」，MUST NOT 基于想象补全设定后继续推演。
+  完整四大铁律（无卡不推演 / 人格不空炮 / 感官空间物理不脑补 / 不生成未定义剧情）+
+  系统能力边界（能做 5 项 vs 绝对不做 5 项）见 `references/anti-hallucination.md`。
 
 ## 规则 25：更名先预览后替换且不动原始素材（v1.0 新增）
 
@@ -453,6 +461,116 @@ pose 卡的插槽填充 MUST 遵循三级优先级：
   `history[]` 最后一条的 value。`nc-检索` 支持 `type:character_tendency` 与按角色
   过滤；`nc-校阅` 可校验动向逻辑冲突（偏移无推手、方向与 direction_rule 矛盾等）。
   详见 `references/card-schema.md` character_tendency 节与 `templates/tendencies.md`。
+
+## 规则 28：SPACE_001 空间物理校验（v1.0 增量）
+
+SPACE_001 是 nc-校阅 / nc-研判 / nc-编排 共用的空间合理性校验规则，消费 scene 卡的
+`usable_clearance` / `mobility_constraint` / `obstacle_list` 与 actor 卡的
+`base_bounds` / `pose_bounding_map` / `sensory_mask` 字段，对密闭 / 狭小场景中的角色
+位移、肢体舒展、碰撞穿墙做物理合理性推演，防止「小轿车里站起来跳舞」类空间矛盾进入正文。
+
+### 双模式行为差异
+
+| 校验维度 | simple 档 | deep 档 |
+|---|---|---|
+| 姿态包围盒 vs 场景净空 | 不校验（爽文特权保留） | L1_HARD：姿态包围盒超出 `usable_clearance` 即抛错（如净高 1.15m 内站立 h=1.72m → SPACE_001 L1） |
+| 穿墙 / 穿固体 | L1_HARD（双模式共用硬规则） | L1_HARD（双模式共用硬规则） |
+| 重心 / 平衡约束 | 不校验 | L2_WARN：狭小环境中大幅度动作无铺垫时提示触碰周边物体 / 重心失衡风险 |
+| 感官通道权限 | 仅拦失明硬错（`sensory_mask.sight: disabled` 却写视觉描写 → SENSE_001 L1） | 全七通道严格校验（前庭觉 / 内感受 / 感知缺陷精细校验） |
+
+### override_note 豁免机制
+
+deep 档 L2_WARN（重心 / 平衡违和）MAY 被卡片 frontmatter 的 `override_note` 字段豁免——
+作者填「专项训练」/「刻意控制」/「玄幻体质」等说明后，nc-校阅 不再对该条抛 L2。
+L1_HARD（穿墙 / 包围盒冲突）**不可**被 `override_note` 豁免，必须修改卡片或桥段描述。
+
+### 向后兼容铁律
+
+scene / actor 卡缺失 `usable_clearance` / `pose_bounding_map` / `sensory_mask` 任一字段时，
+SPACE_001 对该卡跳过空间推演，行为与引入本能力前完全一致；MUST NOT 因缺字段报错。
+
+详见 `references/card-schema.md` §scene / §actor 字段契约与 `references/review-rules.md`
+SPACE_001 条目。
+
+## 规则 29：机器可读校阅规则库驱动（v1.0 增量）
+
+nc-校阅 / nc-研判 / nc-编排 三个审计类技能的校验逻辑 SHALL 优先读取使用方工程
+`config/review-rules.json`（机器可读规则库，结构见 `references/review-rules.md`），
+按 `rule_set` 逐条匹配卡片 frontmatter 字段执行结构化校验，输出结果带 `rule_id` 标注。
+
+### 缺失降级铁律
+
+- **WHEN** 使用方工程无 `config/review-rules.json`
+- **THEN** nc-校阅 降级为纸面校验（按本文件 28 条硬规则 + references 自然语言规则执行），
+  不报错、不阻断；行为与引入本能力前完全一致
+- **WHEN** `config/review-rules.json` 存在但 JSON 损坏（解析失败）
+- **THEN** nc-校阅 抛出 L2_WARN 提示「规则库 JSON 损坏，已降级纸面校验」，继续执行
+  既有纸面校验逻辑，不阻断流程
+
+### 三级输出格式
+
+nc-校阅 输出 MUST 按三级分组呈现（定义见 `references/review-rules.md` §3）：
+
+| 级别 | 标识 | 输出内容 |
+|---|---|---|
+| `L1_HARD` | 🔴 | 附具体修改方案（如「移除焦点动线或修正 sensory_mask」）；**不可豁免** |
+| `L2_WARN` | 🔵 | 附两种处理选项：①「补充动机备注豁免」（填 `override_note`）②「微调描写贴合逻辑」 |
+| `L3_INSPIRATION` | 💡 | 附启发建议（非告警项） |
+
+### 与 audit 只读铁律的协同
+
+本规则驱动层**不改变**规则 12（审计类技能只读）的铁律边界：nc-校阅 仍 MUST 只输出
+意见，绝不自动修改、删除任何文稿或卡片内容。rules.json 仅作为校验逻辑的结构化驱动源，
+所有发现仍以「建议」形式呈现，由作者自行决定是否采纳并手动修改。
+
+### 与 hard-rules.md 的一致性
+
+`references/hard-rules.md`（本文件）是**自然语言权威**，`config/review-rules.json` 是
+**机器真值**。二者 MUST 保持一致：新增 / 修改本文件规则时，同步更新 rules.json 对应
+条目；反之亦然。当二者冲突时，**本文件优先**（人类权威），nc-校阅 应报告冲突并降级
+纸面校验。
+
+详见 `references/review-rules.md` 完整规则库契约与 `templates/review-rules.json` 骨架模板。
+
+## 规则 27：双模式剖面开关（v1.0 增量）
+
+`config/project.yaml` MAY 含 `world_base_profile` 字段（取值 `simple` / `deep`），作为
+全局校验松紧度的唯一来源，控制 nc-校阅 / nc-研判 / nc-编排 三个技能的校验深度：
+
+- **simple**：仅拦截 L1 硬错误（感官权限冲突 / 空间穿墙 / 因果断裂），关闭前庭觉、
+  内感受、激素互斥、动机一致性、感知缺陷精细校验。
+- **deep**：全链路严格校验（感官通道 + 前庭觉 + 内感受 + 激素互斥 + 感知缺陷 +
+  空间物理 + 性格滑动）。
+
+**存量兼容铁律**：未声明 `world_base_profile` 的存量工程 MUST 视为隐式 `simple` 模式，
+全部技能行为与引入本能力前完全一致；MUST NOT 因缺字段报错或强制迁移。
+
+### 单卡片局部覆写（profile_override）
+
+每张卡片 frontmatter MAY 含 `profile_override` 字段（取值 `simple` / `deep` / 缺省）。
+当 `profile_override` 存在且非空时，MUST 优先于全局 `world_base_profile` 生效，仅作用于
+该卡片及其直接关联的桥段 / 快照 / 动线节点；不得污染其他卡片的校验上下文。
+
+- **WHEN** 全局 `world_base_profile: deep`，某桥段卡 frontmatter 含 `profile_override: simple`
+- **THEN** 该桥段及其绑定资产按 simple 规则校验（关闭权重验算 / 激素互斥 / 空间包围盒
+  精细推演），其余卡片仍按 deep 校验
+- **WHEN** 全局 `world_base_profile: simple`，某幻境 / 心理博弈桥段卡 frontmatter 含
+  `profile_override: deep`
+- **THEN** 该桥段按 deep 规则完整校验（启用注意力权重 / 感知缺陷 / 激素组合合理性），
+  其余卡片仍按 simple 校验
+- **WHEN** 某卡 `profile_override` 取值不在 `{simple, deep}` 集合内
+- **THEN** nc-校阅 抛出 L2_WARN 提示非法取值，按全局 `world_base_profile` 兜底处理，
+  不阻断流程
+
+### 子模块自动开关联动（auto_enable_map）
+
+切换 `world_base_profile` 时，系统 SHALL 按 auto_enable_map 预设映射自动启用 / 关闭六个
+子模块校验开关（simple 档五关全 false、`check_visual_focus` 仅拦失明硬错；deep 档五关
+全 true、`check_visual_focus` 升级完整权重验算），作者无需逐项手动配置。作者 MAY 在
+`config/project.yaml` 显式覆盖任一子模块开关以突破默认联动；显式覆盖值 MUST 优先于
+自动联动结果。完整映射表见 `references/data-layering.md` §3。
+
+详见 `references/data-layering.md` §3 与 `references/review-rules.md` 的规则库契约。
 
 ## 违规响应模板
 

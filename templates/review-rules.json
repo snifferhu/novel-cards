@@ -1,0 +1,62 @@
+{
+  "spec_version": "1.0",
+  "global_switch": {
+    "world_base_profile": "simple",
+    "check_visual_focus": false,
+    "check_vestibular": false,
+    "check_interoception": false,
+    "check_hormone_mutex": false,
+    "check_perception_defect": false,
+    "check_space_physics": false
+  },
+  "auto_enable_map": {
+    "simple": {
+      "check_visual_focus": false,
+      "check_vestibular": false,
+      "check_interoception": false,
+      "check_hormone_mutex": false,
+      "check_perception_defect": false,
+      "check_space_physics": false
+    },
+    "deep": {
+      "check_visual_focus": true,
+      "check_vestibular": true,
+      "check_interoception": true,
+      "check_hormone_mutex": true,
+      "check_perception_defect": true,
+      "check_space_physics": true
+    }
+  },
+  "error_level": {
+    "L1_HARD": "客观硬性冲突，必须修改，不可豁免",
+    "L2_WARN": "合理性商榷，可填 override_note 豁免",
+    "L3_INSPIRATION": "创作启发，非校验项"
+  },
+  "rule_set": [
+    {
+      "rule_id": "SENSE_001",
+      "title": "感官通道权限校验",
+      "level": "L1_HARD",
+      "simple": "仅拦失明硬错（sensory_mask.sight: disabled 却写视觉描写）",
+      "deep": "全七通道严格校验（sight/hearing/smell/taste/touch/vestibular/interoception）",
+      "deps": ["actor.sensory_mask", "scene.env_note"]
+    },
+    {
+      "rule_id": "SPACE_001",
+      "title": "空间物理合理性校验",
+      "level": "L1_HARD",
+      "simple": "仅拦离谱穿墙/穿固体（penetrable: false 障碍被穿过）",
+      "deep": "姿态包围盒 vs 场景净空 L1 推演 + 重心/平衡 L2 商榷（可 override_note 豁免）",
+      "deps": ["scene.usable_clearance", "scene.mobility_constraint", "scene.obstacle_list", "actor.base_bounds", "actor.pose_bounding_map"]
+    }
+  ],
+  "personality_baseline_pool": [],
+  "personality_slide_axes": {
+    "risk": {"range": [-10, 10], "semantic": "负=规避风险/正=冒险"},
+    "empathy": {"range": [-10, 10], "semantic": "负=冷漠/正=高共情"},
+    "impulse_control": {"range": [-10, 10], "semantic": "负=易冲动/正=克制"},
+    "trust": {"range": [-10, 10], "semantic": "负=戒备/正=开放"},
+    "desire_orient": {"range": [-10, 10], "semantic": "负=克制欲望/正=即时满足"},
+    "aggression": {"range": [-10, 10], "semantic": "负=温和/正=好斗"}
+  }
+}

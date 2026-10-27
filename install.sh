@@ -58,9 +58,20 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# --- Consumer project initialization ---
+ # --- Consumer project initialization ---
 if [[ -n "$PROJECT" ]]; then
   echo "Initializing consumer project skeleton at: $PROJECT"
+
+  # 存量检测：目标目录已有 config/project.yaml 或 cards/ 下存在 .md 时，提示先跑 nc-初始化
+  # 生成迁移规划表再归位。仅打印提示，不改变下方幂等建骨架行为（绿地工程零提示）。
+  _legacy_cfg=0; _legacy_cards=0
+  [ -f "$PROJECT/config/project.yaml" ] && _legacy_cfg=1
+  if [ -d "$PROJECT/cards" ] && find "$PROJECT/cards" -name '*.md' -print -quit 2>/dev/null | grep -q .; then
+    _legacy_cards=1
+  fi
+  if [ "$_legacy_cfg" = 1 ] || [ "$_legacy_cards" = 1 ]; then
+    echo "⚠️  检测到存量内容（config/project.yaml 或 cards/*.md），建议先运行 nc-初始化 生成迁移规划表再归位；本脚本仅补齐缺失目录，不覆盖已有文件。"
+  fi
 
   # v1.0 完整目录树（与 references/layout.md 及 specs/consumer-project-layout 一致）
   mkdir -p \
@@ -148,6 +159,16 @@ if [[ -n "$PROJECT" ]]; then
 # nc-初始化 会根据作者选择交互式覆写本文件。
 lang: zh          # zh | en
 mode: short       # short | mid | long（长短篇预设，详见 registry/work-length-config.yaml）
+# 双模式剖面开关（可选；缺省 = 隐式 simple，存量工程行为不变，不报错）：
+# world_base_profile: simple    # simple | deep —— 全局校验松紧度唯一来源（simple 只拦 L1 硬错 / deep 全链路严格校验）
+# profile_override 不在此处声明：单卡片局部覆写走各卡 frontmatter 的 profile_override 字段（仅作用于该卡及其直接关联资产）
+# 子模块校验开关（auto_enable_map 按 world_base_profile 自动联动；显式覆盖值优先于联动结果）：
+# check_visual_focus: false     # 视觉焦点校验（simple 档仅拦失明硬错 / deep 档完整权重验算）
+# check_vestibular: false       # 前庭觉（平衡/眩晕/失重）校验
+# check_interoception: false    # 内感受（饥饿/疼痛/体温/心跳）校验
+# check_hormone_mutex: false    # 激素互斥组合合理性校验
+# check_perception_defect: false  # 感知缺陷精细校验
+# check_space_physics: false    # 空间物理（包围盒/位移/穿墙）校验
 pipeline_option:
   enable_review: false        # 是否启用审稿分支（nc-校阅 + nc-节奏）
   enable_finalize: false      # 是否启用定稿分支（nc-定稿）
@@ -176,6 +197,99 @@ YAML
 #   - key: pen-yexingke
 #     display_name: 夜行客
 #     note: 长篇玄幻用
+YAML
+  fi
+
+  # config/review-rules.json 机器可读校阅规则库骨架（rule_set 给 2 条示例结构，完整 12 条经 nc-初始化 生成；仅当不存在时写入）
+  if [ ! -f "$PROJECT/config/review-rules.json" ]; then
+    cat > "$PROJECT/config/review-rules.json" <<'JSON'
+{
+  "spec_version": "1.0",
+  "global_switch": {
+    "world_base_profile": "simple",
+    "check_visual_focus": false,
+    "check_vestibular": false,
+    "check_interoception": false,
+    "check_hormone_mutex": false,
+    "check_perception_defect": false,
+    "check_space_physics": false
+  },
+  "auto_enable_map": {
+    "simple": {
+      "check_visual_focus": false,
+      "check_vestibular": false,
+      "check_interoception": false,
+      "check_hormone_mutex": false,
+      "check_perception_defect": false,
+      "check_space_physics": false
+    },
+    "deep": {
+      "check_visual_focus": true,
+      "check_vestibular": true,
+      "check_interoception": true,
+      "check_hormone_mutex": true,
+      "check_perception_defect": true,
+      "check_space_physics": true
+    }
+  },
+  "error_level": {
+    "L1_HARD": "客观硬性冲突，必须修改，不可豁免",
+    "L2_WARN": "合理性商榷，可填 override_note 豁免",
+    "L3_INSPIRATION": "创作启发，非校验项"
+  },
+  "rule_set": [
+    {
+      "rule_id": "SENSE_001",
+      "title": "感官通道权限校验",
+      "level": "L1_HARD",
+      "simple": "仅拦失明硬错（sensory_mask.sight: disabled 却写视觉描写）",
+      "deep": "全七通道严格校验（sight/hearing/smell/taste/touch/vestibular/interoception）",
+      "deps": ["actor.sensory_mask", "scene.env_note"]
+    },
+    {
+      "rule_id": "SPACE_001",
+      "title": "空间物理合理性校验",
+      "level": "L1_HARD",
+      "simple": "仅拦离谱穿墙/穿固体（penetrable: false 障碍被穿过）",
+      "deep": "姿态包围盒 vs 场景净空 L1 推演 + 重心/平衡 L2 商榷（可 override_note 豁免）",
+      "deps": ["scene.usable_clearance", "scene.mobility_constraint", "scene.obstacle_list", "actor.base_bounds", "actor.pose_bounding_map"]
+    }
+  ],
+  "personality_baseline_pool": [],
+  "personality_slide_axes": {
+    "risk": {"range": [-10, 10], "semantic": "负=规避风险/正=冒险"},
+    "empathy": {"range": [-10, 10], "semantic": "负=冷漠/正=高共情"},
+    "impulse_control": {"range": [-10, 10], "semantic": "负=易冲动/正=克制"},
+    "trust": {"range": [-10, 10], "semantic": "负=戒备/正=开放"},
+    "desire_orient": {"range": [-10, 10], "semantic": "负=克制欲望/正=即时满足"},
+    "aggression": {"range": [-10, 10], "semantic": "负=温和/正=好斗"}
+  }
+}
+JSON
+  fi
+
+  # registry/tendency-prototypes.yaml 人格基线原型白名单骨架（零预置条目，经 nc-注册 填充；仅当不存在时写入）
+  if [ ! -f "$PROJECT/registry/tendency-prototypes.yaml" ]; then
+    cat > "$PROJECT/registry/tendency-prototypes.yaml" <<'YAML'
+# novel-cards v1.0 人格基线原型白名单（install.sh --project 生成的空骨架）
+# 动向卡 baseline_prototype 字段的取值白名单。零预置条目——具体原型经 nc-注册 写入
+# （沿用「注册前置」硬规则，skill 不内置锁死词表）。
+# v1.0 提供 16 个原型定义（爽文 6 + deep 10），完整六轴初始值 / prototype_note /
+# 适用身份 / 避雷点见 skill 仓库 references/personality-prototypes.md。
+# 条目结构：key（全局唯一）/ label（显示名）/ six_axes（六轴初始值 risk/empathy/
+#   impulse_control/trust/desire_orient/aggression，取值 -10~+10）/ prototype_note
+#   （滑动方向约束 + 适用身份 + 避雷点）/ boundary_hints[]（dimension_keywords →
+#   constrained_direction + max_drift + note）。
+# prototypes:
+#   - key: steadfast
+#     label: 坚忍型
+#     six_axes: {risk: -2, empathy: 7, impulse_control: 7, trust: 4, desire_orient: 3, aggression: -2}
+#     prototype_note: <滑动方向约束 + 适用身份 + 避雷点>
+#     boundary_hints:
+#       - dimension_keywords: [克制, 放荡]
+#         constrained_direction: both
+#         max_drift: 3
+#         note: <提醒文案>
 YAML
   fi
 
@@ -290,6 +404,27 @@ MD
 4. 新素材经 `nc-素材` 入库前自动过通胀过滤器三问，Q3（独家洞察）是否决项。
 5. 研判/编排只出建议与计划，绝不静默改卡；更名先预览后替换，不动原始素材。
 
+## 意图路由引导（最小占位）
+
+作者零散输入时，Agent 按以下 9 类信号识别意图并推荐 skill（只推荐不执行，等作者确认）：
+
+| # | 输入信号 | 意图 | 推荐 skill |
+|---|---|---|---|
+| 1 | 丢链接/聊天记录/论文 | 素材入库 | nc-素材 + nc-清洗 |
+| 2 | 查角色/道具/伏笔 | 资产检索 | nc-检索 |
+| 3 | 查 bug/OOC/空间冲突 | 逻辑校验 | nc-校阅 |
+| 4 | 角色会怎么做/选 A 还是 B | 人物剧情推演 | nc-研判 |
+| 5 | 大改/删段/调换顺序 | 批量剧情调整 | nc-编排 |
+| 6 | 导出 word/pdf | 产物导出 | nc-导出 |
+| 7 | 新角色/新场景/新道具 | 新建叙事卡片 | 手动建卡 + nc-校阅 |
+| 8 | 新项目/重置模板 | 项目初始化 | nc-初始化 |
+| 9 | 违规内容/敏感描写 | 合规筛查 | nc-守卫 |
+
+**禁止行为**：无指令不改卡 / 不改正文 / 不动动向标尺 / 不自建目录。
+**显式指令优先**：作者直接写 `nc-xxx` 时跳过意图识别，直接执行。
+
+完整版含交互规则四步话术与详细意图匹配表，由 `nc-初始化` 生成。
+
 ## 当前模式
 
 - mode: short（可在 `config/project.yaml` 改为 mid / long）
@@ -309,25 +444,156 @@ MD
   fi
 
   # build 脚本骨架（仅当不存在时写入）
+  # 职责边界：只做备份/目录准备/历史快照归档/生成 export_request.json，不调 pandoc、不渲染文档
+  # 真正的合并/转 docx/pdf 由 nc-导出 skill 承接（读取 export_request.json 执行渲染）
   if [ ! -f "$PROJECT/build.sh" ]; then
     cat > "$PROJECT/build.sh" <<'SH'
 #!/usr/bin/env bash
 # novel-cards v1.0 构建脚本骨架（install.sh --project 生成）
-# 用途：重建 index/ 机器索引与 graph/ HTML 看板（消费 cards/ 与 registry/）。
-# 实际逻辑由 nc-图谱 / nc-量化 / nc-词频 等技能在运行时驱动；本脚本为手动入口占位。
+# 职责边界：① 创建 release/ 与 history/ 目录 ② 归档版本快照到 history/
+#           ③ 生成 release/export_request.json ④ 提示调用 nc-导出 执行渲染
+# MUST NOT：在脚本内实现 Markdown→PDF/Word 转换、不调用 pandoc、不依赖第三方库
+# 渲染交给 nc-导出（读取 export_request.json 后执行 Pandoc 底层跨平台导出）
 set -euo pipefail
-echo "[build] 重建 index/card-graph.json ..."
-echo "[build] 重建 graph/*.html ..."
-echo "[build] 完成。如需完整重建请运行对应 nc- 技能。"
+
+TIMESTAMP="$(date +%Y%m%d_%H%M%S)"
+SNAP_CARDS="history/snapshot_${TIMESTAMP}_cards"
+SNAP_META="history/snapshot_${TIMESTAMP}_meta"
+
+echo "[build] 步骤 1/4：准备目录 ..."
+mkdir -p release history
+
+echo "[build] 步骤 2/4：归档版本快照到 history/ ..."
+mkdir -p "$SNAP_CARDS" "$SNAP_META"
+[ -d cards ] && cp -r cards/. "$SNAP_CARDS/" || true
+for f in CHANGELOG.md latest.md README.md agents.md config/project.yaml; do
+  [ -f "$f" ] && cp "$f" "$SNAP_META/" || true
+done
+[ -d index ] && cp -r index/. "$SNAP_META/index/" || true
+
+echo "[build] 步骤 3/4：生成 release/export_request.json ..."
+cat > release/export_request.json <<EOF
+{
+  "spec": "novel-cards-export-request",
+  "version": "1.0",
+  "timestamp": "${TIMESTAMP}",
+  "formats": ["pdf"],
+  "include_cards": true,
+  "include_draft": true,
+  "include_index": true
+}
+EOF
+
+echo "[build] 步骤 4/4：完成。"
+echo "[build] 产物：history/snapshot_${TIMESTAMP}_{cards,meta}/ + release/export_request.json"
+echo "[build] 下一步：请调用 nc-导出 读取 export_request.json 执行渲染（Pandoc 底层，跨平台 PDF/Word）"
 SH
     chmod +x "$PROJECT/build.sh"
   fi
   if [ ! -f "$PROJECT/build.cmd" ]; then
-    printf '%s\n' \
-      '@echo off' \
-      'REM novel-cards v1.0 build script skeleton (Windows)' \
-      'echo [build] Rebuilding index and graph ...' \
-      'echo [build] Done.' > "$PROJECT/build.cmd"
+    cat > "$PROJECT/build.cmd" <<'CMD'
+@echo off
+REM novel-cards v1.0 build script skeleton (Windows)
+REM 职责边界：只做备份/目录准备/历史快照归档/生成 export_request.json，不调 pandoc、不渲染文档
+REM 真正的合并/转 docx/pdf 由 nc-导出 skill 承接（读取 export_request.json 执行渲染）
+REM 渲染交给 nc-导出（读取 export_request.json 后执行 Pandoc 底层跨平台导出）
+setlocal enabledelayedexpansion
+
+REM 步骤 1/4：准备目录
+if not exist release mkdir release
+if not exist history mkdir history
+
+REM 时间戳获取（Windows 用 wmic 或 for /f date /t，此处简化为固定格式）
+for /f "tokens=2 delims==" %%a in ('wmic os get localdatetime /value') do set DT=%%a
+set TIMESTAMP=!DT:~0,8!_!DT:~8,6!
+set SNAP_CARDS=history\snapshot_%TIMESTAMP%_cards
+set SNAP_META=history\snapshot_%TIMESTAMP%_meta
+
+REM 步骤 2/4：归档版本快照到 history/
+if exist cards mkdir "%SNAP_CARDS%" 2>nul
+if exist cards xcopy /E /I /Y cards "%SNAP_CARDS%\" >nul
+mkdir "%SNAP_META%" 2>nul
+for %%f in (CHANGELOG.md latest.md README.md agents.md) do (
+  if exist %%f copy /Y %%f "%SNAP_META%\" >nul
+)
+if exist index xcopy /E /I /Y index "%SNAP_META%\index\" >nul
+
+REM 步骤 3/4：生成 release/export_request.json
+(
+  echo {
+  echo   "spec": "novel-cards-export-request",
+  echo   "version": "1.0",
+  echo   "timestamp": "%TIMESTAMP%",
+  echo   "formats": ["pdf"],
+  echo   "include_cards": true,
+  echo   "include_draft": true,
+  echo   "include_index": true
+  echo }
+) > release\export_request.json
+
+REM 步骤 4/4：完成
+echo [build] Done.
+echo [build] Output: history\snapshot_%TIMESTAMP%_{cards,meta}\ + release\export_request.json
+echo [build] Next: invoke nc-export to read export_request.json and render (Pandoc-based cross-platform PDF/Word)
+endlocal
+CMD
+  fi
+
+  # MIGRATION.md 占位（仅当不存在时写入；真实内容由使用方工程随版本迭代填充）
+  if [ ! -f "$PROJECT/MIGRATION.md" ]; then
+    cat > "$PROJECT/MIGRATION.md" <<'MD'
+# MIGRATION.md（novel-cards v1.0 迁移指南占位）
+
+> 本文件为 `install.sh --project` 生成的最小占位版本。
+> 真实内容由使用方工程随版本迭代填充（每次升级追加改动点说明与操作路径）。
+
+## 当前基线版本
+
+**v1.0**（稳定正式版）
+
+## 版本策略
+
+| 档位 | 标记 | 策略 |
+|---|---|---|
+| 0.x | 实验版 | schema 可能变动，不保证向前兼容；建议升级前手动备份 `history/` + `cards/` |
+| 1.x | 稳定正式版 | schema 变动优先做兼容层，重大改动才强制迁移；系统内置自动迁移转换 |
+
+## 五条兼容原则
+
+1. **字段新增**：旧卡片无需改动，缺失字段自动取默认值（向后兼容）
+2. **字段改名/删除**：属破坏性变更，必须写迁移脚本或手动迁移步骤并在本文档置顶
+3. **skill 中英别名**：一旦发布尽量永久保留，不随意废除
+4. **规则 ID**（SPACE_001 / BEAT_001 等）：一旦定义永久不变，只修改规则逻辑
+5. **profile_override**：全局/单卡片剖面切换机制作为底层基础能力保留不砍
+
+## 升级判定四档
+
+| 档位 | 判定条件 | 操作 |
+|---|---|---|
+| ✅ 非破坏性 | 仅新增卡片类型/规则/skill | 直接继续用旧卡，无需迁移 |
+| ⚠️ 破坏性 | 字段重命名/结构重构/删除必填字段 | 提供迁移步骤（方案 A 自动 / 方案 B 手动） |
+| 🧪 实验版 | 0.x → 下一 0.x | 建议升级前手动备份 `history/` + `cards/` |
+| 🚀 稳定版 | 1.0+ 重大升级 | 系统内置自动迁移转换 |
+
+## 回滚四步
+
+1. 进入 `history/` 找升级前自动生成的快照目录（`snapshot_<YYYYMMDD_HHMMSS>_{cards,meta}`）
+2. 将快照内 `cards` + `meta` 文件覆盖回项目根
+3. 恢复 `config/project.yaml` 为升级前版本
+4. 执行 `nc-检索` 抽查资产 ID 引用是否正常
+
+## 废弃策略三档
+
+| 档位 | 处理方式 |
+|---|---|
+| 废弃 skill | 保留别名，调用时输出「该 skill 已废弃，推荐使用 xx」提示，仍执行原逻辑（过渡期内） |
+| 废弃标签/旧字段 | 校阅时输出 L3 提示，不抛 L1/L2 错误给过渡期 |
+| 超过两个大版本的废弃字段 | 在下一个版本彻底移除 |
+
+## 待填充区
+
+<!-- 每次版本升级在此追加：版本号 / 日期 / 改动点清单 / 迁移步骤 / 验证命令 -->
+MD
   fi
 
   # README / CHANGELOG / latest.md 占位（仅当不存在时写入）

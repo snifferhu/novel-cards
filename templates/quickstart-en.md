@@ -85,6 +85,13 @@ subspace with no cross-contamination of data.
 - **Multiple pen names**: register pen names into `registry/pen-names.yaml` via `nc-注册`;
   set each work's `default_pen_name`, override per chapter with the frontmatter `pen_name`;
   `nc-导出` / `nc-成稿` sign with the effective pen name.
+- **Onboarding a legacy project**: for a project that already has content, run `nc-初始化`
+  first to produce a migration plan table before relocating anything — the skill scans the
+  workspace and emits a four-column table ("source path / suggested target dir / suggested
+  type·id prefix / disposition") for you to confirm; historical settings / chapter outlines that
+  can't be mechanically converted go to `res/inbox/` pending cleaning (later via `nc-清洗` /
+  `nc-素材`). The skill only takes over after relocation and never auto-moves or rewrites your
+  existing files.
 - A single-work project (no `works[]`) behaves exactly as before.
 
 ## Length-Tier Differences
@@ -97,6 +104,25 @@ subspace with no cross-contamination of data.
 | 量化/姿态/守卫 | off by default | partially on | all on |
 
 > For the detailed grading matrix see `references/loop.md` in the skill repo.
+
+## Dual-Mode Profile (simple / deep)
+
+Validation strictness is orthogonal to the length mode, controlled by `world_base_profile`
+in `config/project.yaml`:
+
+- **simple** (default): nc-review / nc-analyze / nc-compose block only L1 hard errors
+  (sensory-permission conflicts / spatial wall-clipping / causal breaks); suited for fast-paced
+  power-fantasy writing.
+- **deep**: full-chain strict validation (sensory channels + vestibular + interoception +
+  hormone mutex + perception defects + space physics + personality sliding); suited for
+  deep realistic simulation.
+- **Per-card override**: add `profile_override: simple|deep` to a plotpoint/snapshot card's
+  frontmatter to switch locally; applies only to that card and its directly linked assets.
+- Projects without `world_base_profile` are treated as implicit simple — behavior unchanged,
+  no error raised.
+
+> Full auto_enable_map linkage table and sub-module switch details live in the skill repo's
+> `references/data-layering.md` §3 and `references/review-rules.md`.
 
 ## Next Steps
 

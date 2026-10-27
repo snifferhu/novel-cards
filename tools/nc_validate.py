@@ -174,6 +174,127 @@ def cmd_validate(card_path, project_root):
                 # 工程存在 cards/ 却找不到该桥段 → 悬空引用，必须报出
                 issues.append("动向 history[] trigger_plot=%s 未找到对应已存在桥段卡（悬空引用）" % trig)
 
+    # 5) 空间校验（SPACE_001 轻量扩展，v1.0 增量）：
+    #    scene 卡含 usable_clearance、actor 卡含 pose_bounding_map 时做净高 vs 姿态包围盒
+    #    只读比较；缺失字段跳过（向后兼容）。纯标准库浮点比较，零依赖，绝不写盘。
+    issues.extend(_check_spatial(card_type, fm, text))
+
+    # 6) rules.json 驱动的结构化字段存在性检查（v1.0 增量）：
+    #    若 config/review-rules.json 存在且 JSON 合法，按 rule_set 的 deps 字段做
+    #    卡片 frontmatter 字段存在性 + 取值域轻量检查；缺失或损坏时降级纸面逻辑。
+    issues.extend(_check_rules_json(project_root, card_type, fm, text))
+
+    return issues
+
+
+def _extract_float(text, key):
+    """从文本中提取 `key: <float>` 形式的数值（支持嵌套缩进行），失败返回 None。"""
+    m = re.search(r"%s:\s*([0-9]*\.?[0-9]+)" % re.escape(key), text)
+    if not m:
+        return None
+    try:
+        return float(m.group(1))
+    except ValueError:
+        return None
+
+
+def _check_spatial(card_type, fm, text):
+    """SPACE_001 轻量空间校验（只读，缺失字段跳过，向后兼容）。
+
+    - scene 卡：声明 usable_clearance.height 且 mobility_constraint.can_stand: false
+      → 提示「净高不足直立」（L3 启发级，供 deep 模式升级 L1 的输入信号）。
+    - actor 卡：pose_bounding_map 中某姿态 h 值 > 同卡 base_bounds.height 时不报错
+      （正常现象）；但 sensory_mask.sight: disabled 时提示视觉通道禁用（SENSE_001 输入）。
+    - scene + actor 跨卡包围盒推演需两卡同时在场，单卡 validate 无法完成，留给 audit
+      或 nc-校阅 运行时处理；此处仅做单卡字段合法性提示。
+    """
+    hints = []
+    if card_type == "scene":
+        height = _extract_float(text, "height")
+        can_stand_false = re.search(r"can_stand:\s*false", text) is not None
+        if height is not None and can_stand_false:
+            hints.append(
+                "[space] 场景净高 %.2fm 且 can_stand: false，标记为「净高不足直立」；"
+                "deep 模式下绑定此场景的桥段将触发 SPACE_001 包围盒校验" % height
+            )
+    elif card_type == "actor":
+        sight_disabled = re.search(r"sight:\s*disabled", text) is not None
+        if sight_disabled:
+            hints.append(
+                "[sense] sensory_mask.sight: disabled，该角色禁止生成视觉描写与视觉焦点动线；"
+                "相关描写将触发 SENSE_001 L1_HARD"
+            )
+        # pose_bounding_map 存在性检查：有 stand 姿态但无 base_bounds 时提示补全
+        has_pose_map = "pose_bounding_map" in text
+        has_base_bounds = "base_bounds" in text
+        if has_pose_map and not has_base_bounds:
+            hints.append(
+                "[space] 声明了 pose_bounding_map 但缺 base_bounds，建议补全基础包围盒以启用完整 SPACE_001 推演"
+            )
+    return hints
+
+
+def _load_rules_json(project_root):
+    """加载 config/review-rules.json，返回 dict 或 None（缺失/损坏均返回 None）。"""
+    rules_file = Path(project_root) / "config" / "review-rules.json"
+    if not rules_file.exists():
+        return None
+    try:
+        data = json.loads(rules_file.read_text(encoding="utf-8"))
+        if not isinstance(data, dict):
+            return None
+        return data
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def _check_rules_json(project_root, card_type, fm, text):
+    """按 rules.json 的 rule_set deps 做结构化字段存在性检查（只读，零依赖）。
+
+    - rules.json 缺失 → 返回空列表（降级纸面校验，行为与引入前一致）
+    - rules.json 存在但 JSON 损坏 → 返回 L2_WARN 提示 + 空列表（降级不阻断）
+    - rules.json 合法 → 遍历 rule_set，对每条规则的 deps 字段做卡片 frontmatter
+      字段存在性检查；deps 格式为 "type.field"（如 "scene.usable_clearance"），
+      仅当卡片 type 匹配时才检查对应字段是否存在于 frontmatter 或正文文本中
+    """
+    issues = []
+    rules_data = _load_rules_json(project_root)
+    if rules_data is None:
+        # 区分「文件不存在」（静默降级）与「JSON 损坏」（L2_WARN 提示）
+        rules_file = Path(project_root) / "config" / "review-rules.json"
+        if rules_file.exists():
+            issues.append(
+                "[rules] config/review-rules.json JSON 损坏，已降级纸面校验（L2_WARN）"
+            )
+        return issues
+
+    rule_set = rules_data.get("rule_set", [])
+    if not isinstance(rule_set, list):
+        return issues
+
+    for rule in rule_set:
+        if not isinstance(rule, dict):
+            continue
+        rule_id = rule.get("rule_id", "<unknown>")
+        deps = rule.get("deps", [])
+        if not isinstance(deps, list):
+            continue
+        for dep in deps:
+            if not isinstance(dep, str) or "." not in dep:
+                continue
+            dep_type, dep_field = dep.split(".", 1)
+            if dep_type != card_type:
+                continue
+            # 字段存在性检查：frontmatter 有该 key 或正文文本含该字段名
+            if dep_field in fm:
+                continue
+            if re.search(r"%s\s*:" % re.escape(dep_field), text):
+                continue
+            level = rule.get("level", "L2_WARN")
+            issues.append(
+                "[%s] %s 规则依赖字段 %s.%s 缺失（%s）"
+                % (rule_id, card_type, dep_type, dep_field, level)
+            )
     return issues
 
 

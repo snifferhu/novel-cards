@@ -26,16 +26,25 @@ produce proposals, which the author confirms before persisting.
 
 ## ② Foundational Iron Rules
 
-1. The `res/` material pool (web pages, LLM dialogue, papers, excerpts) is reference-only; without
+1. **Dual-mode profile**: validation strictness is controlled by `world_base_profile`
+   (simple / deep) in `config/project.yaml`; omitted = implicit simple, existing projects
+   behave unchanged. A single card may locally override via frontmatter `profile_override`
+   (applies only to that card and its directly linked assets). Sub-module switches follow
+   the auto_enable_map; explicit overrides take priority. See the skill repo's
+   `references/data-layering.md` §3.
+2. The `res/` material pool (web pages, LLM dialogue, papers, excerpts) is reference-only; without
    author confirmation it must never be written into / overwrite formal `cards/` assets.
-2. Web fetching obeys robots.txt; do not bypass anti-crawling or login restrictions; proactively
+3. Web fetching obeys robots.txt; do not bypass anti-crawling or login restrictions; proactively
    flag copyright and compliance risks.
-3. Plot points have three states `official` / `candidate` / `archive`; candidate plans never
+4. Plot points have three states `official` / `candidate` / `archive`; candidate plans never
    automatically replace the main storyline.
-4. Once changes are finalized, an automatic snapshot goes to `history/`, changes are appended to
+5. Once changes are finalized, an automatic snapshot goes to `history/`, changes are appended to
    `CHANGELOG.md`, and the breakpoint is updated in `latest.md`.
-5. Audit skills (nc-review / nc-rhythm / nc-safetyguard) only emit opinions; they never auto-edit
+6. Audit skills (nc-review / nc-rhythm / nc-safetyguard) only emit opinions; they never auto-edit
    manuscripts.
+7. Dual-mode profile switch: simple blocks only L1 hard errors, deep runs full-chain strict
+   validation; a single card's `profile_override` can locally override the global value
+   without polluting other cards' context.
 
 ## ③ Intent Recognition & Skill Recommendation Rules
 
@@ -89,6 +98,40 @@ ask for confirmation.
 - Author input: "Help me check whether this plot clashes with a foreshadow I planted earlier"
 - Agent reply: "Detected that you want to validate plot-logic conflicts. You can invoke the skill:
   `nc-review`, to scan foreshadows, character states, and setting contradictions. Shall I run it?"
+
+### 9 Core Intent Signal Quick Table
+
+| # | User Input Signal | Detected Intent | Recommended Skill | Supplementary Note |
+|---|---|---|---|---|
+| 1 | Dropping a link / chat log / paper / excerpted material | Material ingestion | `nc-material` + `nc-clean` | Auto-passes inflation filter gate before ingestion |
+| 2 | Looking up characters / items / foreshadows / sensory cues / duplicate descriptions | Asset retrieval | `nc-query` | Supports role filtering, cross-type search |
+| 3 | Checking bugs / OOC / spatial conflicts / sensory conflicts / setting contradictions | Logic validation | `nc-review` | Only emits opinions, never auto-edits |
+| 4 | What would the character do / choose A or B / single-point reasoning | Character plot inference | `nc-analyze` | Only outputs plans A/B/C; no card = no inference |
+| 5 | Major rewrite / delete segment / reorder / change foreshadow timing / batch adjust | Batch plot adjustment | `nc-compose` | Outputs compose_plan for author review first |
+| 6 | Export word / pdf / package deliverable | Deliverable export | `nc-export` | Pandoc-based cross-platform export |
+| 7 | New character / new scene / new item / new faction / multi-perspective freeze-frame | New narrative card | Manual card + `nc-query` + `nc-review` | Proposal-based (AI drafts, user persists) |
+| 8 | New project / reset template / initialize workspace | Project initialization | `nc-init` | Generates v1.0 full directory skeleton |
+| 9 | Violating content / sensitive description / compliance screening | Compliance screening | `nc-safetyguard` | Distinguishes [rendering-harm redline] / [exposure-criticism doubt] |
+
+**Ambiguous input with multiple intents**: when multiple intents match simultaneously, MUST list all candidates and never choose on behalf of the author.
+
+### Interaction Rules: Four-Step Phrasing
+
+1. **"Detected your need: xxx"** — one-line restatement of detected intent
+2. **"Recommended skill(s): [xx / xx]"** — list recommended skills (parallel for multiple intents)
+3. **"Optional actions: directly invoke `nc-xxx params`, or keep providing info and I'll help organize into cards/commands"**
+4. **Only enter the corresponding skill flow when the author explicitly says "just do it for me"** — MUST NOT auto-invoke any skill before confirmation
+
+### Prohibited Actions List
+
+| # | Prohibited Action | Description |
+|---|---|---|
+| 1 | Auto-modify yaml/md cards | MUST NOT edit/write any card file without nc-* command and author's "help me fix" |
+| 2 | Rewrite prose passages | MUST NOT modify `manuscript/` without nc-draft / nc-compose command |
+| 3 | Modify character tendency scale values | MUST NOT modify `tend-*` card values without nc-tendency command |
+| 4 | Self-create directories | MUST NOT create `cards/` / `manuscript/` / `reflections/` / `graph/` / `drafts/` |
+
+After each skill execution, SHALL prompt to sync-update `changelog.md` and `latest.md` (persisted by user).
 
 ### Explicit Command Priority
 
