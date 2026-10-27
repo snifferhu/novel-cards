@@ -102,4 +102,4 @@ subspace with no cross-contamination of data.
 
 - Need the full input/output spec of a skill → see `skill-reference.md`
 - Want the Agent to better match your project habits → edit the intent table in `agents.md`
-- Migrating a legacy (v0.x) project → see the v0→v1 migration section in `USAGE.md` of the skill repo
+

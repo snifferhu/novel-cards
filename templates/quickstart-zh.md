@@ -92,4 +92,4 @@
 
 - 想查某个技能的完整入参/产物 → 看 `skill-reference.md`
 - 想让 Agent 更懂你的项目习惯 → 编辑 `agents.md` 的意图匹配表
-- 遇到旧版（v0.x）工程要迁移 → 看 skill 仓库 `USAGE.md` 的 v0→v1 迁移章节
+

@@ -30,7 +30,7 @@
 `nc-初始化`（交互式，含 agents.md 双语生成）双入口生成。本 skill 只走相对路径，
 不修改使用方配置。
 
-> 📖 日常使用、FAQ 与 **v0→v1 迁移指引**请看 **[USAGE.md](./USAGE.md)**。
+> 📖 日常使用与 FAQ 请看 **[USAGE.md](./USAGE.md)**。
 > 本文档聚焦项目结构、安装方式与技术约定。
 
 ## 快速开始（四步落地闭环）
@@ -149,13 +149,13 @@ novel-cards/
   AGENTS.md               # 本仓库开发约定（不要写卡片内容）
   SKILL.md                # skill 入口（frontmatter 仅 name/description/license）
   README.md               # 本文件（项目概览）
-  USAGE.md                # 使用说明（三场景操作路径 + FAQ + v0→v1 迁移 + 回滚）
+  USAGE.md                # 使用说明（三场景操作路径 + FAQ + 回滚）
   LICENSE                 # AGPL-3.0（不可修改）
   install.sh              # 一键安装 / 项目初始化
   references/
     oo-model.md           # 面向对象透镜：NcObject 基类 + 8 子类 + StoryWorld 容器 + 29 技能→方法映射
     event-inference.md    # 事件驱动连锁推演：dispatch_event → enter/perceive/act/fire → ChangePlan → patch → render
-    skill-catalog.md      # 29 技能六组分类、双语别名映射、auto_invokable 标记、入参/产物、旧 12→新 29 对照
+    skill-catalog.md      # 29 技能六组分类、双语别名映射、auto_invokable 标记、入参/产物
     card-schema.md        # 全类型 frontmatter 字段定义与最小示例（含 character_tendency/tend-）
     data-layering.md      # 四层铁律、card-graph.json 图森林 schema、registry/index 清单
     compliance.md         # robots.txt 校验链路、四套中英文案、版权提醒、工具定位声明
@@ -265,8 +265,7 @@ novel-cards/
 > （独立 `tree_id` 隔离），服务于「拆解现成外部作品」流程，不计入面向用户的六组
 > 29 技能分类，在分析模式下按需手动触发。
 
-完整双语别名映射 JSON、每技能入参/产物、旧 12→新 29 对照表见
-`references/skill-catalog.md`。
+完整双语别名映射 JSON、每技能入参/产物见 `references/skill-catalog.md`。
 
 ## 16+ 卡类型速览
 

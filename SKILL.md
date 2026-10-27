@@ -198,7 +198,7 @@ skill 读写均以**使用方工程根**为基准，走相对路径。骨架由 
 > （独立 `tree_id` 隔离），服务于「拆解现成外部作品」流程，不计入面向用户的六组
 > 29 技能分类，在分析模式下按需手动触发。
 
-完整双语别名映射 JSON、每技能入参/产物、旧 12→新 29 对照表见
+完整双语别名映射 JSON、每技能入参/产物见
 `references/skill-catalog.md`。
 
 ---
@@ -318,7 +318,7 @@ Novel-Cards 仅提供轻量化单点内容摘录辅助。工具会主动遵从�
 
 - `references/oo-model.md` — 面向对象透镜：NcObject 基类（五字段 + render/validate/snapshot/patch 四方法）、8 子类属性/方法契约、StoryWorld 容器（5 属性 / 8 方法）、29 技能 → 方法全量映射、草稿命名 → 既有 schema 对齐表。
 - `references/event-inference.md` — 事件驱动连锁推演：dispatch_event → enter→perceive→act→fire 链 → ChangePlan → 作者审核 → patch → render；冲突三选一；「文字即视图」render 阶段；short/mid/long 模式门控。
-- `references/skill-catalog.md` — 29 技能六组分类、双语别名映射、auto_invokable 标记、入参/产物、旧 12→新 29 对照。
+- `references/skill-catalog.md` — 29 技能六组分类、双语别名映射、auto_invokable 标记、入参/产物。
 - `references/card-schema.md` — 全类型 frontmatter 字段定义与最小示例（含 character_tendency/tend-）。
 - `references/data-layering.md` — 四层铁律、card-graph.json 图森林 schema、registry/index 清单。
 - `references/compliance.md` — robots.txt 校验链路、四套中英文案、版权提醒、工具定位声明。
