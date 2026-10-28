@@ -38,6 +38,11 @@ novel-cards skill 的所有行为准则集中于此。规则分为**不可变硬
 | 27 | **双模式剖面开关**：`config/project.yaml` 的 `world_base_profile`（simple/deep）控制 nc-校阅/nc-研判/nc-编排 校验松紧度；缺省 = 隐式 simple（存量工程行为不变，MUST NOT 报错）；单卡片 frontmatter 的 `profile_override` 局部覆写优先于全局值，仅作用于该卡及其直接关联资产；子模块开关按 auto_enable_map 联动，作者显式覆盖优先 | 硬性（v1.0 增量） |
 | 28 | **SPACE_001 空间物理校验**：deep 档对桥段角色动作做姿态包围盒 vs 场景净空 L1 推演 + 重心/平衡 L2 商榷（可 `override_note` 豁免）；simple 档仅拦离谱穿墙/穿固体（L1 双模式共用硬规则）+ 失明硬错（SENSE_001）；scene/actor 缺失空间字段时跳过推演，存量卡行为不变 | 硬性（v1.0 增量） |
 | 29 | **机器可读校阅规则库驱动**：nc-校阅/nc-研判/nc-编排 优先读 `config/review-rules.json` 按 rule_set 结构化校验（带 rule_id 标注）；缺失或 JSON 损坏降级纸面校验不报错；输出按 🔴L1_HARD（附修改方案，不可豁免）/ 🔵L2_WARN（附豁免选项）/ 💡L3_INSPIRATION（启发）三级分组；不改变 audit 只读铁律（仍只出意见绝不改稿）；hard-rules.md 为自然语言权威、rules.json 为机器真值，冲突时前者优先 | 硬性（v1.0 增量） |
+| 30 | **谱系类型缩写固定 7 类且 IP 短码 ≥3 字符**：书内谱系物料 uid 的 TYPE MUST 取自 MAI/ABR/PRO/CAR/DRF/TST/REF 七类固定缩写，MUST NOT 自造新类型缩写；IP 短码 MUST ≥3 字符（一个独立 IP 永久固定），MUST NOT 用 2 字符缩写；分卷零填充（001/002）、章节 `-CHxx`、版本 `Vxx`、宣发时长锁死 S10/S30/M01/M05 四档 | 硬性（v1.0 增量） |
+| 31 | **谱系物理目录浅层级 ≤1 层**：每本书根目录下最多一层物料子文件夹（MAI/ABR/PRO/CAR/DRF/TST/REF），MUST NOT 出现二级及以上嵌套（禁止 `MAI/vol1/chapter01`）；一卷内部章节用文件名后缀区分（`SHZ-MAI-001-CH05.md`），时序顺序靠文件名自带数字排序 | 硬性（v1.0 增量） |
+| 32 | **index.yaml 为逻辑谱系真值由 skill 自动维护**：每本书一份 `index.yaml` 记录谱系关系 / 卷册从属 / 章节归属 / 时序依赖（follow）/ 关联物料（related）/ 状态与软删除标记；SHALL 由 nc-lineage-* 技能自动读写，人 SHOULD NOT 手改；手改损坏时 nc-lineage-query MUST fail-loud 报错（uid 唯一 / follow 无环 / 命名格式校验），MUST NOT 静默吞错 | 硬性（v1.0 增量） |
+| 33 | **谱系时序只写在 follow 字段**：剧情先后 / 卷册从属 / 前后依赖 MUST 只表达在 `index.yaml` 的 `follow` / `children` 字段，MUST NOT 靠文件夹嵌套或文件夹顺序定义剧情先后；重排文件不得改变谱系时序 | 硬性（v1.0 增量） |
+| 34 | **谱系移除软删除优先**：nc-lineage-del 默认软删除（仅置 `archived: true`，文件保留，查询默认过滤归档条目，可经 `nc-lineage-add --restore` 恢复）；硬删除 MUST 需 `--hard` 参数并二次确认（同时删索引条目与本地文件）；未确认则中止 | 硬性（v1.0 增量） |
 
 ## 规则 1 & 2：提案制详解
 
@@ -541,7 +546,7 @@ nc-校阅 / nc-研判 / nc-编排 三个审计类技能的校验逻辑 SHALL 优
 ### 缺失降级铁律
 
 - **WHEN** 使用方工程无 `config/review-rules.json`
-- **THEN** nc-校阅 降级为纸面校验（按本文件 29 条硬规则 + references 自然语言规则执行），
+- **THEN** nc-校阅 降级为纸面校验（按本文件 34 条硬规则 + references 自然语言规则执行），
   不报错、不阻断；行为与引入本能力前完全一致
 - **WHEN** `config/review-rules.json` 存在但 JSON 损坏（解析失败）
 - **THEN** nc-校阅 抛出 L2_WARN 提示「规则库 JSON 损坏，已降级纸面校验」，继续执行
@@ -571,6 +576,67 @@ nc-校阅 输出 MUST 按三级分组呈现（定义见 `references/review-rules
 纸面校验。
 
 详见 `references/review-rules.md` 完整规则库契约与 `templates/review-rules.json` 骨架模板。
+
+## 规则 30：谱系类型缩写固定 7 类且 IP 短码 ≥3 字符（v1.0 增量）
+
+书内谱系物料 uid 的 TYPE MUST 取自固定 7 类缩写（MAI 正传正文 / ABR 精简缩略 / PRO 宣发文案 /
+CAR 资产卡片 / DRF 草稿备选 / TST 校阅测试 / REF 外部参考），MUST NOT 自造新类型缩写；IP 短码
+MUST ≥3 字符（一个独立 IP 永久固定），MUST NOT 使用 2 字符缩写（易撞、歧义）。编号形态：分卷
+零填充（001/002）、章节 `-CHxx`、版本 `Vxx`、宣发时长锁死 S10/S30/M01/M05 四档（不搞 S15/M03
+自定义时长）。
+
+- **WHEN** 作者尝试登记 `SHZ-XYZ-001`（XYZ 不在 7 类内）或 2 字符 IP 短码 `SZ-MAI-001`
+- **THEN** nc-lineage-add/edit MUST 拒绝并提示「类型缩写必须取自 MAI/ABR/PRO/CAR/DRF/TST/REF，
+  不可自造」/「IP 短码须 ≥3 字符」
+
+完整命名规范见 `references/lineage.md` §1。
+
+## 规则 31：谱系物理目录浅层级 ≤1 层（v1.0 增量）
+
+每本书根目录下最多一层物料子文件夹（MAI/ABR/PRO/CAR/DRF/TST/REF），MUST NOT 出现二级及以上
+嵌套（禁止 `MAI/vol1/chapter01` 这类多层目录）；一卷内部章节用文件名后缀区分
+（`SHZ-MAI-001-CH05.md`），时序顺序靠文件名自带数字排序。浅目录保证「单看文件名可知归属、平铺
+不丢信息」。
+
+- **WHEN** 作者试图把文件放到 `SHZ/MAI/VOL001/SHZ-MAI-001-CH05.md`（两层嵌套）
+- **THEN** 系统 MUST 提示目录深度超限，要求改为单层 `SHZ/MAI/SHZ-MAI-001-CH05.md`
+
+完整目录约定见 `references/lineage.md` §2。
+
+## 规则 32：index.yaml 为逻辑谱系真值由 skill 自动维护（v1.0 增量）
+
+每本书一份 `index.yaml` 是逻辑谱系真值，记录谱系关系 / 卷册从属 / 章节归属 / 时序依赖
+（follow）/ 关联物料（related）/ 状态与软删除标记。该文件 SHALL 由 nc-lineage-* 技能自动读写，
+人 SHOULD NOT 手改；手改损坏时 nc-lineage-query MUST fail-loud 报错（uid 唯一 / follow 无环 /
+命名格式校验），MUST NOT 静默吞错返回错误谱系树。
+
+- **WHEN** 作者手动编辑 index.yaml 导致重复 uid 或 follow 成环
+- **THEN** nc-lineage-query MUST 报错并指出具体校验失败项（重复 uid / 环形依赖），不静默
+
+完整 schema 与校验规则见 `references/lineage.md` §3。
+
+## 规则 33：谱系时序只写在 follow 字段（v1.0 增量）
+
+剧情先后 / 卷册从属 / 前后依赖 MUST 只表达在 `index.yaml` 的 `follow` / `children` 字段，
+MUST NOT 靠文件夹嵌套或文件夹顺序定义剧情先后；重排磁盘文件不得改变谱系时序。这让「物理存储
+是浅目录、逻辑谱系是虚拟树」的双轨制成立——作者不用记路径，工具知道谁是谁的前传。
+
+- **WHEN** 卷二接在卷一之后
+- **THEN** index.yaml 中卷二条目 `follow: SHZ-MAI-001`，剧情先后不靠文件夹顺序或文件名隐含
+
+完整说明见 `references/lineage.md` §3 / §6。
+
+## 规则 34：谱系移除软删除优先（v1.0 增量）
+
+nc-lineage-del 默认软删除——仅置 `archived: true`，文件保留，归档条目不再出现在正常谱系树
+（nc-lineage-query 默认过滤），可经 `nc-lineage-add --restore <uid>` 恢复；硬删除 MUST 需 `--hard`
+参数并二次确认，同时删除索引条目与本地文件，未确认则中止。长篇创作误删一卷代价极高，软删除
+零成本兜底。
+
+- **WHEN** 执行 `nc-lineage-del --ip SHZ --id SHZ-MAI-001-CH07`（无 --hard）
+- **THEN** 该条目 `archived: true`，文件保留；`nc-lineage-query --ip SHZ` 默认不显示它
+
+完整契约见 `references/lineage.md` §4.3。
 
 ## 违规响应模板
 

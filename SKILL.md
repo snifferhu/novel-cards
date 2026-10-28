@@ -2,24 +2,29 @@
 name: novel-cards
 description: >-
   维护小说卡片体系，走提案制与用户共创。为长篇 / 中篇 / 短篇虚构作品提供
-  29 个 nc- 技能（工程初始化&素材资产 / 叙事卡片建模 / 剧情结构 / 生成与可视化 /
+  33 个 nc- 技能（工程初始化&素材资产 / 叙事卡片建模 / 剧情结构 / 生成与可视化 /
   审计校验 / 归档导出&复盘六组），覆盖 actor（角色）、桥段、道具（黑盒三层）、
   场景、伏笔、动线（积木驱动）、势力、快照（时间锚点状态切片）、暗线、积木模块、
   词频张力、语料、量化指标、姿态库、感官标记、角色动向（性格/心智倾向滑动标尺）、
   对标作品档案等 16+ 类结构化卡片，并支持 HTML 图谱表达复杂关系、四层数据分层
-  （md/json/yaml/html）。统一触发前缀 `nc-`：当用户说 `nc-初始化` / `nc-素材` /
-  `nc-清洗` / `nc-检索` / `nc-注册` / `nc-更名` / `nc-角色` / `nc-姿态` /
-  `nc-道具` / `nc-场景` / `nc-感官标记` / `nc-动向` / `nc-桥段` / `nc-伏笔` /
-  `nc-快照` / `nc-势力` / `nc-暗线` / `nc-积木` / `nc-研判` / `nc-编排` /
-  `nc-量化` / `nc-图谱` / `nc-成稿` / `nc-词频` / `nc-校阅` / `nc-节奏` /
-  `nc-守卫` / `nc-定稿` / `nc-导出` / `nc-复盘` 时触发（均支持英文别名，如
-  nc-role / nc-tendency / nc-analyze / nc-compose / nc-rename / nc-wordfreq）。
+  （md/json/yaml/html）、书内谱系管理（语义化命名 + 浅目录 + 机器维护 index.yaml，
+  管一本书内部卷/章节/物料谱系，与多本作品隔离正交叠加）。统一触发前缀 `nc-`：
+  当用户说 `nc-初始化` / `nc-素材` / `nc-清洗` / `nc-检索` / `nc-注册` /
+  `nc-更名` / `nc-角色` / `nc-姿态` / `nc-道具` / `nc-场景` / `nc-感官标记` /
+  `nc-动向` / `nc-桥段` / `nc-伏笔` / `nc-快照` / `nc-势力` / `nc-暗线` /
+  `nc-积木` / `nc-研判` / `nc-编排` / `nc-谱系新增` / `nc-谱系修改` /
+  `nc-谱系移除` / `nc-谱系查询` / `nc-量化` / `nc-图谱` / `nc-成稿` /
+  `nc-词频` / `nc-校阅` / `nc-节奏` / `nc-守卫` / `nc-定稿` / `nc-导出` /
+  `nc-复盘` 时触发（均支持英文别名，如 nc-role / nc-tendency / nc-analyze /
+  nc-compose / nc-rename / nc-wordfreq / nc-lineage-add / nc-lineage-edit /
+  nc-lineage-del / nc-lineage-query）。
   无前缀的自然语言触发词：「维护小说卡片体系」「走提案制」「新增/更新角色卡」
   「整理伏笔卡」「梳理动线」「状态快照」「暗线卡」「生成关系图谱」「复盘这一章」
   「过滤一下这个素材」「这个角色再突破底线怎么安排」（单点推演→nc-研判）
   「这批素材用上，老情节换掉」（批量迭代→nc-编排）「改书名/全局代号重命名」
-  （→nc-更名）等。所有回写一律输出 Markdown 完整草案，用户确认后由用户落盘；
-  AI 不直接写卡。
+  （→nc-更名）「给这本书建个卷/章节谱系」「把这篇已有文稿挂进谱系」
+  「查一下整本书的谱系树/卷册从属/配套宣发稿」（→nc-谱系*）等。
+  所有回写一律输出 Markdown 完整草案，用户确认后由用户落盘；AI 不直接写卡。
 license: AGPL-3.0
 ---
 
@@ -104,14 +109,16 @@ skill 读写均以**使用方工程根**为基准，走相对路径。骨架由 
     custom/            # 经 nc-注册 的自定义类型
       sensory_cue/     # type: sensory_cue（su-）
       refwork/         # type: refwork（rw-）
-  reflections/         # type: reflection（rf-，独立于 cards/）
-  manuscript/          # 正文章节
-  graph/               # .html 可视化看板（消费 card-graph.json 渲染）
-  tools/               # 可选只读运行时（nc_validate.py：validate/audit/simulate，缺失降级纸面校验）
-  export/ release/     # nc-导出 中间产物 / 成品
-  history/             # nc-定稿 工程快照归档
-  drafts/practice/     # 练习稿（过滤器未通过 / 用户标记）
-  CHANGELOG.md latest.md
+   reflections/         # type: reflection（rf-，独立于 cards/）
+   manuscript/          # 正文章节
+   index.yaml           # 书内谱系索引（真值，nc-lineage-* 自动维护；语义化命名 + 浅目录双轨）
+   MAI/ ABR/ PRO/ CAR/ DRF/ TST/ REF/   # 书内谱系物料子目录（≤1 层浅目录，按 7 类固定缩写分置）
+   graph/               # .html 可视化看板（消费 card-graph.json 渲染）
+   tools/               # 可选只读运行时（nc_validate.py：validate/audit/simulate，缺失降级纸面校验）
+   export/ release/     # nc-导出 中间产物 / 成品
+   history/             # nc-定稿 工程快照归档
+   drafts/practice/     # 练习稿（过滤器未通过 / 用户标记）
+   CHANGELOG.md latest.md
 ```
 
  详细布局与各目录职责见 `references/layout.md`。
@@ -126,7 +133,7 @@ skill 读写均以**使用方工程根**为基准，走相对路径。骨架由 
 
  ---
 
- ## 3. 29 技能速查总表（六组）
+  ## 3. 33 技能速查总表（六组）
 
 按功能分六组。所有技能支持中文与英文双向别名调用，新手优先中文；输入任一别名
 内部自动映射，返回提示仍以中文为主、英文名括号附带。面向作者呈现的是**用户可主动
@@ -167,7 +174,11 @@ skill 读写均以**使用方工程根**为基准，走相对路径。骨架由 
 | `nc-暗线` | `nc-thread` | 整条明面叙事的隐性逻辑链路（setting/plot/character/mixed） |
 | `nc-积木` | `nc-module` | 积木编排：trigger_map 绑定动线/伏笔/pose，组装触发关系 |
 | `nc-研判` | `nc-analyze` | 单点创作推演，出方案 A/B/C（只出建议报告，绝不改卡） |
-| `nc-编排` | `nc-compose` | 批量剧情编排三段式（计划→审核→执行），前置 nc-校阅 扫冲突 |
+| `nc-编排` | `nc-compose` | 批量剧情编排三段式（计划→审核→执行），前置 nc-校阅 扫冲突；MAY 读谱系按 follow 时序批量生成下一章/梗概/宣发稿并挂靠谱系 |
+| `nc-谱系新增` | `nc-lineage-add` | 书内谱系管理：新增卷/章节/配套物料（梗概/宣发/卡片/草稿/测试/参考），登记进 index.yaml 绑定从属；`--exist-file` 挂靠已有 md；`--restore <uid>` 恢复软删除 |
+| `nc-谱系修改` | `nc-lineage-edit` | 书内谱系管理：改标题/调时序（follow）/变更归属（move-to-vol）/改状态；默认只改 index.yaml 不动文件名，`--rename-file` 才同步重命名 |
+| `nc-谱系移除` | `nc-lineage-del` | 书内谱系管理：默认软删除（archived:true，文件保留，查询默认过滤，可 --restore 恢复）；`--hard` 硬删除需二次确认 |
+| `nc-谱系查询` | `nc-lineage-query` | 书内谱系管理：查整 IP 谱系树/单卷带章节+前后置/`--filter <TYPE>`/`--show-archived`；输出文字谱系树；读取前 fail-loud 校验（uid 唯一/follow 无环/命名格式） |
 
 ### 3.D 生成与可视化组
 
@@ -196,7 +207,7 @@ skill 读写均以**使用方工程根**为基准，走相对路径。骨架由 
 
 > **分析模式专用**：`nc-对标`(nc-refwork) 是 v1.0 主体保留的外部作品拆解学习技能
 > （独立 `tree_id` 隔离），服务于「拆解现成外部作品」流程，不计入面向用户的六组
-> 29 技能分类，在分析模式下按需手动触发。
+> 33 技能分类，在分析模式下按需手动触发。
 
 完整双语别名映射 JSON、每技能入参/产物见
 `references/skill-catalog.md`。
@@ -268,6 +279,7 @@ skill 读写均以**使用方工程根**为基准，走相对路径。骨架由 
 | `nc-积木` | `references/card-schema.md`（trigger_map） | `templates/modules.md` |
 | `nc-研判` | `references/loop.md`（单点推演分支）、`references/hard-rules.md`（规则 24 只出建议） | — |
 | `nc-编排` | `references/loop.md`（批量迭代分支）、`references/hard-rules.md`（规则 24 计划→审核→执行） | — |
+| `nc-谱系新增` / `nc-谱系修改` / `nc-谱系移除` / `nc-谱系查询` | `references/lineage.md`（命名规范 + index.yaml schema + 四技能契约）、`references/hard-rules.md`（规则 30-34 谱系铁律） | `templates/lineage-index.yaml` |
 | `nc-量化` | `references/data-layering.md`（metric-index.json） | `templates/metrics.md` |
 | `nc-图谱` | `references/data-layering.md`（card-graph.json schema） | `templates/relation-graph.html` |
 | `nc-成稿` | `references/loop.md`（写稿分支 + --length 档位） | — |
@@ -329,15 +341,15 @@ Novel-Cards 仅提供轻量化单点内容摘录辅助。工具会主动遵从�
 
 ## 9. 参考文件
 
-- `references/oo-model.md` — 面向对象透镜：NcObject 基类（五字段 + render/validate/snapshot/patch 四方法）、8 子类属性/方法契约、StoryWorld 容器（5 属性 / 8 方法）、29 技能 → 方法全量映射、草稿命名 → 既有 schema 对齐表。
+- `references/oo-model.md` — 面向对象透镜：NcObject 基类（五字段 + render/validate/snapshot/patch 四方法）、8 子类属性/方法契约、StoryWorld 容器（5 属性 / 8 方法）、33 技能 → 方法全量映射、草稿命名 → 既有 schema 对齐表。
 - `references/event-inference.md` — 事件驱动连锁推演：dispatch_event → enter→perceive→act→fire 链 → ChangePlan → 作者审核 → patch → render；冲突三选一；「文字即视图」render 阶段；short/mid/long 模式门控。
-- `references/skill-catalog.md` — 29 技能六组分类、双语别名映射、auto_invokable 标记、入参/产物。
+- `references/skill-catalog.md` — 33 技能六组分类、双语别名映射、auto_invokable 标记、入参/产物。
 - `references/card-schema.md` — 全类型 frontmatter 字段定义与最小示例（含 character_tendency/tend-）。
 - `references/data-layering.md` — 四层铁律、card-graph.json 图森林 schema、registry/index 清单。
 - `references/compliance.md` — robots.txt 校验链路、四套中英文案、版权提醒、工具定位声明。
 - `references/agents-guide.md` — agents.md 四块、意图匹配表、显式指令优先、文档三分拆、可编辑性。
 - `references/loop.md` — 三场景流程编排、长短篇分级矩阵、研判/编排迭代分支、动向弧光链、写稿/审稿/修稿/定稿分支开关。
-- `references/hard-rules.md` — 29 条硬规则详解（含 24 研判/编排只出建议 / 25 更名先预览后替换 / 26 动向变动绑定桥段 / 27 双模式剖面开关 / 28 SPACE_001 空间物理校验 / 29 机器可读校阅规则库驱动）。
+- `references/hard-rules.md` — 34 条硬规则详解（含 24 研判/编排只出建议 / 25 更名先预览后替换 / 26 动向变动绑定桥段 / 27 双模式剖面开关 / 28 SPACE_001 空间物理校验 / 29 机器可读校阅规则库驱动 / 30-34 书内谱系命名·浅目录·index.yaml·时序·软删除）。
 - `references/layout.md` — 使用方工程目录树、install.sh 与 nc-初始化 双入口边界。
 - `references/filter.md` — 通胀过滤器三问（现为 nc-素材 入库前自动 gate + 手动 nc-过滤 复检）。
 

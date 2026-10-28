@@ -1,13 +1,14 @@
 # novel-cards
 
 双端兼容（**OpenCode** + **Claude Code**）的小说卡片体系维护 skill。为长篇 /
-中篇 / 短篇虚构作品提供 **29 个 `nc-` 技能**（工程初始化&素材资产 / 叙事卡片建模 /
+中篇 / 短篇虚构作品提供 **33 个 `nc-` 技能**（工程初始化&素材资产 / 叙事卡片建模 /
 剧情结构 / 生成与可视化 / 审计校验 / 归档导出&复盘六组），覆盖 **16+ 类结构化卡片**，
 支持 **HTML 图谱**表达复杂关系、**四层数据分层**（`.md` 业务源头 / `.json` 图森林真值 /
 `.yaml` 配置白名单 / `.html` 展示投影）、**反思卡**沉淀单章复盘、**通胀过滤器**做
 新素材入口 gate、**多本作品并行创作**（一个工程目录同时管理多部小说，`works/` 子空间
-隔离 + `--work` 作用域 + 多笔名署名）。以**提案制**方式与作者协作。统一触发前缀
-`nc-`（均支持英文别名）。
+隔离 + `--work` 作用域 + 多笔名署名）、**书内谱系管理**（语义化命名 + 浅目录 + 机器维护
+`index.yaml`，管一本书内部卷/章节/物料谱系，与多本作品隔离正交叠加）。以**提案制**方式
+与作者协作。统一触发前缀 `nc-`（均支持英文别名）。
 
 > **面向对象透镜**：每张卡都是一个 `NcObject` 子类实例，每个 `nc-*` 技能都是对
 > `StoryWorld` 容器或某个对象的一次方法调用；正文是参与对象按 timeline 顺序 `render()`
@@ -20,7 +21,7 @@
 
 本仓库**不是**任何小说工程本身，而是一个 skill 定义仓库。交付物是：
 
-- `SKILL.md` — skill 入口（触发词、29 技能六组速查表、硬规则摘要、路由规则、三场景流程概览、合规声明）
+- `SKILL.md` — skill 入口（触发词、33 技能六组速查表、硬规则摘要、路由规则、三场景流程概览、合规声明）
 - `references/` — 细则（技能目录、卡片 schema、四层分层、合规链路、agents 引导、闭环工作流、硬规则、布局约定、过滤器）
 - `templates/` — 16+ 类卡的骨架模板 + 关系图谱 HTML 模板 + 双语 agents/quickstart/skill-reference 模板
 - `install.sh` — 一键安装到 OpenCode / Claude Code；`--project` 生成使用方工程 v1.0 完整目录骨架
@@ -126,6 +127,8 @@ cd ~/path/to/your/novel                          # 进入使用方工程
   reflections/            # 反思卡 rf-（独立于 cards/）+ 审计意见书
   manuscript/             # 正文章节
   graph/                  # 关系图谱 HTML（消费 index/card-graph.json 渲染）
+  index.yaml              # 书内谱系索引（真值；nc-lineage-* 自动维护，人勿手改）
+  MAI/ ABR/ PRO/ CAR/ DRF/ TST/ REF/   # 书内谱系物料子目录（≤1 层浅目录，7 类固定缩写分置）
   tools/                  # 可选只读运行时（nc_validate.py：validate/audit/simulate，缺失降级纸面校验）
   export/                 # nc-导出 中间产物
   release/                # nc-导出 成品（PDF/Word）
@@ -166,16 +169,17 @@ novel-cards/
   LICENSE                 # AGPL-3.0（不可修改）
   install.sh              # 一键安装 / 项目初始化
   references/
-    oo-model.md           # 面向对象透镜：NcObject 基类 + 8 子类 + StoryWorld 容器 + 29 技能→方法映射
+    oo-model.md           # 面向对象透镜：NcObject 基类 + 8 子类 + StoryWorld 容器 + 33 技能→方法映射
     event-inference.md    # 事件驱动连锁推演：dispatch_event → enter/perceive/act/fire → ChangePlan → patch → render
-    skill-catalog.md      # 29 技能六组分类、双语别名映射、auto_invokable 标记、入参/产物
+    skill-catalog.md      # 33 技能六组分类、双语别名映射、auto_invokable 标记、入参/产物
     card-schema.md        # 全类型 frontmatter 字段定义与最小示例（含 character_tendency/tend-）
     data-layering.md      # 四层铁律、card-graph.json 图森林 schema、registry/index 清单
     compliance.md         # robots.txt 校验链路、四套中英文案、版权提醒、工具定位声明
     agents-guide.md       # agents.md 四块、意图匹配表、显式指令优先、文档三分拆、可编辑性
     loop.md               # 三场景流程编排、长短篇分级矩阵、研判/编排迭代分支、动向弧光链、分支开关
-    hard-rules.md         # 29 条硬规则详解
+    hard-rules.md         # 34 条硬规则详解
     layout.md             # 使用方工程目录树、install.sh 与 nc-初始化 双入口边界
+    lineage.md            # 书内谱系：uid 命名规范 / 浅目录约定 / index.yaml schema / 四技能契约 / 联动边界
     filter.md             # 通胀过滤器三问（nc-素材 入库前自动 gate + 手动 nc-过滤 复检）
   tools/
     nc_validate.py        # 可选只读运行时（Python3 标准库单文件，validate/audit/simulate 三子命令）
@@ -203,11 +207,11 @@ novel-cards/
     agents-en.md          # agents.md 英文模板
     quickstart-zh.md      # quickstart.md 中文模板（新手主线最简流程）
     quickstart-en.md      # quickstart.md 英文模板
-    skill-reference-zh.md # skill-reference.md 中文模板（29 技能全量备查总表）
+    skill-reference-zh.md # skill-reference.md 中文模板（33 技能全量备查总表）
     skill-reference-en.md # skill-reference.md 英文模板
 ```
 
-## 29 技能速览（六组）
+## 33 技能速览（六组）
 
 按功能分六组。所有技能支持中文与英文双向别名调用，新手优先中文。面向作者呈现的是
 **用户可主动调用**的六组分类；`auto_invokable` 内部标记对普通作者隐藏，仅在
@@ -247,7 +251,11 @@ novel-cards/
 | `nc-暗线` | `nc-thread` | 整条明面叙事的隐性逻辑链路（setting/plot/character/mixed） |
 | `nc-积木` | `nc-module` | 积木编排：trigger_map 绑定动线/伏笔/pose，组装触发关系 |
 | `nc-研判` | `nc-analyze` | 单点创作推演，出方案 A/B/C（只出建议报告，绝不改卡） |
-| `nc-编排` | `nc-compose` | 批量剧情编排三段式（计划→审核→执行），前置 nc-校阅 扫冲突 |
+| `nc-编排` | `nc-compose` | 批量剧情编排三段式（计划→审核→执行），前置 nc-校阅 扫冲突；MAY 读谱系按 follow 时序批量生成下一章/梗概/宣发稿并挂靠谱系 |
+| `nc-谱系新增` | `nc-lineage-add` | 书内谱系管理：新增卷/章节/配套物料，登记进 index.yaml 绑定从属；`--exist-file` 挂靠已有 md；`--restore <uid>` 恢复软删除 |
+| `nc-谱系修改` | `nc-lineage-edit` | 书内谱系管理：改标题/调时序（follow）/变更归属/改状态；默认只改 index.yaml 不动文件名，`--rename-file` 才同步重命名 |
+| `nc-谱系移除` | `nc-lineage-del` | 书内谱系管理：默认软删除（archived:true，文件保留，可 --restore 恢复）；`--hard` 硬删除需二次确认 |
+| `nc-谱系查询` | `nc-lineage-query` | 书内谱系管理：查整 IP 谱系树/单卷带章节+前后置/`--filter <TYPE>`/`--show-archived`；输出文字谱系树；读取前 fail-loud 校验 |
 
 ### D. 生成与可视化组
 
@@ -276,7 +284,7 @@ novel-cards/
 
 > **分析模式专用**：`nc-对标`(nc-refwork) 是 v1.0 主体保留的外部作品拆解学习技能
 > （独立 `tree_id` 隔离），服务于「拆解现成外部作品」流程，不计入面向用户的六组
-> 29 技能分类，在分析模式下按需手动触发。
+> 33 技能分类，在分析模式下按需手动触发。
 
 完整双语别名映射 JSON、每技能入参/产物见 `references/skill-catalog.md`。
 
@@ -331,6 +339,12 @@ novel-cards/
 铁律：`.html` MUST 由 `index/card-graph.json` 重生成，不存业务逻辑；`.md` 是唯一
 业务源头；`.json` 是图森林真值（节点 id/type/tree_id + 边 source/target/relation）；
 `.yaml` 是配置白名单。详见 `references/data-layering.md`。
+
+**谱系索引特例**：书内谱系的逻辑真值是工程根的 `index.yaml`（`.yaml` 层），但它**不是**
+人工维护的配置白名单——它由 `nc-谱系*` 四技能自动维护、人 SHOULD NOT 手改，损坏时
+`nc-谱系查询` fail-loud 报错并提示重建路径；物理物料文件（`.md`）走浅目录
+（`MAI/ABR/PRO/CAR/DRF/TST/REF` 七类子目录，≤1 层）。存量工程无 `index.yaml` 视为
+未启用 book-lineage，全部既有行为不变。完整契约见 `references/lineage.md`。
 
 ## 多本作品并行创作与署名
 
@@ -450,7 +464,7 @@ Novel-Cards 仅提供轻量化单点内容摘录辅助。工具会主动遵从�
 页面；不尝试绕过反爬/登录/动态渲染；任何不确定情况按「禁止」处理终止；抓取成功
 必附版权提醒。详见 `references/compliance.md`。
 
-## 硬规则速览（核心精选；全量 29 条见 `references/hard-rules.md`）
+## 硬规则速览（核心精选；全量 34 条见 `references/hard-rules.md`）
 
 1. **禁止直接写卡**：AI 绝不 `edit` / `write` 使用方工程的卡片、图谱、反思卡、练习稿文件。
 2. **提案制**：AI 回写卡片以完整 Markdown 提案、图谱以完整 HTML 提案输出，用户确认后自行落盘。
@@ -476,25 +490,26 @@ Novel-Cards 仅提供轻量化单点内容摘录辅助。工具会主动遵从�
 22. **更名先预览后替换**：`nc-更名` 全局标识符替换必须先出【替换预览清单】经作者确认才批量写入，且不动 `res/` 原始素材与口语称呼。
 23. **动向变动绑定桥段**：`character_tendency` 的 `history[]` 每条 MUST 绑定一个已存在的桥段卡（`trigger_plot` 引用真实 `pp-*`），禁止无推手凭空变性格。
 24. **auto_invokable 仅三项**：只有 `nc-量化` / `nc-图谱` / `nc-节奏` 为 true，其余技能一律 `user_trigger_only`，不对普通作者暴露该属性。
-25. **文档三分拆**：使用方工程引导文档拆为 `agents.md`（Agent 行为契约）/ `quickstart.md`（新手主线）/ `skill-reference.md`（29 技能全量备查），中英双语模板节结构一一对应。
-26. **六组分类一致性**：SKILL.md 速查表 / README 技能表 / `references/skill-catalog.md` / `USAGE.md` 四处列出的 29 技能集合与六组分组完全相同。
+25. **文档三分拆**：使用方工程引导文档拆为 `agents.md`（Agent 行为契约）/ `quickstart.md`（新手主线）/ `skill-reference.md`（33 技能全量备查），中英双语模板节结构一一对应。
+26. **六组分类一致性**：SKILL.md 速查表 / README 技能表 / `references/skill-catalog.md` / `USAGE.md` 四处列出的 33 技能集合与六组分组完全相同。
 
 完整规则见 `references/hard-rules.md`。
 
 ## 触发场景
 
-### 统一前缀触发（推荐，29 个，均支持英文别名）
+### 统一前缀触发（推荐，33 个，均支持英文别名）
 
 按六组分类：
 
 - **A. 工程初始化 & 素材资产**：`nc-初始化` / `nc-素材` / `nc-清洗` / `nc-检索` / `nc-注册` / `nc-更名`
 - **B. 叙事卡片建模**：`nc-角色` / `nc-姿态` / `nc-道具` / `nc-场景` / `nc-感官标记` / `nc-动向`
-- **C. 剧情结构**：`nc-桥段` / `nc-伏笔` / `nc-快照` / `nc-势力` / `nc-暗线` / `nc-积木` / `nc-研判` / `nc-编排`
+- **C. 剧情结构**：`nc-桥段` / `nc-伏笔` / `nc-快照` / `nc-势力` / `nc-暗线` / `nc-积木` / `nc-研判` / `nc-编排` / `nc-谱系新增` / `nc-谱系修改` / `nc-谱系移除` / `nc-谱系查询`
 - **D. 生成与可视化**：`nc-量化` / `nc-图谱` / `nc-成稿` / `nc-词频`
 - **E. 审计校验**：`nc-校阅` / `nc-节奏` / `nc-守卫`
 - **F. 归档导出 & 复盘**：`nc-定稿` / `nc-导出` / `nc-复盘`
 
 英文别名示例：`nc-role` / `nc-tendency` / `nc-analyze` / `nc-compose` / `nc-rename` /
+`nc-lineage-add` / `nc-lineage-edit` / `nc-lineage-del` / `nc-lineage-query` /
 `nc-plot` / `nc-item` / `nc-foreshadow` / `nc-timeline` / `nc-wordfreq` / `nc-draft` /
 `nc-graph` / `nc-module` / `nc-snapshot` / `nc-faction` / `nc-thread` / `nc-refwork` /
 `nc-metric` / `nc-pose` / `nc-sensorycue` / `nc-rhythm` / `nc-review` / `nc-safetyguard` /
@@ -512,6 +527,7 @@ Novel-Cards 仅提供轻量化单点内容摘录辅助。工具会主动遵从�
 - 「这个角色再突破底线怎么安排合适」（单点推演 → `nc-研判`）
 - 「这批素材用上，老情节换掉」（批量迭代 → `nc-编排`）
 - 「改书名」 / 「把全局代号 X 重命名为 Y」（→ `nc-更名`）
+- 「给这本书建个卷/章节谱系」 / 「把这篇已有文稿挂进谱系」 / 「查一下整本书的谱系树」（→ `nc-谱系*`）
 - 「复盘这一章」 / 「这一章哪里卡住了」 / 「这一章写完要沉淀一下」
 - 「过滤一下这个素材」 / 「这个题材值不值得做」 / 「这个角度别人能不能抄」
 - 「校阅一下设定一致性」 / 「检查一下节奏」 / 「做个合规扫描」

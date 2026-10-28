@@ -145,6 +145,6 @@
 {{ENABLED_SKILLS}}
 
 > **流程向导模式**：Agent 按当前流水线阶段只推荐「下一步最相关的 1–3 个技能」，
-> 不一次性倾倒全部 29 个技能；作者可在本文件声明「本项目常用技能集」做进一步收敛。
-> 完整 29 技能清单、双语别名与 auto_invokable 列见 `skill-reference.md`；
+> 不一次性倾倒全部 33 个技能；作者可在本文件声明「本项目常用技能集」做进一步收敛。
+> 完整 33 技能清单、双语别名与 auto_invokable 列见 `skill-reference.md`；
 > 新手主线见 `quickstart.md`；长短篇分级矩阵见 skill 仓库 `references/loop.md`。

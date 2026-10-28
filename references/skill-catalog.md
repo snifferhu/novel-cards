@@ -1,19 +1,19 @@
 # 技能清单（skill-catalog.md）
 
-novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类**呈现（降低记忆
+novel-cards v1.0 提供 **33 个 `nc-` 技能**。面向用户按**六组分类**呈现（降低记忆
 负担），每个技能另带 `auto_invokable` / `user_trigger_only` 内外调用属性标记。所有
 技能支持中文与英文双向别名调用，新手优先中文；输入任一别名时内部自动映射，返回
 提示仍以中文为主、英文名括号附带。
 
-> **呈现收敛原则**：技能数量虽达 29 个，但日常使用**不必一次全部触发**。AI 应按
-> 当前所处流水线阶段只推荐「下一步最相关的 1–3 个技能」，不一次性倾倒全部 29 个。
+> **呈现收敛原则**：技能数量虽达 33 个，但日常使用**不必一次全部触发**。AI 应按
+> 当前所处流水线阶段只推荐「下一步最相关的 1–3 个技能」，不一次性倾倒全部 33 个。
 > 作者也可在 `agents.md` 里声明「本项目常用技能集」做进一步收敛。详见
 > `references/loop.md` 的三场景分级矩阵。
 
 ## 1. 六组用户可见分类总览
 
 > 注：原「主流程 / 素材辅助 / 校验审计 / 导出归档」四组为**内部流水线视角**；
-> 六组为**用户可见分类**。两者是同一 29 技能的不同切面，本文档同时给出映射，
+> 六组为**用户可见分类**。两者是同一 33 技能的不同切面，本文档同时给出映射，
 > 避免双轨漂移。
 
 ### A. 工程初始化 & 素材资产组
@@ -52,43 +52,47 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
 | 17 | `nc-暗线` | `nc-thread` | 整条明面叙事的隐性逻辑链路（setting/plot/character/mixed），秘密信息流 | false | `DarkLine.create()` / `DarkLine.patch()` | 长篇默认开启，独立命名空间 |
 | 18 | `nc-积木` | `nc-module` | 积木编排：trigger_map 绑定动线、伏笔、pose，组装触发关系 | false | `Module.create()` / `StoryTrack.step()` | 最小调度单元 |
 | 19 | `nc-研判` | `nc-analyze` | 读取选定剧情/角色/动向/感官标记资产 + 作者诉求，做创作层面推演，输出结构化分析报告 + 可选方案 A/B/C（附利弊与连锁影响）；**只出建议报告，绝不直接改动任何 cards/素材** | false | `StoryWorld.deliberate()` | 操作技能，不生成驻留卡片；与 nc-校阅 互补（校阅找茬、研判出主意） |
-| 20 | `nc-编排` | `nc-compose` | 根据素材/原有剧情资产/情节目标/模式自动生成结构化【编排执行计划】（create_plot/edit_plot/archive_plot/update_tendency/bind_sensory_cue 五类任务），交作者逐条审核后前置跑 nc-校阅 扫冲突再顺序执行 | false | `StoryWorld.plan_modify()` | 批量剧情迭代三段式（计划→审核→执行），全程禁止静默修改 |
+| 20 | `nc-编排` | `nc-compose` | 根据素材/原有剧情资产/情节目标/模式自动生成结构化【编排执行计划】（create_plot/edit_plot/archive_plot/update_tendency/bind_sensory_cue 五类任务），交作者逐条审核后前置跑 nc-校阅 扫冲突再顺序执行；MAY 读取书内谱系按 follow 时序批量生成下一章/梗概/宣发稿并自动挂靠谱系 | false | `StoryWorld.plan_modify()` | 批量剧情迭代三段式（计划→审核→执行），全程禁止静默修改 |
+| 21 | `nc-谱系新增` | `nc-lineage-add` | 书内谱系管理：新增卷/章节/配套物料（梗概/宣发/卡片/草稿/测试/参考），登记进 index.yaml 并绑定从属；`--exist-file` 把已有 md 快速挂靠进谱系（不新建文件仅登记索引）；`--restore <uid>` 恢复软删除条目 | false | `StoryWorld.lineage_add()` | 命名规范 IP≥3字符+7类固定缩写；目录浅层级≤1层 |
+| 22 | `nc-谱系修改` | `nc-lineage-edit` | 书内谱系管理：改标题/调时序（follow）/变更归属（move-to-vol）/改状态；默认只改 index.yaml 逻辑关系不动文件名，`--rename-file` 才同步重命名磁盘文件 | false | `StoryWorld.lineage_edit()` | 逻辑改名与文件名解耦，方便试错 |
+| 23 | `nc-谱系移除` | `nc-lineage-del` | 书内谱系管理：默认软删除（archived:true，文件保留，查询默认过滤，可 --restore 恢复）；`--hard` 硬删除需二次确认（删索引+删文件） | false | `StoryWorld.lineage_del()` | 软删除优先防误删 |
+| 24 | `nc-谱系查询` | `nc-lineage-query` | 书内谱系管理：查整 IP 谱系树/单卷带章节+前后置/`--filter <TYPE>` 只看某类/`--show-archived` 含归档；输出文字谱系树（远期 GUI 渲染可视化连线图）；读取前 fail-loud 校验（uid 唯一/follow 无环/命名格式） | false | `StoryWorld.lineage_query()` | 作品时序谱系，与 nc-检索（素材卡片）职责分离 |
 
 > 注：`nc-对标`(nc-refwork) 是 v1.0 主体保留的**分析模式专用技能**（外部作品拆解
 > 学习，独立 `tree_id` 隔离），服务于「拆解现成外部作品」流程，**不计入**面向用户的
-> 六组 29 技能分类（该流程在分析模式下按需手动触发）。它仍出现在下方双语别名映射
+> 六组 33 技能分类（该流程在分析模式下按需手动触发）。它仍出现在下方双语别名映射
 > JSON 中，保证触发解析完整。
 
 ### D. 生成与可视化组
 
 | # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | OO 归属 | 备注 |
 |---|---|---|---|---|---|---|
-| 21 | `nc-量化` | `nc-metric` | 挂载张力、爆点、信息载荷等量化指标，供长篇深度打磨与批量统计 | true | `Metric.create()` / `NcObject.validate()` | 可被其他技能内部自动唤起 |
-| 22 | `nc-图谱` | `nc-graph` | 渲染叙事森林时序图、角色关系、动线链路图、积木联动总图 | true | `StoryWorld.export()` 的 graph 投影 | 可被其他技能内部自动唤起 |
-| 23 | `nc-成稿` | `nc-draft` | **自动出正文初稿**：读取已备好的设定/桥段/大纲/暗线/角色等卡片，按 `--length short/mid/long` 控制篇幅，生成 `manuscript/` 手稿提案供作者校阅调整；提案头部标注署名（作品默认笔名 / 章节 `pen_name` 覆写） | false | `StoryWorld.export()` 的 render 阶段 | 写稿环节核心；与 nc-词频 配合（成稿出内容，词频管约束） |
-| 24 | `nc-词频` | `nc-wordfreq` | 词频向量 + 感官均衡强约束校验工具（纯约束，不出正文）；为 nc-成稿 提供约束输入 | false | `LexStat.create()` / `render()` 强约束输入 | 约束工具，长篇精细打磨 |
+| 25 | `nc-量化` | `nc-metric` | 挂载张力、爆点、信息载荷等量化指标，供长篇深度打磨与批量统计 | true | `Metric.create()` / `NcObject.validate()` | 可被其他技能内部自动唤起 |
+| 26 | `nc-图谱` | `nc-graph` | 渲染叙事森林时序图、角色关系、动线链路图、积木联动总图 | true | `StoryWorld.export()` 的 graph 投影 | 可被其他技能内部自动唤起 |
+| 27 | `nc-成稿` | `nc-draft` | **自动出正文初稿**：读取已备好的设定/桥段/大纲/暗线/角色等卡片，按 `--length short/mid/long` 控制篇幅，生成 `manuscript/` 手稿提案供作者校阅调整；提案头部标注署名（作品默认笔名 / 章节 `pen_name` 覆写） | false | `StoryWorld.export()` 的 render 阶段 | 写稿环节核心；与 nc-词频 配合（成稿出内容，词频管约束） |
+| 28 | `nc-词频` | `nc-wordfreq` | 词频向量 + 感官均衡强约束校验工具（纯约束，不出正文）；为 nc-成稿 提供约束输入 | false | `LexStat.create()` / `render()` 强约束输入 | 约束工具，长篇精细打磨 |
 
 ### E. 审计校验组
 
 | # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | OO 归属 | 备注 |
 |---|---|---|---|---|---|---|
-| 25 | `nc-校阅` | `nc-review` | 叙事审计：设定、pose 约束、动线、伏笔、动机、OOC 一致性 + character_tendency 动向逻辑冲突检查（含原型边界漂移建议级检查④）；内置调用 nc-节奏 输出作为节奏模块 | false | `NcObject.validate()` + `StoryWorld.audit()` | 只出意见不改稿 |
-| 26 | `nc-节奏` | `nc-rhythm` | 章节桥段疏密、爆点密度、留白校验，战略爆点自动豁免 | true | `Rhythm.validate()`（nc-校阅 内置模块） | 可被 nc-校阅 内部自动唤起 |
-| 27 | `nc-守卫` | `nc-safetyguard` | 隐私 + 合规内容扫描，区分【渲染加害红线】/【揭露批判疑点】 | false | `StoryWorld.safety_guard.scan()` | 低频，分发前使用，默认隐藏 |
+| 29 | `nc-校阅` | `nc-review` | 叙事审计：设定、pose 约束、动线、伏笔、动机、OOC 一致性 + character_tendency 动向逻辑冲突检查（含原型边界漂移建议级检查④）；支持 `--uid` 限定单卷/单章并读 follow 前置卷设定做跨卷一致性校验；内置调用 nc-节奏 输出作为节奏模块 | false | `NcObject.validate()` + `StoryWorld.audit()` | 只出意见不改稿 |
+| 30 | `nc-节奏` | `nc-rhythm` | 章节桥段疏密、爆点密度、留白校验，战略爆点自动豁免 | true | `Rhythm.validate()`（nc-校阅 内置模块） | 可被 nc-校阅 内部自动唤起 |
+| 31 | `nc-守卫` | `nc-safetyguard` | 隐私 + 合规内容扫描，区分【渲染加害红线】/【揭露批判疑点】 | false | `StoryWorld.safety_guard.scan()` | 低频，分发前使用，默认隐藏 |
 
 ### F. 归档导出 & 复盘组
 
 | # | 中文调用名 | 英文调用名 | 简要职责 | auto_invokable | OO 归属 | 备注 |
 |---|---|---|---|---|---|---|
-| 28 | `nc-定稿` | `nc-finalize` | 生成工程快照归档、打上锁定标记 | false | `StoryWorld.snapshot()` 批量 + 锁定标记 | 可选分支，自娱可跳过 |
-| 29 | `nc-导出` | `nc-export` | Pandoc 底层，跨平台（Windows/Mac/Ubuntu）导出 PDF / Word；按生效笔名（作品 `default_pen_name` / 章节 `pen_name` 覆写）落署名 | false | `StoryWorld.export()` 序列化落盘 | 需导出文件才走；多书工程加 `--work` 限定目标书 |
-| 30 | `nc-复盘` | `nc-retrospect` | 沉淀经验、洞察，回流素材库，开启新一轮构思 | false | `Reflection.create()` + `StoryWorld.import_raw()` 反哺 | 收尾节点 |
+| 32 | `nc-定稿` | `nc-finalize` | 生成工程快照归档、打上锁定标记 | false | `StoryWorld.snapshot()` 批量 + 锁定标记 | 可选分支，自娱可跳过 |
+| 33 | `nc-导出` | `nc-export` | Pandoc 底层，跨平台（Windows/Mac/Ubuntu）导出 PDF / Word；按生效笔名（作品 `default_pen_name` / 章节 `pen_name` 覆写）落署名 | false | `StoryWorld.export()` 序列化落盘 | 需导出文件才走；多书工程加 `--work` 限定目标书 |
+| 34 | `nc-复盘` | `nc-retrospect` | 沉淀经验、洞察，回流素材库，开启新一轮构思 | false | `Reflection.create()` + `StoryWorld.import_raw()` 反哺 | 收尾节点 |
 
 ### 内部流水线视角 → 六组映射
 
 | 旧四组（流水线视角） | 对应六组成员 |
 |---|---|
-| 主流程（流水线节点） | A 组（初始化/素材/清洗/检索/注册）+ B 组（角色/道具/场景/姿态/感官标记/动向）+ C 组（桥段/伏笔/快照/势力/暗线/积木/对标/研判/编排）+ D 组（成稿/词频/量化/图谱）+ F 组（定稿/导出/复盘） |
+| 主流程（流水线节点） | A 组（初始化/素材/清洗/检索/注册）+ B 组（角色/道具/场景/姿态/感官标记/动向）+ C 组（桥段/伏笔/快照/势力/暗线/积木/对标/研判/编排/谱系新增/谱系修改/谱系移除/谱系查询）+ D 组（成稿/词频/量化/图谱）+ F 组（定稿/导出/复盘） |
 | 素材辅助（游离辅助） | B 组的 `nc-姿态` / `nc-感官标记` / `nc-动向` |
 | 校验审计（只出意见） | E 组（校阅/节奏/守卫） |
 | 导出归档（可选分支） | F 组的 `nc-定稿` / `nc-导出` |
@@ -116,9 +120,13 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
   "nc-暗线": "nc-thread",         "nc-thread": "nc-暗线",
   "nc-对标": "nc-refwork",        "nc-refwork": "nc-对标",
   "nc-积木": "nc-module",         "nc-module": "nc-积木",
-  "nc-研判": "nc-analyze",        "nc-analyze": "nc-研判",
-  "nc-编排": "nc-compose",        "nc-compose": "nc-编排",
-  "nc-量化": "nc-metric",         "nc-metric": "nc-量化",
+   "nc-研判": "nc-analyze",        "nc-analyze": "nc-研判",
+   "nc-编排": "nc-compose",        "nc-compose": "nc-编排",
+   "nc-谱系新增": "nc-lineage-add","nc-lineage-add": "nc-谱系新增",
+   "nc-谱系修改": "nc-lineage-edit","nc-lineage-edit": "nc-谱系修改",
+   "nc-谱系移除": "nc-lineage-del","nc-lineage-del": "nc-谱系移除",
+   "nc-谱系查询": "nc-lineage-query","nc-lineage-query": "nc-谱系查询",
+   "nc-量化": "nc-metric",         "nc-metric": "nc-量化",
   "nc-图谱": "nc-graph",          "nc-graph": "nc-图谱",
   "nc-成稿": "nc-draft",          "nc-draft": "nc-成稿",
   "nc-词频": "nc-wordfreq",       "nc-wordfreq": "nc-词频",
@@ -174,7 +182,11 @@ novel-cards v1.0 提供 **29 个 `nc-` 技能**。面向用户按**六组分类*
 | `nc-暗线` | 主题、层级、references_to_main | `cards/darklayer/dk-*.md` |
 | `nc-积木` | 动作名、trigger_map 绑定的动线/伏笔/pose | `cards/modules/md-*.md` |
 | `nc-研判` | 选定资产（剧情/角色/动向/感官标记，可多个）+ 作者诉求 | 结构化分析报告 + 方案 A/B/C（对话输出，可选经 nc-素材 存库；**不改任何卡片**） |
-| `nc-编排` | `--source` 素材 / `--reference` 原有资产 / `--prompt` 情节目标 / `--mode expand/rewrite/restructure` | compose_plan（create_plot/edit_plot/archive_plot/update_tendency/bind_sensory_cue 五类任务）→ 审核定稿 → 前置 nc-校阅 → 顺序执行（每步调底层技能 + CHANGELOG + latest.md）；计划存为素材（tag:compose-plan） |
+| `nc-编排` | `--source` 素材 / `--reference` 原有资产 / `--prompt` 情节目标 / `--mode expand/rewrite/restructure` | compose_plan（create_plot/edit_plot/archive_plot/update_tendency/bind_sensory_cue 五类任务）→ 审核定稿 → 前置 nc-校阅 → 顺序执行（每步调底层技能 + CHANGELOG + latest.md）；计划存为素材（tag:compose-plan）；MAY 读谱系按 follow 时序批量生成下一章/梗概/宣发稿并自动挂靠谱系 |
+| `nc-谱系新增` | `--ip <IP_ID>`、`--type MAI/ABR/PRO/CAR/DRF/TST/REF`、`--vol/--ch/--ver/--tag`（按类型）、`--title`、`--exist-file <path>`（挂靠已有 md）、`--restore <uid>`（恢复软删除）、`--work <id>` | `index.yaml` 追加谱系条目（绑定从属 children / 时序 follow）+ 对应目录空白文件（`--exist-file` 时跳过新建）+ `last_modified` 更新 + CHANGELOG 记录 |
+| `nc-谱系修改` | `--ip <IP_ID>`、`--id <uid>`、`--title` / `--follow <uid>` / `--move-to-vol <vol>` / `--status`、`--rename-file`（显式才同步重命名磁盘文件）、`--work <id>` | `index.yaml` 逻辑关系更新（默认不动文件名，`--rename-file` 才改盘）+ CHANGELOG 记录 |
+| `nc-谱系移除` | `--ip <IP_ID>`、`--id <uid>`、`--hard`（硬删除需二次确认）、`--work <id>` | 默认软删除：`index.yaml` 置 `archived: true`（文件保留，查询默认过滤）；`--hard` 确认后删索引条目 + 本地文件 |
+| `nc-谱系查询` | `--ip <IP_ID>`、`--id <uid>`（单卷带章节+前后置）、`--filter <TYPE>`、`--show-archived`、`--work <id>` | 文字谱系树（对话输出，不落盘；远期 GUI 渲染可视化连线图）；读取前 fail-loud 校验（uid 唯一/follow 无环/命名格式/file_path 存在性 L2 警告） |
 | `nc-量化` | 章节区间、指标维度 | `cards/metrics/mt-*.md` + `index/metric-index.json` 追加 |
 | `nc-图谱` | 对象/主题 | `graph/*.html`（由 `index/card-graph.json` 重渲染） |
 | `nc-成稿` | 章节/桥段 id + `--length short/mid/long`（篇幅档位）+ `--work <id>`（多书限定） | `manuscript/chapter-*.md` 正文初稿（走提案制，作者校阅后落盘）；提案头部标注署名（作品默认笔名 / 章节 `pen_name` 覆写） |

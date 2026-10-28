@@ -10,10 +10,10 @@
 <consumer-project-root>/
   agents.md                # Agent 引导文件（Agent 行为契约；nc-初始化 生成，可编辑）
   quickstart.md            # 新手主线最简流程（6 步闭环 + 进阶扩展；隐藏 auto_invokable）
-  skill-reference.md       # 29 技能全量备查总表（带 auto_invokable 列 + 六组分组）
+  skill-reference.md       # 33 技能全量备查总表（带 auto_invokable 列 + 六组分组）
   config/
     project.yaml           # 工程配置：lang / mode / pipeline_option
-    skills.yaml            # 29 技能条目骨架（auto_invokable 默认值；唯一可见该属性的底层配置）
+    skills.yaml            # 33 技能条目骨架（auto_invokable 默认值；唯一可见该属性的底层配置）
     safety-blacklist.yaml  # 合规禁区（与 registry/safety-blacklist.yaml 同源，工程级副本）
   registry/                # .yaml 静态配置白名单
     work-length-config.yaml   # 长短篇模式与技能启用矩阵
@@ -79,8 +79,8 @@
 
 | 目录 | 文件类型 | 核心定位 | 能否改逻辑 |
 |---|---|---|---|
-| `quickstart.md` / `skill-reference.md` | `.md` | 新手主线引导 / 29 技能全量备查总表 | ✅ 作者可手动编辑 |
-| `config/skills.yaml` | `.yaml` | 29 技能条目骨架（auto_invokable 默认值） | ⚠️ 底层配置，普通作者无需改动 |
+| `quickstart.md` / `skill-reference.md` | `.md` | 新手主线引导 / 33 技能全量备查总表 | ✅ 作者可手动编辑 |
+| `config/skills.yaml` | `.yaml` | 33 技能条目骨架（auto_invokable 默认值） | ⚠️ 底层配置，普通作者无需改动 |
 | `cards/**` | `.md` | 人类主编辑载体，业务源头 | ✅ 直接改 |
 | `reflections/` | `.md` / `.json` | 反思卡 + 审计意见书 | ✅ 直接改 |
 | `manuscript/` | `.md` | 正文章节手稿 | ✅ 直接改 |
@@ -305,10 +305,10 @@ novel-cards skill 支持四种安装方式：
 ~/path/to/novel-project/
   agents.md                # Agent 引导兜底占位（nc-初始化 生成交互式完整版）
   quickstart.md            # 新手主线最简流程兜底占位
-  skill-reference.md       # 29 技能全量备查总表兜底占位
+  skill-reference.md       # 33 技能全量备查总表兜底占位
   config/
     project.yaml           # lang / mode / pipeline_option 占位
-    skills.yaml            # 29 技能条目骨架占位（auto_invokable 默认值）
+    skills.yaml            # 33 技能条目骨架占位（auto_invokable 默认值）
     .gitkeep
   registry/.gitkeep            # pen-names.yaml 等白名单由 nc-初始化 填充
   works/.gitkeep               # 多本作品工作区（每本书 = works/<work-id>/ 子空间）

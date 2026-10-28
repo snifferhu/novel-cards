@@ -1,0 +1,45 @@
+# 书内谱系索引骨架模板（lineage-index.yaml）
+#
+# 本文件是「使用方工程」每本书的 index.yaml 骨架，由 install.sh --project 幂等拷入
+# （works/<work-id>/index.yaml 或单本工程根 index.yaml）。真实内容由作者经 nc-lineage-*
+# 技能运行时填充——本仓库内只放字段结构 + 占位符，绝不写入任何真实 IP / 卷 / 章节数据。
+#
+# 完整 schema 契约与校验规则见 references/lineage.md §3。
+# 命名规范（IP 短码 ≥3 字符 + 7 类固定类型缩写 MAI/ABR/PRO/CAR/DRF/TST/REF）见 §1。
+#
+# 铁律：
+#   - uid 全局唯一，遵循 "IP-3位码-编号" 格式，所有 nc-lineage 操作靠 uid 定位
+#   - 时序 / 从属 / 关联只写在 follow / children / related 字段，不靠文件夹嵌套表达
+#   - 人 SHOULD NOT 手改本文件；手改损坏时 nc-lineage-query fail-loud 报错
+
+ip_id: "{{IP_ID}}"          # IP 短码（≥3 字符，一个独立 IP 永久固定，如 SHZ）
+ip_name: "{{IP_NAME}}"      # IP 中文全名（如 山河志）
+status: "{{STATUS}}"        # 整书状态：构思中 / 连载中 / 定稿 / 搁置
+last_modified: ""           # 最近一次谱系操作时间戳（skill 自动更新，勿手填）
+
+# 谱系条目列表：卷 / 章节 / 配套物料（梗概 / 宣发 / 卡片 / 草稿 / 测试 / 参考）
+# 每个条目字段见 references/lineage.md §3.1；此处仅给结构占位，零预置真实条目。
+lineage: []
+# 示例结构（实际由 nc-lineage-add 生成，不要手写真实数据）：
+#   - uid: {{IP_ID}}-MAI-001
+#     type: MAI
+#     vol: "001"
+#     title: "{{卷标题}}"
+#     follow: null              # 前置依赖 uid（表达时序），无前置为 null
+#     status: writing
+#     archived: false           # 软删除标记
+#     children: []              # 从属章节 uid 列表
+#   - uid: {{IP_ID}}-MAI-001-CH05
+#     type: MAI
+#     vol: "001"
+#     ch: "05"
+#     title: "{{章节标题}}"
+#     file_path: "./MAI/{{IP_ID}}-MAI-001-CH05.md"
+#     status: writing
+#     archived: false
+
+# 跨类型关联物料（挂在整书层面）
+related:
+  abr: []                      # 精简缩略版 uid 列表（如 [{{IP_ID}}-ABR-V01]）
+  promo: []                    # 宣发文案 uid 列表（S10/S30/M01/M05 四档）
+  car: []                      # 资产卡片合集 uid 列表（如 [{{IP_ID}}-CAR-ROL]）

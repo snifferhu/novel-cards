@@ -47,36 +47,40 @@
 | 17 | `nc-暗线` | `nc-thread` | Hidden logic thread across the whole surface narrative (setting/plot/character/mixed) | false |
 | 18 | `nc-积木` | `nc-module` | Module orchestration: trigger_map binds tracks/foreshadow/pose, assembles triggers | false |
 | 19 | `nc-研判` | `nc-analyze` | Single-point creative reasoning, emits plans A/B/C (report only, never edits cards) | false |
-| 20 | `nc-编排` | `nc-compose` | Batch plot orchestration three-stage (plan→review→execute), pre-runs nc-校阅 conflict scan | false |
+| 20 | `nc-编排` | `nc-compose` | Batch plot orchestration three-stage (plan→review→execute), pre-runs nc-校阅 conflict scan; MAY read book-lineage to batch-generate next chapter/abridgment/promo by follow order and attach to lineage | false |
+| 21 | `nc-谱系新增` | `nc-lineage-add` | Intra-book lineage mgmt: add volumes/chapters/companion materials, register into index.yaml with binding; `--exist-file` attaches an existing md; `--restore <uid>` restores soft-deleted entries | false |
+| 22 | `nc-谱系修改` | `nc-lineage-edit` | Intra-book lineage mgmt: change title / reorder (follow) / reassign (move-to-vol) / status; default edits index.yaml logic only without touching filenames, `--rename-file` syncs disk rename | false |
+| 23 | `nc-谱系移除` | `nc-lineage-del` | Intra-book lineage mgmt: default soft-delete (archived:true, file kept, query filters by default, restorable via --restore); `--hard` requires second confirmation | false |
+| 24 | `nc-谱系查询` | `nc-lineage-query` | Intra-book lineage mgmt: query whole-IP lineage tree / single volume with chapters + predecessors-successors / `--filter <TYPE>` / `--show-archived`; emits text lineage tree; fail-loud validation before read (uid unique / follow acyclic / naming format) | false |
 
 ### D. Generation & Visualization
 
 | # | Chinese | English alias | Responsibility | auto_invokable |
 |---|---|---|---|---|
-| 21 | `nc-量化` | `nc-metric` | Mount tension/climax/info-payload metrics for deep polish and batch stats | true |
-| 22 | `nc-图谱` | `nc-graph` | Render narrative-forest timeline / character relations / track-link / module graphs | true |
-| 23 | `nc-成稿` | `nc-draft` | Read all cards to emit a first draft; `--length short/mid/long` controls volume (proposal system) | false |
-| 24 | `nc-词频` | `nc-wordfreq` | Word-frequency vector + sensory-balance hard constraints (pure constraint, no prose), feeds drafting | false |
+| 25 | `nc-量化` | `nc-metric` | Mount tension/climax/info-payload metrics for deep polish and batch stats | true |
+| 26 | `nc-图谱` | `nc-graph` | Render narrative-forest timeline / character relations / track-link / module graphs | true |
+| 27 | `nc-成稿` | `nc-draft` | Read all cards to emit a first draft; `--length short/mid/long` controls volume (proposal system) | false |
+| 28 | `nc-词频` | `nc-wordfreq` | Word-frequency vector + sensory-balance hard constraints (pure constraint, no prose), feeds drafting | false |
 
 ### E. Audit & Validation
 
 | # | Chinese | English alias | Responsibility | auto_invokable |
 |---|---|---|---|---|
-| 25 | `nc-校阅` | `nc-review` | Narrative audit: setting/pose/tracks/foreshadow/motive/OOC + tendency-logic conflicts (incl. prototype boundary-drift check ④; embeds nc-节奏) | false |
-| 26 | `nc-节奏` | `nc-rhythm` | Chapter plot density / burst density / white-space check; strategic bursts auto-exempted | true |
-| 27 | `nc-守卫` | `nc-safetyguard` | Privacy + compliance content scan, distinguishes [harm-rendering red line] / [exposure-critique doubt] | false |
+| 29 | `nc-校阅` | `nc-review` | Narrative audit: setting/pose/tracks/foreshadow/motive/OOC + tendency-logic conflicts (incl. prototype boundary-drift check ④; embeds nc-节奏; supports `--uid` to scope a single volume/chapter and read its follow predecessor settings) | false |
+| 30 | `nc-节奏` | `nc-rhythm` | Chapter plot density / burst density / white-space check; strategic bursts auto-exempted | true |
+| 31 | `nc-守卫` | `nc-safetyguard` | Privacy + compliance content scan, distinguishes [harm-rendering red line] / [exposure-critique doubt] | false |
 
 ### F. Archival, Export & Retrospect
 
 | # | Chinese | English alias | Responsibility | auto_invokable |
 |---|---|---|---|---|
-| 28 | `nc-定稿` | `nc-finalize` | Generate project snapshot archival, apply lock marker | false |
-| 29 | `nc-导出` | `nc-export` | Pandoc cross-platform PDF / Word export | false |
-| 30 | `nc-复盘` | `nc-retrospect` | Distill lessons and insights, feed back into material pool, start next round | false |
+| 32 | `nc-定稿` | `nc-finalize` | Generate project snapshot archival, apply lock marker | false |
+| 33 | `nc-导出` | `nc-export` | Pandoc cross-platform PDF / Word export | false |
+| 34 | `nc-复盘` | `nc-retrospect` | Distill lessons and insights, feed back into material pool, start next round | false |
 
 > Note: `nc-对标`(nc-refwork) is an **analysis-mode-only skill** retained from the v1.0
 > body (external-work deconstruction study, isolated `tree_id`), serving the "deconstruct
-> an existing external work" flow. It is not counted in the user-facing six-group 29-skill
+> an existing external work" flow. It is not counted in the user-facing six-group 33-skill
 > taxonomy and is triggered manually on demand in analysis mode.
 
 ## Per-Skill Input / Output Reference
@@ -102,7 +106,11 @@
 | `nc-暗线` | theme, layer, references_to_main | `cards/darklayer/dk-*.md` |
 | `nc-积木` | action name, trigger_map-bound tracks/foreshadow/pose | `cards/modules/md-*.md` |
 | `nc-研判` | selected assets (multiple ok) + author request | structured analysis report + plans A/B/C (no card modified) |
-| `nc-编排` | `--source` / `--reference` / `--prompt` / `--mode expand/rewrite/restructure` | compose_plan → review → pre-run nc-校阅 → sequential execution (logs CHANGELOG + latest.md); plan saved as material tag:compose-plan |
+| `nc-编排` | `--source` / `--reference` / `--prompt` / `--mode expand/rewrite/restructure` | compose_plan → review → pre-run nc-校阅 → sequential execution (logs CHANGELOG + latest.md); plan saved as material tag:compose-plan; MAY read book-lineage to batch-generate next chapter/abridgment/promo by follow order and attach to lineage |
+| `nc-谱系新增` | `--ip <IP_ID>`, `--type MAI/ABR/PRO/CAR/DRF/TST/REF`, `--vol/--ch/--ver/--tag`, `--title`, `--exist-file <path>`, `--restore <uid>` | `index.yaml` appends a lineage entry (binding children / follow order) + blank file in the matching subdir (`--exist-file` skips new-file creation) + last_modified bump + CHANGELOG |
+| `nc-谱系修改` | `--ip <IP_ID>`, `--id <uid>`, `--title` / `--follow <uid>` / `--move-to-vol <vol>` / `--status`, `--rename-file` | `index.yaml` logic-relation update (default does not touch filenames, `--rename-file` renames on disk) + CHANGELOG |
+| `nc-谱系移除` | `--ip <IP_ID>`, `--id <uid>`, `--hard` (hard delete requires second confirmation) | default soft-delete: set `archived: true` in `index.yaml` (file kept, query filters by default); `--hard` after confirmation removes index entry + local file |
+| `nc-谱系查询` | `--ip <IP_ID>`, `--id <uid>`, `--filter <TYPE>`, `--show-archived` | text lineage tree (chat output, not persisted); fail-loud validation before read (uid unique / follow acyclic / naming format / file_path existence L2 warning) |
 | `nc-量化` | chapter range, metric dimensions | `cards/metrics/mt-*.md` + append to `index/metric-index.json` |
 | `nc-图谱` | object/theme | `graph/*.html` (re-rendered from `index/card-graph.json`) |
 | `nc-成稿` | chapter/plotpoint id + `--length short/mid/long` | `manuscript/chapter-*.md` first draft (proposal system) |

@@ -160,8 +160,8 @@ do not appear in this table). Authors only see the **user-triggerable** six-grou
 {{ENABLED_SKILLS}}
 
 > **Flow-wizard mode**: the Agent recommends only "the 1–3 most relevant next-step skills" for the
-> current pipeline stage, never dumping all 29 skills at once; the author may declare a
+> current pipeline stage, never dumping all 33 skills at once; the author may declare a
 > "commonly-used skill set for this project" here to converge further.
-> The complete 29-skill catalog, bilingual aliases and the auto_invokable column live in
+> The complete 33-skill catalog, bilingual aliases and the auto_invokable column live in
 > `skill-reference.md`; the newcomer mainline is in `quickstart.md`; the short/mid/long grading
 > matrix is in the skill repo's `references/loop.md`.

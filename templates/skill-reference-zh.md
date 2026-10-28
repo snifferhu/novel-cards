@@ -8,7 +8,7 @@
 > `false` = 仅作者主动触发，不会被系统后台自动拉起。本表是唯一对普通作者可见
 > `auto_invokable` 属性的文档；底层配置见 `config/skills.yaml`。
 
-## 六组技能全量总表（29 技能）
+## 六组技能全量总表（33 技能）
 
 ### A. 工程初始化 & 素材资产组
 
@@ -43,35 +43,39 @@
 | 17 | `nc-暗线` | `nc-thread` | 整条明面叙事的隐性逻辑链路（setting/plot/character/mixed） | false |
 | 18 | `nc-积木` | `nc-module` | 积木编排：trigger_map 绑定动线/伏笔/pose，组装触发关系 | false |
 | 19 | `nc-研判` | `nc-analyze` | 单点创作推演，出方案 A/B/C（只出建议报告，绝不改卡） | false |
-| 20 | `nc-编排` | `nc-compose` | 批量剧情编排三段式（计划→审核→执行），前置 nc-校阅 扫冲突 | false |
+| 20 | `nc-编排` | `nc-compose` | 批量剧情编排三段式（计划→审核→执行），前置 nc-校阅 扫冲突；MAY 读谱系按 follow 时序批量生成下一章/梗概/宣发稿并挂靠谱系 | false |
+| 21 | `nc-谱系新增` | `nc-lineage-add` | 书内谱系管理：新增卷/章节/配套物料，登记进 index.yaml 绑定从属；`--exist-file` 挂靠已有 md；`--restore <uid>` 恢复软删除 | false |
+| 22 | `nc-谱系修改` | `nc-lineage-edit` | 书内谱系管理：改标题/调时序（follow）/变更归属/改状态；默认只改 index.yaml 不动文件名，`--rename-file` 才同步重命名 | false |
+| 23 | `nc-谱系移除` | `nc-lineage-del` | 书内谱系管理：默认软删除（archived:true，文件保留，可 --restore 恢复）；`--hard` 硬删除需二次确认 | false |
+| 24 | `nc-谱系查询` | `nc-lineage-query` | 书内谱系管理：查整 IP 谱系树/单卷带章节+前后置/`--filter <TYPE>`/`--show-archived`；输出文字谱系树；读取前 fail-loud 校验 | false |
 
 ### D. 生成与可视化组
 
 | # | 中文 | 英文别名 | 简要职责 | auto_invokable |
 |---|---|---|---|---|
-| 21 | `nc-量化` | `nc-metric` | 挂载张力/爆点/信息载荷量化指标，供深度打磨与批量统计 | true |
-| 22 | `nc-图谱` | `nc-graph` | 渲染叙事森林时序图/角色关系/动线链路图/积木联动总图 | true |
-| 23 | `nc-成稿` | `nc-draft` | 读全部卡片出正文初稿，`--length short/mid/long` 控篇幅（走提案制） | false |
-| 24 | `nc-词频` | `nc-wordfreq` | 词频向量 + 感官均衡强约束校验（纯约束，不出正文），为成稿提供输入 | false |
+| 25 | `nc-量化` | `nc-metric` | 挂载张力/爆点/信息载荷量化指标，供深度打磨与批量统计 | true |
+| 26 | `nc-图谱` | `nc-graph` | 渲染叙事森林时序图/角色关系/动线链路图/积木联动总图 | true |
+| 27 | `nc-成稿` | `nc-draft` | 读全部卡片出正文初稿，`--length short/mid/long` 控篇幅（走提案制） | false |
+| 28 | `nc-词频` | `nc-wordfreq` | 词频向量 + 感官均衡强约束校验（纯约束，不出正文），为成稿提供输入 | false |
 
 ### E. 审计校验组
 
 | # | 中文 | 英文别名 | 简要职责 | auto_invokable |
 |---|---|---|---|---|
-| 25 | `nc-校阅` | `nc-review` | 叙事审计：设定/pose/动线/伏笔/动机/OOC + 动向逻辑冲突（含原型边界漂移检查④；内置 nc-节奏） | false |
-| 26 | `nc-节奏` | `nc-rhythm` | 章节桥段疏密/爆点密度/留白校验，战略爆点自动豁免 | true |
-| 27 | `nc-守卫` | `nc-safetyguard` | 隐私 + 合规内容扫描，区分【渲染加害红线】/【揭露批判疑点】 | false |
+| 29 | `nc-校阅` | `nc-review` | 叙事审计：设定/pose/动线/伏笔/动机/OOC + 动向逻辑冲突（含原型边界漂移检查④；内置 nc-节奏；支持 `--uid` 限定单卷/章并读 follow 前置卷设定） | false |
+| 30 | `nc-节奏` | `nc-rhythm` | 章节桥段疏密/爆点密度/留白校验，战略爆点自动豁免 | true |
+| 31 | `nc-守卫` | `nc-safetyguard` | 隐私 + 合规内容扫描，区分【渲染加害红线】/【揭露批判疑点】 | false |
 
 ### F. 归档导出 & 复盘组
 
 | # | 中文 | 英文别名 | 简要职责 | auto_invokable |
 |---|---|---|---|---|
-| 28 | `nc-定稿` | `nc-finalize` | 生成工程快照归档、打锁定标记 | false |
-| 29 | `nc-导出` | `nc-export` | Pandoc 跨平台导出 PDF / Word | false |
-| 30 | `nc-复盘` | `nc-retrospect` | 沉淀经验、洞察，回流素材库，开启新一轮构思 | false |
+| 32 | `nc-定稿` | `nc-finalize` | 生成工程快照归档、打锁定标记 | false |
+| 33 | `nc-导出` | `nc-export` | Pandoc 跨平台导出 PDF / Word | false |
+| 34 | `nc-复盘` | `nc-retrospect` | 沉淀经验、洞察，回流素材库，开启新一轮构思 | false |
 
 > 注：`nc-对标`(nc-refwork) 是 v1.0 主体保留的**分析模式专用技能**（外部作品拆解学习，
-> 独立 `tree_id` 隔离），服务于「拆解现成外部作品」流程，不计入面向用户的六组 29 技能分类，
+> 独立 `tree_id` 隔离），服务于「拆解现成外部作品」流程，不计入面向用户的六组 33 技能分类，
 > 在分析模式下按需手动触发。
 
 ## 每技能入参 / 产物备查
@@ -97,7 +101,11 @@
 | `nc-暗线` | 主题、层级、references_to_main | `cards/darklayer/dk-*.md` |
 | `nc-积木` | 动作名、trigger_map 绑定的动线/伏笔/pose | `cards/modules/md-*.md` |
 | `nc-研判` | 选定资产（可多个）+ 作者诉求 | 结构化分析报告 + 方案 A/B/C（不改任何卡片） |
-| `nc-编排` | `--source` / `--reference` / `--prompt` / `--mode expand/rewrite/restructure` | compose_plan → 审核 → 前置 nc-校阅 → 顺序执行（记 CHANGELOG + latest.md）；计划存为素材 tag:compose-plan |
+| `nc-编排` | `--source` / `--reference` / `--prompt` / `--mode expand/rewrite/restructure` | compose_plan → 审核 → 前置 nc-校阅 → 顺序执行（记 CHANGELOG + latest.md）；计划存为素材 tag:compose-plan；MAY 读谱系按 follow 时序批量生成下一章/梗概/宣发稿并挂靠谱系 |
+| `nc-谱系新增` | `--ip <IP_ID>`、`--type MAI/ABR/PRO/CAR/DRF/TST/REF`、`--vol/--ch/--ver/--tag`、`--title`、`--exist-file <path>`、`--restore <uid>` | `index.yaml` 追加谱系条目（绑定从属 children / 时序 follow）+ 对应目录空白文件（`--exist-file` 跳过新建）+ last_modified 更新 + CHANGELOG |
+| `nc-谱系修改` | `--ip <IP_ID>`、`--id <uid>`、`--title` / `--follow <uid>` / `--move-to-vol <vol>` / `--status`、`--rename-file` | `index.yaml` 逻辑关系更新（默认不动文件名，`--rename-file` 才改盘）+ CHANGELOG |
+| `nc-谱系移除` | `--ip <IP_ID>`、`--id <uid>`、`--hard`（硬删除需二次确认） | 默认软删除：`index.yaml` 置 `archived: true`（文件保留，查询默认过滤）；`--hard` 确认后删索引条目 + 本地文件 |
+| `nc-谱系查询` | `--ip <IP_ID>`、`--id <uid>`、`--filter <TYPE>`、`--show-archived` | 文字谱系树（对话输出，不落盘）；读取前 fail-loud 校验（uid 唯一/follow 无环/命名格式/file_path 存在性 L2 警告） |
 | `nc-量化` | 章节区间、指标维度 | `cards/metrics/mt-*.md` + `index/metric-index.json` 追加 |
 | `nc-图谱` | 对象/主题 | `graph/*.html`（由 `index/card-graph.json` 重渲染） |
 | `nc-成稿` | 章节/桥段 id + `--length short/mid/long` | `manuscript/chapter-*.md` 正文初稿（提案制） |

@@ -105,7 +105,14 @@ if [[ -n "$PROJECT" ]]; then
     "$PROJECT/release" \
     "$PROJECT/history" \
     "$PROJECT/drafts/practice" \
-    "$PROJECT/works"
+    "$PROJECT/works" \
+    "$PROJECT/MAI" \
+    "$PROJECT/ABR" \
+    "$PROJECT/PRO" \
+    "$PROJECT/CAR" \
+    "$PROJECT/DRF" \
+    "$PROJECT/TST" \
+    "$PROJECT/REF"
 
   # .gitkeep：仅当不存在时写入（幂等，不覆盖已有文件）
   for d in \
@@ -139,9 +146,24 @@ if [[ -n "$PROJECT" ]]; then
     "$PROJECT/release" \
     "$PROJECT/history" \
     "$PROJECT/drafts/practice" \
-    "$PROJECT/works"; do
+    "$PROJECT/works" \
+    "$PROJECT/MAI" \
+    "$PROJECT/ABR" \
+    "$PROJECT/PRO" \
+    "$PROJECT/CAR" \
+    "$PROJECT/DRF" \
+    "$PROJECT/TST" \
+    "$PROJECT/REF"; do
     [ -e "$d/.gitkeep" ] || touch "$d/.gitkeep"
   done
+
+  # index.yaml：书内谱系索引骨架（lineage-index.yaml 幂等拷入；真实内容由 nc-lineage-* 运行时填充）。
+  # 仅当不存在时写入，重复执行零变更。
+  if [ -f "$SRC/templates/lineage-index.yaml" ]; then
+    if [ ! -f "$PROJECT/index.yaml" ]; then
+      cp "$SRC/templates/lineage-index.yaml" "$PROJECT/index.yaml"
+    fi
+  fi
 
   # tools/nc_validate.py：轻量只读校验器分发到使用方工程根（幂等，重复执行零变更）。
   # 本 skill 的 tools/ 为可选运行时——缺失时 skill 降级为纸面校验约定。
@@ -293,7 +315,7 @@ JSON
 YAML
   fi
 
-  # config/skills.yaml 占位：29 技能条目骨架（auto_invokable 默认值；仅当不存在时写入）
+  # config/skills.yaml 占位：33 技能条目骨架（auto_invokable 默认值；仅当不存在时写入）
   if [ ! -f "$PROJECT/config/skills.yaml" ]; then
     cat > "$PROJECT/config/skills.yaml" <<'YAML'
 # novel-cards v1.0 技能条目骨架（install.sh --project 生成的默认占位）
@@ -324,6 +346,10 @@ skills:
   nc-module:      { alias: nc-积木,     group: C, auto_invokable: false }
   nc-analyze:     { alias: nc-研判,     group: C, auto_invokable: false }
   nc-compose:     { alias: nc-编排,     group: C, auto_invokable: false }
+  nc-lineage-add:   { alias: nc-谱系新增, group: C, auto_invokable: false }
+  nc-lineage-edit:  { alias: nc-谱系修改, group: C, auto_invokable: false }
+  nc-lineage-del:   { alias: nc-谱系移除, group: C, auto_invokable: false }
+  nc-lineage-query: { alias: nc-谱系查询, group: C, auto_invokable: false }
   # D. 生成与可视化
   nc-metric:      { alias: nc-量化,     group: D, auto_invokable: true }
   nc-graph:       { alias: nc-图谱,     group: D, auto_invokable: true }
@@ -337,7 +363,7 @@ skills:
   nc-finalize:    { alias: nc-定稿,     group: F, auto_invokable: false }
   nc-export:      { alias: nc-导出,     group: F, auto_invokable: false }
   nc-retrospect:  { alias: nc-复盘,     group: F, auto_invokable: false }
-  # 分析模式专用（不计入六组 29 技能分类）
+  # 分析模式专用（不计入六组 33 技能分类）
   nc-refwork:     { alias: nc-对标,     group: analysis, auto_invokable: false }
 YAML
   fi
@@ -358,7 +384,7 @@ YAML
 
 > **提案制**：每一步 AI 只输出完整 Markdown 提案到对话，你确认后自行落盘；AI 绝不直接写卡。
 
-完整 29 技能清单见 `skill-reference.md`；Agent 行为契约见 `agents.md`。
+完整 33 技能清单见 `skill-reference.md`；Agent 行为契约见 `agents.md`。
 MD
   fi
 
@@ -368,13 +394,13 @@ MD
 # skill-reference.md（novel-cards v1.0 兜底技能备查总表）
 
 > 本文件为 `install.sh --project` 生成的最小兜底版本。
-> 推荐运行 `nc-初始化`（skill 指令）以生成交互式完整版（含 29 技能全量总表 + auto_invokable 列 + 每技能入参/产物）。
+> 推荐运行 `nc-初始化`（skill 指令）以生成交互式完整版（含 33 技能全量总表 + auto_invokable 列 + 每技能入参/产物）。
 
-## 六组技能（29 技能）
+## 六组技能（33 技能）
 
 - **A. 工程初始化 & 素材资产**：nc-初始化 / nc-素材 / nc-清洗 / nc-检索 / nc-注册 / nc-更名
 - **B. 叙事卡片建模**：nc-角色 / nc-姿态 / nc-道具 / nc-场景 / nc-感官标记 / nc-动向
-- **C. 剧情结构**：nc-桥段 / nc-伏笔 / nc-快照 / nc-势力 / nc-暗线 / nc-积木 / nc-研判 / nc-编排
+- **C. 剧情结构**：nc-桥段 / nc-伏笔 / nc-快照 / nc-势力 / nc-暗线 / nc-积木 / nc-研判 / nc-编排 / nc-谱系新增 / nc-谱系修改 / nc-谱系移除 / nc-谱系查询
 - **D. 生成与可视化**：nc-量化 / nc-图谱 / nc-成稿 / nc-词频
 - **E. 审计校验**：nc-校阅 / nc-节奏 / nc-守卫
 - **F. 归档导出 & 复盘**：nc-定稿 / nc-导出 / nc-复盘
@@ -434,7 +460,7 @@ MD
 
 - **A. 工程初始化 & 素材资产**：nc-初始化 / nc-素材 / nc-清洗 / nc-检索 / nc-注册 / nc-更名
 - **B. 叙事卡片建模**：nc-角色 / nc-姿态 / nc-道具 / nc-场景 / nc-感官标记 / nc-动向
-- **C. 剧情结构**：nc-桥段 / nc-伏笔 / nc-快照 / nc-势力 / nc-暗线 / nc-积木 / nc-研判 / nc-编排
+- **C. 剧情结构**：nc-桥段 / nc-伏笔 / nc-快照 / nc-势力 / nc-暗线 / nc-积木 / nc-研判 / nc-编排 / nc-谱系新增 / nc-谱系修改 / nc-谱系移除 / nc-谱系查询
 - **D. 生成与可视化**：nc-量化 / nc-图谱 / nc-成稿 / nc-词频
 - **E. 审计校验**：nc-校阅 / nc-节奏 / nc-守卫
 - **F. 归档导出 & 复盘**：nc-定稿 / nc-导出 / nc-复盘

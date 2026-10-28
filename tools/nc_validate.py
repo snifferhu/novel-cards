@@ -73,6 +73,16 @@ RELATION_ENUM = {
 # 长线四方对齐所需四类前缀
 FOUR_WAY_PREFIXES = ("fs-", "tl-", "md-", "lx-")
 
+# ---------------------------------------------------------------------------
+# 书内谱系（lineage）常量：与 references/lineage.md §1 / hard-rules.md 规则 30-34 一致
+# ---------------------------------------------------------------------------
+# 7 类固定类型缩写（MUST NOT 自造新缩写）
+LINEAGE_TYPE_CODES = ("MAI", "ABR", "PRO", "CAR", "DRF", "TST", "REF")
+# 每类物料对应的浅目录子文件夹（IP 根下 ≤1 层）
+LINEAGE_SUBDIRS = ("MAI", "ABR", "PRO", "CAR", "DRF", "TST", "REF")
+# uid 命名正则：IP(≥3大写) - TYPE(3位) - 编号；MAI 可带 -CHxx 章节后缀
+LINEAGE_UID_RE = re.compile(r"^[A-Z]{3,}-[A-Z]{3}-\d{3}(-CH\d{2})?$")
+
 
 # ---------------------------------------------------------------------------
 # 极简 frontmatter 解析（正则 + 扁平 key: value，不依赖 PyYAML）
@@ -379,6 +389,9 @@ def cmd_audit(project_root):
         findings.extend(_audit_graph(graph_file))
     # 注：card-graph.json 缺失属正常（尚未生成），不报违规
 
+    # ---- E. 书内谱系 index.yaml 只读校验（缺失视为未启用 book-lineage，向后兼容）----
+    findings.extend(_audit_lineage(root))
+
     return findings, checked
 
 
@@ -396,6 +409,137 @@ def _collect_all_card_ids(root):
         if m:
             ids.add(m.group(1))
     return ids
+
+
+# ---------------------------------------------------------------------------
+# 书内谱系 index.yaml 只读校验（零依赖 YAML 子集解析，绝不写盘）
+# ---------------------------------------------------------------------------
+def _parse_lineage_index(text):
+    """极简 YAML 子集解析：提取顶层 ip_id 与 lineage[] 条目的 uid/type/follow。
+
+    仅覆盖 nc-lineage-* 技能写入的扁平结构（顶层标量 + lineage 列表 + 条目内
+    缩进键值），不依赖 PyYAML。无法解析的行静默跳过（本工具只做校验，不做真值）。
+    """
+    ip_id = None
+    entries = []  # 每个元素为 {"uid":..., "type":..., "follow":...}
+    cur = None
+    in_lineage = False
+    for raw in text.splitlines():
+        line = raw.rstrip("\n")
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        indent = len(line) - len(line.lstrip())
+        # 顶层键（indent==0）
+        if indent == 0:
+            in_lineage = stripped.startswith("lineage:")
+            if stripped.startswith("ip_id:"):
+                ip_id = stripped[len("ip_id:"):].strip().strip('"\'')
+            elif stripped.startswith("related:"):
+                in_lineage = False
+            continue
+        if not in_lineage:
+            continue
+        # lineage 列表项起始（"- uid:" 或 "- " 后跟键值）
+        if stripped.startswith("- "):
+            if cur is not None:
+                entries.append(cur)
+            cur = {}
+            body = stripped[2:].strip()
+            if body:
+                _assign_entry_field(cur, body)
+            continue
+        # 条目内续行字段
+        if cur is not None and ":" in stripped:
+            _assign_entry_field(cur, stripped)
+    if cur is not None:
+        entries.append(cur)
+    return ip_id, entries
+
+
+def _assign_entry_field(entry, body):
+    """把 'key: value' 形式赋值到 entry dict（忽略嵌套 children/related 等复杂值）。"""
+    if ":" not in body:
+        return
+    key, _, val = body.partition(":")
+    key = key.strip()
+    val = val.strip().strip('"\'')
+    if key in ("uid", "type", "follow", "file_path", "status"):
+        if key == "follow" and val in ("", "null", "~"):
+            val = None
+        entry[key] = val
+
+
+def _audit_lineage(root):
+    """校验每本书的 index.yaml（若存在）：uid 唯一 / 命名格式 / follow 无环 /
+    浅目录深度 ≤1。缺失 index.yaml 视为未启用 book-lineage，不报违规（向后兼容）。"""
+    findings = []
+    candidates = [root / "index.yaml"]
+    works = root / "works"
+    if works.is_dir():
+        for sub in sorted(works.iterdir()):
+            if sub.is_dir():
+                candidates.append(sub / "index.yaml")
+    for idx_file in candidates:
+        if not idx_file.exists():
+            continue
+        rel = str(idx_file.relative_to(root))
+        try:
+            text = idx_file.read_text(encoding="utf-8", errors="replace")
+        except OSError as e:
+            findings.append("[lineage] %s 读取失败: %s" % (rel, e))
+            continue
+        ip_id, entries = _parse_lineage_index(text)
+        # 1) uid 全局唯一
+        seen = {}
+        for ent in entries:
+            uid = ent.get("uid")
+            if not uid:
+                findings.append("[lineage] %s 存在缺 uid 的谱系条目" % rel)
+                continue
+            if uid in seen:
+                findings.append("[lineage] %s 重复 uid: %s" % (rel, uid))
+            else:
+                seen[uid] = ent
+        # 2) 命名格式（IP≥3字符 + 7类固定缩写 + 编号）
+        for uid in seen:
+            if not LINEAGE_UID_RE.match(uid):
+                findings.append(
+                    "[lineage] %s uid 命名非法: %s（须匹配 IP≥3字符-3位类型码-编号）" % (rel, uid)
+                )
+            else:
+                parts = uid.split("-")
+                tcode = parts[1]
+                if tcode not in LINEAGE_TYPE_CODES:
+                    findings.append(
+                        "[lineage] %s uid 类型码不在 7 类白名单: %s（%s）" % (rel, uid, tcode)
+                    )
+        # 3) follow 无环（沿 follow 链检测环形依赖）
+        for start_uid in seen:
+            chain = []
+            node = start_uid
+            while node:
+                if node in chain:
+                    findings.append(
+                        "[lineage] %s follow 成环: %s → %s" % (rel, " → ".join(chain), node)
+                    )
+                    break
+                chain.append(node)
+                nxt = seen.get(node, {}).get("follow")
+                node = nxt if nxt and nxt in seen else None
+        # 4) 浅目录深度 ≤1（IP 根下物料子目录不得再嵌套子文件夹）
+        base = idx_file.parent
+        for sd in LINEAGE_SUBDIRS:
+            d = base / sd
+            if not d.is_dir():
+                continue
+            for child in sorted(d.iterdir()):
+                if child.is_dir():
+                    findings.append(
+                        "[lineage] %s/%s 出现二级嵌套目录 %s（谱系目录深度须 ≤1 层）"
+                        % (rel, sd, child.name)
+                    )
+    return findings
 
 
 def _audit_graph(graph_file):

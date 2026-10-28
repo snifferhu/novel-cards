@@ -190,7 +190,7 @@ frontmatter；它们要么已被现有专属字段承载（如 `actor.name`、`c
 | `deliberate()` | `nc-研判`(nc-analyze) | 单点创作推演，出方案 A/B/C（只出建议报告，绝不改卡） |
 | `export()` | `nc-导出`(nc-export) / `nc-成稿`(nc-draft) 的 render 阶段 | 按 timeline 顺序调各对象 `render()` 序列化正文 / 跨平台导出 PDF/Word |
 
-## 4. 技能 → 方法完整映射表（29 技能 + 分析模式）
+## 4. 技能 → 方法完整映射表（33 技能 + 分析模式）
 
 每个 `nc-` 技能都能表述为 `StoryWorld` 或某个子类的成员方法。**技能集合、六组分类、
 `auto_invokable` 标记逐字不变**，本表仅换 OO 视角表述。`auto_invokable=true` 仅
@@ -217,19 +217,23 @@ frontmatter；它们要么已被现有专属字段承载（如 `actor.name`、`c
 | 17 | `nc-暗线` / nc-thread | C | false | `DarkLine` 实例 `create`/`patch`（`check_converge()`） |
 | 18 | `nc-积木` / nc-module | C | false | `module`(`md-`) 的 `trigger_map` 编排（跨动线同步的唯一通道） |
 | 19 | `nc-研判` / nc-analyze | C | false | `StoryWorld.deliberate()`（单点推演，出方案 A/B/C） |
-| 20 | `nc-编排` / nc-compose | C | false | `StoryWorld.plan_modify()`（批量三段式 compose_plan） |
-| 21 | `nc-量化` / nc-metric | D | **true** | `metric`(`mt-`) 对象维护 + `StoryWorld.audit()` 数值维度 |
-| 22 | `nc-图谱` / nc-graph | D | **true** | `StoryWorld.objects` 图森林 → `graph/*.html` 渲染（`render()` 的可视化投影） |
-| 23 | `nc-成稿` / nc-draft | D | false | `StoryWorld.export()` 的 render 阶段（按 timeline 调各对象 `render()` 拼正文） |
-| 24 | `nc-词频` / nc-wordfreq | D | false | `lexstat`(`lx-`) 约束向量（`render()` 的强约束输入，不出正文） |
-| 25 | `nc-校阅` / nc-review | E | false | `NcObject.validate()` + `StoryWorld.audit()`（只出意见不改稿） |
-| 26 | `nc-节奏` / nc-rhythm | E | **true** | `StoryWorld.audit()` 的节奏模块（被 nc-校阅 内置调用） |
-| 27 | `nc-守卫` / nc-safetyguard | E | false | `StoryWorld.safety_guard.scan()`（只告警不改文） |
-| 28 | `nc-定稿` / nc-finalize | F | false | `NcObject.snapshot()` 批量 + 工程锁定标记 |
-| 29 | `nc-导出` / nc-export | F | false | `StoryWorld.export()` 的序列化落盘（PDF/Word） |
-| — | `nc-对标` / nc-refwork（分析模式专用，不计入六组 29） | analysis | false | `refwork`(`rw-`) 对象维护（独立 `tree_id` 隔离） |
+| 20 | `nc-编排` / nc-compose | C | false | `StoryWorld.plan_modify()`（批量三段式 compose_plan；MAY 读谱系按 follow 时序批量生成并挂靠谱系） |
+| 21 | `nc-谱系新增` / nc-lineage-add | C | false | `StoryWorld.lineage_add()`（登记卷/章节/物料进 index.yaml 绑定从属） |
+| 22 | `nc-谱系修改` / nc-lineage-edit | C | false | `StoryWorld.lineage_edit()`（改 index.yaml 逻辑关系，默认不动文件名） |
+| 23 | `nc-谱系移除` / nc-lineage-del | C | false | `StoryWorld.lineage_del()`（默认软删除 archived:true，--hard 需确认） |
+| 24 | `nc-谱系查询` / nc-lineage-query | C | false | `StoryWorld.lineage_query()`（输出文字谱系树，读取前 fail-loud 校验） |
+| 25 | `nc-量化` / nc-metric | D | **true** | `metric`(`mt-`) 对象维护 + `StoryWorld.audit()` 数值维度 |
+| 26 | `nc-图谱` / nc-graph | D | **true** | `StoryWorld.objects` 图森林 → `graph/*.html` 渲染（`render()` 的可视化投影） |
+| 27 | `nc-成稿` / nc-draft | D | false | `StoryWorld.export()` 的 render 阶段（按 timeline 调各对象 `render()` 拼正文） |
+| 28 | `nc-词频` / nc-wordfreq | D | false | `lexstat`(`lx-`) 约束向量（`render()` 的强约束输入，不出正文） |
+| 29 | `nc-校阅` / nc-review | E | false | `NcObject.validate()` + `StoryWorld.audit()`（只出意见不改稿；支持 --uid 限定单卷/章并读 follow 前置卷设定） |
+| 30 | `nc-节奏` / nc-rhythm | E | **true** | `StoryWorld.audit()` 的节奏模块（被 nc-校阅 内置调用） |
+| 31 | `nc-守卫` / nc-safetyguard | E | false | `StoryWorld.safety_guard.scan()`（只告警不改文） |
+| 32 | `nc-定稿` / nc-finalize | F | false | `NcObject.snapshot()` 批量 + 工程锁定标记 |
+| 33 | `nc-导出` / nc-export | F | false | `StoryWorld.export()` 的序列化落盘（PDF/Word） |
+| — | `nc-对标` / nc-refwork（分析模式专用，不计入六组 33） | analysis | false | `refwork`(`rw-`) 对象维护（独立 `tree_id` 隔离） |
 
-> **映射完整性**：29 个六组技能 + 1 个分析模式技能，每行有且仅有一个主归属方法
+> **映射完整性**：33 个六组技能 + 1 个分析模式技能，每行有且仅有一个主归属方法
 > （允许「子类方法 + 容器方法」组合，如 `nc-校阅`→`NcObject.validate()`+`StoryWorld.audit()`）。
 > 本表与 `references/skill-catalog.md` 六组分类、双语别名 JSON、`auto_invokable` 取值零差异。
 

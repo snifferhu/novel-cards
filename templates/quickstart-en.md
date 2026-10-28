@@ -65,6 +65,18 @@ aliases):
 - `nc-图谱` — render narrative-forest timeline / relation / track-link graphs
 - `nc-守卫` — privacy + compliance content scan (use before distribution)
 
+### Intra-book Lineage Management (long-form volume/chapter structure)
+
+- **Positioning**: manage the ordering and subordination of a book's volumes / chapters / companion
+  materials (abridgment / promo / character cards / drafts / tests / references). Logical truth lives
+  in `index.yaml` (auto-maintained by skills); physical files use shallow dirs
+  (`MAI/ABR/PRO/CAR/DRF/TST/REF`, ≤1 level).
+- `nc-谱系新增` — add a volume / chapter / companion material and register it into `index.yaml`; `--exist-file` attaches an existing md.
+- `nc-谱系修改` — change title / reorder (follow) / reassign / status; default edits the index only, not filenames.
+- `nc-谱系移除` — default soft-delete (`archived: true`, file kept and restorable); `--hard` requires second confirmation.
+- `nc-谱系查询` — query whole-IP lineage tree / single volume with chapters + predecessors-successors; emits a text lineage tree.
+- Full contract in the skill repo's `references/lineage.md`; projects without `index.yaml` are treated as not-enabled, behavior unchanged.
+
 ### Archival, Export & Maintenance
 
 - `nc-定稿` — project snapshot archival, lock marker

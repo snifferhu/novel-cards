@@ -79,7 +79,7 @@
 - **不写**真实小说内容示例；`examples/` 只放结构骨架与假名占位（如 `角色-甲`、`章节-001`）。
 - **不修改** `LICENSE`（AGPL-3.0，全文保留）。
 - **tools/nc_validate.py 只读铁律**：该运行时 MUST 零第三方依赖（仅 Python3 标准库）、MUST 只读不写盘、MUST NOT 替代提案制或自动回写卡片；在本仓库内它是交付物本体，但绝不在本仓库内用它对真实工程做写操作。
-- **OO 文档与 schema 对齐**：`references/oo-model.md` / `references/event-inference.md` 中的类层次、方法契约、技能→方法映射 MUST 与 `references/card-schema.md` 的 type/前缀表、`references/skill-catalog.md` 的 29 技能集合保持一致；草稿命名（uuid/create_at/disposition_slide/pose_bank/MoodLine）只作概念别名说明，MUST NOT 作为 frontmatter 字段落地。
+- **OO 文档与 schema 对齐**：`references/oo-model.md` / `references/event-inference.md` 中的类层次、方法契约、技能→方法映射 MUST 与 `references/card-schema.md` 的 type/前缀表、`references/skill-catalog.md` 的 33 技能集合保持一致；草稿命名（uuid/create_at/disposition_slide/pose_bank/MoodLine）只作概念别名说明，MUST NOT 作为 frontmatter 字段落地。
 
 ## 7. 编辑 SKILL.md / references / templates 时的自检
 
@@ -95,14 +95,14 @@
 - [ ] 所有路径示例都是使用方工程的相对路径，无绝对路径、无 `$HOME`。
 - [ ] `description` 字段能被 Claude Code 与 OpenCode 同时正确解析（无 opencode 专属键混入）。
 - [ ] 无 `relationship` 卡类型残留引用（已合并到 timeline）。
-- [ ] 技能计数一致性：SKILL.md 速查表 / README 技能表 / `references/skill-catalog.md` / `USAGE.md` / `templates/skill-reference-zh.md` 五处列出的 29 技能集合完全相同（v1.0 主体 24 技能；2026-10-23 追加 `nc-动向` / `nc-研判` / `nc-编排` / `nc-更名` 后为 29 技能）。
-- [ ] 六组分类覆盖：A 工程初始化&素材资产 / B 叙事卡片建模 / C 剧情结构 / D 生成与可视化 / E 审计校验 / F 归档导出&复盘 六组分组名称在 skill-catalog / agents-guide / skill-reference 三处一致，且 29 技能全部归入某一组（`nc-对标` 单列为分析模式专用，不计入六组）。
+- [ ] 技能计数一致性：SKILL.md 速查表 / README 技能表 / `references/skill-catalog.md` / `USAGE.md` / `templates/skill-reference-zh.md` 五处列出的 33 技能集合完全相同（v1.0 主体 24 技能；2026-10-23 追加 `nc-动向` / `nc-研判` / `nc-编排` / `nc-更名` 后为 28 技能；add-book-lineage 追加 `nc-谱系新增` / `nc-谱系修改` / `nc-谱系移除` / `nc-谱系查询` 后为 33 技能）。
+- [ ] 六组分类覆盖：A 工程初始化&素材资产 / B 叙事卡片建模 / C 剧情结构 / D 生成与可视化 / E 审计校验 / F 归档导出&复盘 六组分组名称在 skill-catalog / agents-guide / skill-reference 三处一致，且 33 技能全部归入某一组（`nc-对标` 单列为分析模式专用，不计入六组）。
 - [ ] auto_invokable 标记三处一致：仅 `nc-量化` / `nc-图谱` / `nc-节奏` 为 true，在 `config/skills.yaml` 骨架 / `references/skill-catalog.md` / `templates/skill-reference-*.md` 三处取值完全相同；其余技能一律 user_trigger_only。
-- [ ] 三分拆文档对应：使用方工程引导文档拆为 `agents.md`（Agent 行为契约）/ `quickstart.md`（新手主线）/ `skill-reference.md`（29 技能全量备查），中英双语模板节结构一一对应、占位符集合一致。
+- [ ] 三分拆文档对应：使用方工程引导文档拆为 `agents.md`（Agent 行为契约）/ `quickstart.md`（新手主线）/ `skill-reference.md`（33 技能全量备查），中英双语模板节结构一一对应、占位符集合一致。
 - [ ] 双语模板对应：`templates/agents-zh.md` 与 `templates/agents-en.md`、`quickstart-zh.md` 与 `quickstart-en.md`、`skill-reference-zh.md` 与 `skill-reference-en.md` 各自节结构一一对应，占位符集合一致。
 - [ ] 四层数据分层表述一致：`.md` / `.json` / `.yaml` / `.html` 的分工在 SKILL.md / README / `references/data-layering.md` 三处措辞一致。
-- [ ] 触发词前缀 `nc-` 在 SKILL.md description / README / USAGE 三处一致（v1.0 主体 24 前缀；2026-10-23 追加 `nc-动向` / `nc-研判` / `nc-编排` / `nc-更名` 后为 29 前缀）。
+- [ ] 触发词前缀 `nc-` 在 SKILL.md description / README / USAGE 三处一致（v1.0 主体 24 前缀；2026-10-23 追加 `nc-动向` / `nc-研判` / `nc-编排` / `nc-更名` 后为 28 前缀；add-book-lineage 追加 `nc-谱系新增` / `nc-谱系修改` / `nc-谱系移除` / `nc-谱系查询` 后为 33 前缀）。
 - [ ] `baseline_prototype` 为 registry-backed 可选枚举：`npd-*` 等词表只在 references/templates 以「需经 nc-注册」标注的示例出现；`nc-初始化` 骨架（`registry/tendency-prototypes.yaml`）零预置具体条目；`nc-校阅` 检查④为建议级（提示而非禁止）；未声明该字段的存量 tend- 卡行为不变。
-- [ ] OO 透镜一致性：`references/oo-model.md` 的 NcObject 基类五字段 / 8 子类 / StoryWorld 容器 / 29 技能→方法映射，与 `references/card-schema.md` type/前缀表、`references/skill-catalog.md` 六组 29 技能集合完全对齐；草稿命名（uuid/create_at/disposition_slide/pose_bank/MoodLine）仅作概念别名，未作为 frontmatter 字段落地。
+- [ ] OO 透镜一致性：`references/oo-model.md` 的 NcObject 基类五字段 / 8 子类 / StoryWorld 容器 / 33 技能→方法映射，与 `references/card-schema.md` type/前缀表、`references/skill-catalog.md` 六组 33 技能集合完全对齐；草稿命名（uuid/create_at/disposition_slide/pose_bank/MoodLine）仅作概念别名，未作为 frontmatter 字段落地。
 - [ ] 事件推演文档对齐：`references/event-inference.md` 的 ChangePlan 五类任务（create_plot/edit_plot/archive_plot/update_tendency/bind_sensory_cue）与 `references/skill-catalog.md` 中 `nc-编排` 产物描述一致；enter→perceive→act→fire 链引用的对象类型均在 card-schema 中存在。
 - [ ] tools/ 只读铁律：`tools/nc_validate.py` 零第三方依赖（仅 Python3 标准库）、只读不写盘、不替代提案制；SKILL.md / README / AGENTS.md 三处对「可选运行时 + 缺失降级纸面校验」的表述一致。
